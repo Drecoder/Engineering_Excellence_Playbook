@@ -52,7 +52,10 @@ Engineering_Excellence_Playbook/
 ├── 02_BackendZone/
 ├── 03_InfrastructureZone/
 ├── 04_OperationalRunbooks/
-└── 05_Metadata/
+├── 05_Metadata/
+├── 04_OperationalRunbooks/  # Rollbacks, Incident Response
+├── docs/                    # Deep dives: USL, Little's Law, and The Playbook
+└── metrics/promql/          # Master Metric Index (PromQL Constants)
 
 > Each folder contains templates, standards, and reference guides to manage platform flow effectively.
 
@@ -60,8 +63,9 @@ Engineering_Excellence_Playbook/
 
 ## 🔗 How to Use
 
-1. Start with **00_UniversalStandards** — align on deliverables, definition of done, and post-mortem process.  
-2. Use **FrontendZone**, **BackendZone**, and **InfrastructureZone** for implementation guidelines and operational standards.  
-3. Reference **OperationalRunbooks** for reactive flows (rollbacks, monitoring).  
-4. Consult **Metadata** for high-level decision frameworks (Red/Green logic, Two Sides of the Coin, least privilege).  
-5. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.
+1. Start with **00_UniversalStandards** — align on deliverables, definition of done, and post-mortem process.
+2. **Consult the Master Metric Index** — Use the `/metrics/promql/` folder for standardized monitoring constants.
+3. Use **FrontendZone**, **BackendZone**, and **InfrastructureZone** for implementation guidelines and operational standards.  
+4. Reference **OperationalRunbooks** for reactive flows (rollbacks, monitoring).  
+5. Consult **Metadata** for high-level decision frameworks (Red/Green logic, Two Sides of the Coin, least privilege).
+6. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.
