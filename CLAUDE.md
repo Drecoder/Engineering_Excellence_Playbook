@@ -17,7 +17,9 @@ subset (IaC and Node/TypeScript). They narrow the general philosophy in
 ## IaC Rules
 
 - Use **Terragrunt** (HCL) to orchestrate Terraform — do not call bare `terraform` directly
-  in new work.
+  in new work. This includes bootstrap units (`live/_bootstrap/…`).
+- Every Deployment Unit declares a class: `persistent` or `ephemeral`. Ephemeral units carry a
+  TTL label, are destroyed only through the apply pipeline, and are swept by a scheduled cleanup.
 - Keep state configuration DRY: define backend/provider config once in a root `terragrunt.hcl`
   and have child `terragrunt.hcl` files `include` it rather than repeating backend blocks.
 - Keep modules isolated — a module must not reach into another module's state or resources
@@ -70,9 +72,22 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
 - **Sandboxed tools.** File tools resolve paths inside a sandbox root and reject traversal;
   write tools restrict file extensions (e.g. `.hcl`, `.tf`). Shell tools are allow-listed commands,
   never free-form.
-- **Bounded loops.** Every agent loop is a Governor: a configurable max attempt count, a timeout /
-  `AbortSignal` per tool and model call, and a terminal `gave_up` status. The cross-agent
-  self-correction loop is capped at **3 iterations**, then escalates to a human.
+- **Bounded loops.** Every agent loop is a Governor: a configurable max attempt count, a **token
+  budget per change**, a timeout / `AbortSignal` per tool and model call, and a terminal `gave_up`
+  status. PR review rounds end at no blocking findings, **round 3**, or a **stalled** round (no
+  finding fingerprints resolved), then escalate to a human. Only blocking findings start a round.
+- **Gates before PRs.** The Builder opens a PR only after the no-op, scope, duplicate, and
+  rig-scan gates pass (plus self-review when enabled).
+- **AI review advises; humans approve.** Merges to staging and prod require human approval.
+  Auto-merge is limited to explicitly allow-listed low-risk paths.
+- **Spend tokens only where code cannot decide.** Rules run before any router or model; a model
+  step stays only if its metrics show it improves outcomes.
+- **Models are injected.** Agents depend on a provider-agnostic model interface; the provider and
+  model come from configuration. Every configured model setting must reach the call.
+- **Prompts are versioned files.** Untrusted input is delimited and treated as data; outputs that
+  code consumes are schema-validated; the context window is set explicitly.
+- **Agents never notify people directly.** They set PR labels; a notification service routes them
+  (`06_AgentZone/01_Agent_Standards.md` §8).
 - **Fail closed.** Routing or risk classification that is unknown, malformed, or below the
   confidence threshold resolves to the highest-scrutiny path. Changes touching IAM or state
   (`moved` blocks, replacements, deletes) always take the highest-scrutiny path, decided from the

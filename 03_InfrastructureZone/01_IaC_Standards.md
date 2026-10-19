@@ -78,9 +78,47 @@ Infrastructure is production-ready when:
 <repo>/
 ├── terragrunt.hcl              # root: remote_state + provider generation, defined once
 ├── modules/<module>/           # reusable Terraform modules
-└── live/<env>/<region>/<unit>/
-    └── terragrunt.hcl          # include root, set inputs, declare dependency blocks
+└── live/
+    ├── _bootstrap/<cloud>/identity/   # OIDC trust, plan + apply identities (applied once by a human)
+    └── <env>/<cloud>/<unit>/
+        └── terragrunt.hcl      # include root, set inputs, declare dependency blocks
 ```
+
+Bootstrap is Terragrunt too: the remote-state backend creates its own bucket, and the identity
+units are the only ones a human applies by hand. Everything after them runs through CI.
+
+---
+
+## Deployment Unit Lifecycle
+
+A **Deployment Unit (DU)** is the atomic thing the platform launches: its own state, identity,
+and blast radius. DUs never read each other's state; they share values only through outputs.
+
+| Class | Lifetime | Rules |
+| :--- | :--- | :--- |
+| `persistent` | Long-lived (bootstrap, state, telemetry storage) | Deletes and replacements are blocked by the no-delete gate |
+| `ephemeral` | Created on demand, destroyed after use | Requires a `ttl` label; destroyed only by the apply pipeline; swept by a scheduled cleanup when expired or orphaned |
+
+- Agents and people **request** a DU with a spec (type, size, TTL). The apply pipeline validates it
+  against policy (budget, max TTL, allowed instance types) and applies it. Agents never create
+  infrastructure directly.
+- Build order for a platform: **bootstrap → observability → networking → workloads**, so
+  everything after bootstrap reports telemetry from its first run.
+- DU creation time and teardown success are tracked as metrics.
+
+---
+
+## Cost Defaults
+
+Spin up only what is used, and make idle cost visible:
+
+- **Dev first.** Add staging and prod only once the dev loop works.
+- **Avoid fixed hourly costs in dev:** no NAT gateways, managed Kubernetes clusters, or idle load
+  balancers unless the unit truly needs them.
+- **GPUs are on demand.** Prefer a scale-to-zero service (e.g. Cloud Run with a GPU) over a
+  long-lived VM; a GPU VM must be an `ephemeral` DU with a TTL.
+- **Budget alerts in every account and project** as the backstop for the TTL cleanup.
+- Request GPU quota early; give GPU units an ordered list of allowed zones or regions.
 
 ---
 

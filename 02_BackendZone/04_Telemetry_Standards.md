@@ -59,7 +59,9 @@ Avoid high-cardinality metric labels (task IDs, file paths, user IDs). Those bel
 | **Every service** | RED: request rate, error rate, duration histogram |
 | **Every Governor** | `governor_active_tasks`, `governor_max_limit`, `governor_wait_duration_seconds` |
 | **Every LLM call** | Span with `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`; token and cost counters |
-| **Every agent** | Task outcome counter, attempts histogram, loop-iteration count |
+| **Every agent** | Task outcome counter, attempts histogram, loop-iteration count, token budget used |
+| **Every review loop** | Rounds per change, stall count, findings resolved per round (by fingerprint), cost per merged change |
+| **Every Deployment Unit** | Creation time, teardown success, collector export failures |
 
 ---
 
@@ -78,6 +80,27 @@ Avoid high-cardinality metric labels (task IDs, file paths, user IDs). Those bel
 | **Cloud** | Grafana Cloud | App → OTLP gRPC → collector (Grafana Alloy) → Grafana Cloud OTLP endpoint (HTTP) |
 
 Switching stages changes environment variables and collector config only — never application code.
+
+---
+
+## 7️⃣a Decentralized Telemetry Stack
+
+Across clouds, telemetry goes to an **independent observability Deployment Unit** that no workload
+cloud owns:
+
+- **The stack is its own DU**, launched by the platform like any other, in a dedicated account or
+  neutral location (or a neutral SaaS).
+- **Workloads never depend on it.** Every DU runs a local collector (OTel Collector / Grafana Alloy)
+  that buffers and retries; if the stack is down, telemetry is delayed, not lost, and workloads
+  keep running.
+- **Outbound only.** DUs push OTLP; the stack never reaches into a DU. Each DU authenticates with
+  its own identity so one DU cannot impersonate another.
+- **Storage outlives compute.** Logs, metrics, and traces are kept in object storage, so ephemeral
+  DUs — including an ephemeral stack — never take their history with them.
+- **Cost controls at the edge.** Sampling, short retention, and dropping debug logs happen in the
+  local collector, before cross-cloud egress is paid.
+- **Agents report to the same stack**, so one trace and one dashboard cover infrastructure and the
+  change loop that produced it.
 
 ---
 
