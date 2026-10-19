@@ -6,7 +6,7 @@ This repo is the **Engineering Excellence Playbook** — see `README.md` for the
 principles/philosophy and `00_UniversalStandards/` → `05_Metadata/` for the detailed zone
 docs. The rules below are the enforceable, mechanical subset Claude must follow when writing
 or reviewing code here (IaC and Node/TypeScript). They narrow the general philosophy in
-`03_InfrastructureZone/01_Terraform_GCP_Standards.md` and `02_BackendZone/` to concrete gates.
+`03_InfrastructureZone/01_IaC_Standards.md` (plus `01a_GCP_Specifics.md` / `01b_AWS_Specifics.md`) and `02_BackendZone/` to concrete gates.
 
 ## IaC Rules
 
