@@ -59,7 +59,9 @@ Engineering_Excellence_Playbook/
 ├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
 ├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks
 ├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
-└── metrics/promql/          # Master Metric Index (PromQL constants)
+├── metrics/promql/          # Master Metric Index (PromQL constants)
+├── templates/consumer/      # Files a consumer repo copies to depend on the playbook
+└── action.yml               # GitHub Action that vendors CLAUDE.md / schemas into a consumer
 ```
 
 > Each folder contains templates, standards, and reference guides to manage platform flow effectively.

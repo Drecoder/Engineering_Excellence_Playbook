@@ -1,0 +1,25 @@
+# Copy into a consumer repo at .github/workflows/sync-playbook-rules.yml.
+# The consumer declares the playbook as a pinned dependency; the playbook never lists consumers.
+
+name: Sync Playbook Rules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Runs when the pinned playbook version changes (e.g. a Dependabot bump is merged).
+      - .github/workflows/sync-playbook-rules.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pin to an exact release; Dependabot opens a PR when a new one is tagged.
+      - uses: Drecoder/Engineering_Excellence_Playbook@v1.0.0

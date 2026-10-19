@@ -1,6 +1,7 @@
 # Standards Distribution
 
-*The playbook is the single source of truth. Consumer repos receive a vendored copy through CI.*
+*The playbook is the single source of truth. Consumer repos depend on it — the playbook never
+depends on them.*
 
 ---
 
@@ -22,69 +23,104 @@ of an absolute path are a convenience only.
 
 ---
 
-## 2️⃣ What Is Distributed
+## 2️⃣ Design: Dependency Inversion
 
-| Source (playbook) | Destination (consumer repo) |
+The playbook **publishes**; consumers **declare a dependency**. Nothing in the playbook lists
+consumer repos.
+
+| Concern | Owned by |
+| :--- | :--- |
+| What the rules are | Playbook (`CLAUDE.md`, `schemas/`) |
+| How rules are vendored | Playbook (`action.yml` — a composite GitHub Action) |
+| Which repos use the rules | Each consumer (its own workflow) |
+| Which version a repo uses | Each consumer (the pinned `@vX.Y.Z` ref) |
+| When a repo adopts a new version | Each consumer (merging the Dependabot bump and the sync PR) |
+
+Adding a consumer never requires a playbook change, and the playbook needs no credentials for
+any other repo.
+
+---
+
+## 3️⃣ What Is Vendored
+
+| Source (playbook, at the pinned ref) | Destination (consumer repo) |
 | :--- | :--- |
 | `CLAUDE.md` | `.playbook/CLAUDE.md` |
 | `CLAUDE.md` | `.playbook/AGENTS.md` |
 | `schemas/**` (when present) | `.playbook/schemas/**` |
-| — | `.playbook/README.md` (source commit + do-not-edit notice) |
+| — | `.playbook/README.md` (source ref + do-not-edit notice) |
 
 The zone docs are **not** vendored: they explain the rules, and the rules link back to them.
 
 ---
 
-## 3️⃣ How It Flows
+## 4️⃣ How It Flows
 
-1. A change to `CLAUDE.md` or `schemas/` merges to `main` in the playbook (reviewed like any PR).
-2. `.github/workflows/sync-playbook-rules.yml` runs once per consumer repo.
-3. It replaces the consumer's `.playbook/` directory and opens (or updates) a PR on the
-   `chore/playbook-sync` branch.
-4. The consumer repo's own CI and review gate the PR. Merging it is how a repo **adopts** a new
-   rule version — rules never change underneath a repo silently.
+1. A rule change merges to `main` in the playbook and is released as a tag (`vX.Y.Z`).
+2. Dependabot in each consumer opens a PR bumping `Drecoder/Engineering_Excellence_Playbook@vX.Y.Z`.
+3. Merging that bump triggers the consumer's sync workflow, which runs the playbook action.
+4. The action replaces `.playbook/` with the files from that exact ref and opens a sync PR.
+5. The consumer's own CI and review gate the sync PR. Merging it **adopts** the new rules.
 
----
-
-## 4️⃣ Consumer Repo Setup
-
-Each consumer keeps its own root `CLAUDE.md` for repo-specific rules and imports the shared ones:
-
-```markdown
-# CLAUDE.md
-
-@.playbook/CLAUDE.md
-
-## Repo-specific rules
-- ...
-```
-
-- Add `.playbook/ @<owner>` to `CODEOWNERS` so vendored files only change through the sync PR.
-- Repo-specific rules may **narrow** playbook rules, never loosen them. A needed exception is a
-  playbook PR, not a local edit.
+Rules never change underneath a repo silently, and every repo's rule version is visible in its
+workflow file.
 
 ---
 
-## 5️⃣ Identity & Security
+## 5️⃣ Consumer Repo Setup
 
-- The workflow authenticates as a **GitHub App** installed only on the consumer repos, with
-  `contents: write` and `pull_requests: write`. No personal access tokens.
-- App ID lives in the repo variable `PLAYBOOK_SYNC_APP_ID`; the private key in the secret
-  `PLAYBOOK_SYNC_APP_PRIVATE_KEY`.
-- Tokens are minted per run and scoped to the single consumer repo being synced.
+Copy the templates from `templates/consumer/`:
+
+| Template | Destination in the consumer |
+| :--- | :--- |
+| `.github/workflows/sync-playbook-rules.yml` | Same path |
+| `.github/dependabot.yml` | Same path (merge if one exists) |
+
+Then:
+
+1. Enable **Settings → Actions → General → Allow GitHub Actions to create and approve pull
+   requests** (the action uses the workflow's `GITHUB_TOKEN`).
+2. Run the workflow once manually (`workflow_dispatch`) to open the first sync PR.
+3. Import the shared rules from the repo's own root `CLAUDE.md`:
+
+   ```markdown
+   # CLAUDE.md
+
+   @.playbook/CLAUDE.md
+
+   ## Repo-specific rules
+   - ...
+   ```
+
+4. Add `.playbook/ @<owner>` to `CODEOWNERS` so vendored files only change through the sync PR.
+
+Repo-specific rules may **narrow** playbook rules, never loosen them. A needed exception is a
+playbook PR, not a local edit.
 
 ---
 
-## 6️⃣ Adding a Consumer
+## 6️⃣ Releasing the Playbook
 
-1. Install the GitHub App on the new repo.
-2. Add the repo name to the `matrix.repo` list in `sync-playbook-rules.yml`.
-3. Run the workflow manually (`workflow_dispatch`) to open the first sync PR.
-4. Add the `@.playbook/CLAUDE.md` import and the `CODEOWNERS` entry in the consumer.
+- Tag releases on `main` as `vX.Y.Z`. Consumers pin exact versions, so a tag is a contract:
+  never move or delete a published tag.
+- Version bumps follow the change type: **major** for a rule that can fail existing code,
+  **minor** for new rules or schemas, **patch** for wording that changes no behavior.
 
 ---
 
-## 7️⃣ Principle
+## 7️⃣ Constraints
+
+- **Private playbook:** if the playbook repo is private, enable **Settings → Actions → General →
+  Access** so repositories owned by the same account can use its action.
+- **CI on sync PRs:** PRs opened with `GITHUB_TOKEN` do not trigger other workflows. A consumer
+  that needs CI on the sync PR passes a GitHub App token via the action's `token` input.
+- **Destination safety:** the action refuses an empty, root, absolute, or `..` destination,
+  because it replaces that directory on every sync.
+
+---
+
+## 8️⃣ Principle
 
 A standard that does not reach the place where work happens is a suggestion. Distribution makes
-the playbook **enforceable everywhere**, while each repo still chooses *when* to adopt a change.
+the playbook **enforceable everywhere**, while each repo decides *which* version it runs and
+*when* to adopt a change.

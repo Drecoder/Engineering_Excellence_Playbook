@@ -4,7 +4,7 @@ Instructions for Claude Code (and, via `AGENTS.md`, other agents) when writing o
 
 This file is the canonical rule set of the **Engineering Excellence Playbook**
 (`github.com/Drecoder/Engineering_Excellence_Playbook`). It is vendored into consumer repos as
-`.playbook/CLAUDE.md` and `.playbook/AGENTS.md` by CI (see
+`.playbook/CLAUDE.md` and `.playbook/AGENTS.md` by the playbook's GitHub Action, pinned per repo (see
 `00_UniversalStandards/05_Standards_Distribution.md`), so **keep every rule repo-agnostic**.
 All doc paths below refer to the playbook repo.
 
