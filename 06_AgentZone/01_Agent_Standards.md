@@ -24,6 +24,36 @@ shape of each rule.
 
 ---
 
+## 1️⃣a Actors and Tools
+
+The platform separates **actors**, which hold judgment, from **tools**, which hold capability.
+The split repeats at every layer: an agent is an actor and its scanners are tools; the platform
+is an actor and its infrastructure engine is a tool.
+
+| | Actor | Tool |
+| :--- | :--- | :--- |
+| Holds | The loop, the decision of what to do next, model-backed judgment | One capability, called and returned |
+| Examples | Builder, Reviewer, the platform (agents + approval + pipeline) | rig (scan, reason), the IaC engine (plan) |
+| Must not contain | Raw mechanism it could call a tool for | A loop, a decision about what to do, any `apply` / write of record |
+| Surface | Versioned input/output contracts; golden tasks | A versioned callable: typed input → typed output |
+
+Three rules:
+
+1. **Tools hold no judgment.** A tool is called, runs its one capability, and returns a typed
+   result. It never decides what to work on next, and it never applies.
+2. **Actors hold no raw mechanism.** An actor calls a tool rather than embedding the capability,
+   so judgment and capability stay independently testable.
+3. **Dependencies point one way: actor → tool, never the reverse.** A tool never imports its
+   caller (the IaC engine never imports the agents; a scanner never imports the platform).
+
+**Demoting an actor to a tool is a sanctioned refactor.** Capabilities built as agents during an
+earlier design (their own loop, their own autonomy) are expected to become tools as the system
+matures. When actor logic is found inside a tool, the standard is to **move it up** into the
+calling actor — not to leave it — following `00_UniversalStandards/06_Module_Refactor_Framework.md`.
+The result is a smaller, deterministic, testable callable.
+
+---
+
 ## 2️⃣ Agent Anatomy
 
 | Part | Standard |

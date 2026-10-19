@@ -87,6 +87,11 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
 Rules for the Builder / Reviewer agents and any future agent in the control plane (rationale in
 `06_AgentZone/01_Agent_Standards.md`).
 
+- **Actors hold judgment; tools hold capability.** An agent (actor) holds the loop and the
+  decisions; the things it calls (scanners, analysis, the IaC engine) are tools that take typed
+  input and return typed output. A tool holds no loop, decides nothing about what to do next, and
+  never applies. Dependencies point one way — actor → tool, never the reverse. Actor logic found
+  inside a tool is moved up into the caller (a sanctioned refactor), not left in place.
 - **Plan, never apply.** Agents may run `terragrunt plan` / `validate` only. `apply` runs in a
   separate post-merge pipeline with its own scoped identity and is never exposed as an agent tool.
 - **Schemas at every boundary.** Agent inputs, outputs, and tool arguments are defined as
