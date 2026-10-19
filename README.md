@@ -50,7 +50,8 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 
 ```text
 Engineering_Excellence_Playbook/
-├── CLAUDE.md                # Enforceable rules for Claude Code (IaC, TS, observability, agents)
+├── AGENTS.md                # Enforceable standards for engineers, assistants, and agents
+├── CLAUDE.md                # Shim: imports AGENTS.md for Claude Code
 ├── 00_UniversalStandards/   # Lifecycle, DoD, security in depth, governors, distribution, refactors
 ├── 01_FrontendZone/         # React patterns, clean code, performance
 ├── 02_BackendZone/          # API architecture, async processing, database health, telemetry
@@ -61,7 +62,7 @@ Engineering_Excellence_Playbook/
 ├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
 ├── metrics/promql/          # Master Metric Index (PromQL constants)
 ├── templates/consumer/      # Files a consumer repo copies to depend on the playbook
-└── action.yml               # GitHub Action that vendors CLAUDE.md / schemas into a consumer
+└── action.yml               # GitHub Action that vendors AGENTS.md / schemas into a consumer
 ```
 
 > Each folder contains templates, standards, and reference guides to manage platform flow effectively.

@@ -4,7 +4,7 @@
 
 This is the central security standard for every project that follows the playbook. Detailed
 guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity and access) and
-`05_Metadata/Least_Privilege_Checklist.md`. The enforceable subset is in `CLAUDE.md` →
+`05_Metadata/Least_Privilege_Checklist.md`. The enforceable subset is in `AGENTS.md` →
 **Security Rules**.
 
 ---

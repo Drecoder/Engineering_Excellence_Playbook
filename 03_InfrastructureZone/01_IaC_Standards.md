@@ -131,7 +131,7 @@ Every IaC PR must include:
 - IAM diff explanation (if changed)
 - Rollback consideration
 - Cross-layer impact notes
-- Structural vs behavioral classification — never both in one PR (see `CLAUDE.md`)
+- Structural vs behavioral classification — never both in one PR (see `AGENTS.md`)
 
 ---
 

@@ -10,7 +10,7 @@ Terragrunt modules and TypeScript modules alike.*
 > **Each step changes either structure or behavior, never both.** Every intermediate step leaves
 > the system fully deployable, so you can pause or roll back at any point.
 
-This is the long form of the structural-vs-behavioral rule in `CLAUDE.md`.
+This is the long form of the structural-vs-behavioral rule in `AGENTS.md`.
 
 ---
 

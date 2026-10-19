@@ -21,7 +21,7 @@ advance (see `05_Metadata/RedGreen_Logic.md`).
 
 | Entry gate | Activities | Exit gate |
 | :--- | :--- | :--- |
-| Design exit gate met | Implement with telemetry from the first commit; keep structural and behavioral changes in separate PRs; bound all concurrency with a Governor (`04_CONCURRENCY_GOVERNORS.md`) | Local validation commands in `CLAUDE.md` pass |
+| Design exit gate met | Implement with telemetry from the first commit; keep structural and behavioral changes in separate PRs; bound all concurrency with a Governor (`04_CONCURRENCY_GOVERNORS.md`) | Local validation commands in `AGENTS.md` pass |
 
 ## 3. Validate
 

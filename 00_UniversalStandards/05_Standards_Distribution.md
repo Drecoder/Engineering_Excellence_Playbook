@@ -7,16 +7,20 @@ depends on them.*
 
 ## 1️⃣ Why Distribution Is Needed
 
-Claude Code only loads the `CLAUDE.md` of the repo it is working in (plus the user-level
-`~/.claude/CLAUDE.md`). Rules written here do nothing for a session — or a containerized agent —
-running in another repo unless they are delivered there.
+The standards apply to the whole agentic platform — engineers, coding assistants of any vendor,
+and the platform's own agents. Coding tools only load instruction files from the repo they are
+working in, so rules written here do nothing for a session — or a containerized agent — running
+in another repo unless they are delivered there.
+
+`AGENTS.md` is the single, tool-neutral source. Tool-specific files are thin shims that import it
+(e.g. `CLAUDE.md` contains `@AGENTS.md`), so no tool ever gets a different copy of the rules.
 
 | Consumer | Where it runs | How it gets the rules |
 | :--- | :--- | :--- |
-| Local Claude Code sessions | Your machine | Vendored `.playbook/` (preferred) or an `@` import of a local playbook checkout |
-| AWS Builder agent | ECS Fargate / AgentCore container | Vendored `.playbook/` in the repo it clones |
-| GCP Reviewer agent | Cloud Run container | Vendored `.playbook/` in the repo under review |
-| Non-Claude agents (Gemini, SLMs) | Any | `.playbook/AGENTS.md` — same content as `CLAUDE.md` |
+| Engineers | Anywhere | `.playbook/AGENTS.md` plus the zone docs it links to |
+| Coding assistants (Claude, Gemini, others) | Your machine | Vendored `.playbook/AGENTS.md`, directly or through a tool shim |
+| Builder / Reviewer agents | Cloud containers | Vendored `.playbook/` in the repo they work on; enforced by platform controls |
+| Platform services (rig, routers) | Cloud | Enforced by schemas, identities, and `SEC-*` / gate policies |
 
 Containers have no access to your local disk, so **vendoring is the standard**; local `@` imports
 of an absolute path are a convenience only.
@@ -30,7 +34,7 @@ consumer repos.
 
 | Concern | Owned by |
 | :--- | :--- |
-| What the rules are | Playbook (`CLAUDE.md`, `schemas/`) |
+| What the rules are | Playbook (`AGENTS.md`, `schemas/`) |
 | How rules are vendored | Playbook (`action.yml` — a composite GitHub Action) |
 | Which repos use the rules | Each consumer (its own workflow) |
 | Which version a repo uses | Each consumer (the pinned `@vX.Y.Z` ref) |
@@ -45,8 +49,8 @@ any other repo.
 
 | Source (playbook, at the pinned ref) | Destination (consumer repo) |
 | :--- | :--- |
-| `CLAUDE.md` | `.playbook/CLAUDE.md` |
-| `CLAUDE.md` | `.playbook/AGENTS.md` |
+| `AGENTS.md` | `.playbook/AGENTS.md` (the rules) |
+| `CLAUDE.md` | `.playbook/CLAUDE.md` (shim: `@AGENTS.md`) |
 | `schemas/**` (when present) | `.playbook/schemas/**` |
 | — | `.playbook/README.md` (source ref + do-not-edit notice) |
 
@@ -81,15 +85,22 @@ Then:
 1. Enable **Settings → Actions → General → Allow GitHub Actions to create and approve pull
    requests** (the action uses the workflow's `GITHUB_TOKEN`).
 2. Run the workflow once manually (`workflow_dispatch`) to open the first sync PR.
-3. Import the shared rules from the repo's own root `CLAUDE.md`:
+3. Reference the shared rules from the repo's own root `AGENTS.md`, and add a shim per tool:
+
+   ```markdown
+   # AGENTS.md
+
+   Follows the playbook standards in `.playbook/AGENTS.md`.
+
+   ## Repo-specific rules
+   - ...
+   ```
 
    ```markdown
    # CLAUDE.md
 
-   @.playbook/CLAUDE.md
-
-   ## Repo-specific rules
-   - ...
+   @.playbook/AGENTS.md
+   @AGENTS.md
    ```
 
 4. Add `.playbook/ @<owner>` to `CODEOWNERS` so vendored files only change through the sync PR.

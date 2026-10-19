@@ -3,7 +3,7 @@
 *Agents are services. They follow the same lifecycle, contracts, and observability rules — plus
 guardrails for the fact that their decisions come from a model.*
 
-The enforceable subset lives in `CLAUDE.md` → **Agent Rules**. This doc explains the why and the
+The enforceable subset lives in `AGENTS.md` → **Agent Rules**. This doc explains the why and the
 shape of each rule.
 
 ---

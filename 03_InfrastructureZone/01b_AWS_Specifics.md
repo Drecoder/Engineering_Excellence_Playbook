@@ -35,7 +35,7 @@ remote_state {
   `sts:AssumeRoleWithWebIdentity`). **No IAM users with access keys** for workloads.
 - Role trust policies pin the OIDC `sub` claim to the exact repo / branch / environment.
 - One role per workload per environment. Separate roles for `plan` (read-only) and `apply`
-  (post-merge pipeline only), matching the Agent Rules in `CLAUDE.md`.
+  (post-merge pipeline only), matching the Agent Rules in `AGENTS.md`.
 - Never attach `AdministratorAccess` or `*` actions on `*` resources to workloads; guard
   accounts with SCPs.
 

@@ -2,7 +2,7 @@
 
 *Traces, metrics, and logs ship with the first line of code.*
 
-The enforceable subset lives in `CLAUDE.md` → **Observability Rules**. Query definitions live in
+The enforceable subset lives in `AGENTS.md` → **Observability Rules**. Query definitions live in
 `metrics/promql/MASTER_INDEX.md`.
 
 ---

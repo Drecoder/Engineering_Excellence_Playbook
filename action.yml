@@ -1,6 +1,7 @@
 name: Sync Engineering Excellence Playbook Rules
 description: >
-  Vendor the playbook's rules (CLAUDE.md, AGENTS.md, schemas/) into the calling repo at the
+  Vendor the playbook's tool-neutral rules (AGENTS.md, plus tool shims such as CLAUDE.md, and
+  schemas/) into the calling repo at the
   pinned playbook version and open a PR. The playbook never lists its consumers; each consumer
   declares this action as a dependency. See 00_UniversalStandards/05_Standards_Distribution.md.
 
@@ -38,8 +39,9 @@ runs:
         esac
         rm -rf "$DEST"
         mkdir -p "$DEST"
+        cp "$SRC/AGENTS.md" "$DEST/AGENTS.md"
+        # Tool shims only import AGENTS.md, so every tool sees the same rules.
         cp "$SRC/CLAUDE.md" "$DEST/CLAUDE.md"
-        cp "$SRC/CLAUDE.md" "$DEST/AGENTS.md"
         if [ -d "$SRC/schemas" ]; then
           cp -r "$SRC/schemas" "$DEST/schemas"
         fi
