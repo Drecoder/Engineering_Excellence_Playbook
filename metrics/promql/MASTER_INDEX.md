@@ -13,11 +13,12 @@ Standardized queries for validating the **Flow Audit** across the platform.
 | Goal | PromQL Query |
 | :--- | :--- |
 | **CPU Utilization** | `1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))` |
-| **Memory Saturation** | `node_memory_Active_bytes / node_memory_MemTotal_bytes` |
-| **I/O Errors** | `rate(node_network_receive_errs_total[5m])` |
+| **Memory Utilization** | `1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)` |
+| **Memory Saturation** | `rate(node_pressure_memory_waiting_seconds_total[5m])` (PSI: share of time tasks stall on memory) |
+| **Network Errors** | `rate(node_network_receive_errs_total[5m])` |
 
 ## 3. Governor & Flow Metrics
 | Goal | PromQL Query |
 | :--- | :--- |
-| **Concurrency Saturation** | `avg(governor_active_tasks) / avg(governor_max_limit)` |
-| **Queue Jitter** | `histogram_quantile(0.99, rate(governor_wait_duration_seconds_bucket[5m]))` |
+| **Concurrency Saturation** | `avg(governor_active_tasks / governor_max_limit)` |
+| **Queue Jitter** | `histogram_quantile(0.99, sum by (le) (rate(governor_wait_duration_seconds_bucket[5m])))` |

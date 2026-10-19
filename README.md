@@ -48,16 +48,18 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 
 ## 📂 Repo Structure Overview
 
+```text
 Engineering_Excellence_Playbook/
-├── 00_UniversalStandards/
-├── 01_FrontendZone/
-├── 02_BackendZone/
-├── 03_InfrastructureZone/
-├── 04_OperationalRunbooks/
-├── 05_Metadata/
-├── 04_OperationalRunbooks/ # Rollbacks, Incident Response
-├── docs/ # Deep dives: USL, Little's Law, and The Playbook
-└── metrics/promql/ # Master Metric Index (PromQL Constants)
+├── CLAUDE.md                # Enforceable rules for Claude Code (IaC, TS, observability, agents)
+├── 00_UniversalStandards/   # Lifecycle, Definition of Done, post-mortems, concurrency governors
+├── 01_FrontendZone/         # React patterns, clean code, performance
+├── 02_BackendZone/          # API architecture, async processing, database health
+├── 03_InfrastructureZone/   # Terraform/Terragrunt, security & IAM, Kubernetes
+├── 04_OperationalRunbooks/  # Rollbacks, incident response, alert thresholds
+├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
+├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
+└── metrics/promql/          # Master Metric Index (PromQL constants)
+```
 
 > Each folder contains templates, standards, and reference guides to manage platform flow effectively.
 

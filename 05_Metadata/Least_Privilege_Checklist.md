@@ -1,5 +1,4 @@
 # Least Privilege Checklist
-*Ensuring IAM and access controls are secure and minimal.*
 *Stand-alone reference for ensuring minimal necessary access across the platform.*
 
 ---
@@ -20,7 +19,7 @@
 - Avoid hardcoding credentials
 - Assign roles at the minimum resource level
 - Document any exceptions in the PR
-- Validate with `terraform plan` that permissions changes do not overreach
+- Validate with `terragrunt plan` that permissions changes do not overreach
 
 ---
 

@@ -64,7 +64,7 @@ Infrastructure is production-ready when:
 
 Every Terraform PR must include:
 
-- `terraform plan` output
+- `terragrunt plan` output (attach the plan JSON summary)
 - Risk summary
 - IAM diff explanation (if changed)
 - Rollback consideration

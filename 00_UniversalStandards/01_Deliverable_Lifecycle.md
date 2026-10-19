@@ -18,13 +18,10 @@ I treat documentation as infrastructure.
 
 All standards:
 
-Live in Git
-
-Evolve through Pull Requests
-
-Apply across infrastructure, backend, frontend, and operations
-
-Are observable and continuously improved
+- Live in Git
+- Evolve through Pull Requests
+- Apply across infrastructure, backend, frontend, and operations
+- Are observable and continuously improved
 
 If it affects production behavior, it belongs in version control.
 
@@ -34,13 +31,14 @@ In any given project, we may implement a GitHub Action (e.g., md2conf) to auto-p
 
 ## Structure
 
-00_UniversalStandards/ → Cross-layer lifecycle + governance
-01_FrontendZone/ → React, performance, UI patterns
-02_BackendZone/ → API architecture, async systems, database health
-03_InfrastructureZone/ → Terraform, Kubernetes, IAM standards
+```text
+00_UniversalStandards/  → Cross-layer lifecycle + governance
+01_FrontendZone/        → React, performance, UI patterns
+02_BackendZone/         → API architecture, async systems, database health
+03_InfrastructureZone/  → Terraform/Terragrunt, Kubernetes, IAM standards
 04_OperationalRunbooks/ → Rollbacks, monitoring thresholds
-05_Metadata/ → Red/Green logic, system philosophy
-
+05_Metadata/            → Red/Green logic, system philosophy
+```
 
 ---
 

@@ -33,7 +33,7 @@ I manage security **as part of the platform flow**:
 1. **Define Role / Access Need**  
    - Map user/service to minimum required actions  
 2. **Implement Policy as Code**  
-   - Terraform or CloudFormation templates  
+   - Terraform modules orchestrated by Terragrunt  
    - PR review required for all changes  
 3. **Deploy & Monitor**  
    - Observe IAM changes, failed access attempts  
