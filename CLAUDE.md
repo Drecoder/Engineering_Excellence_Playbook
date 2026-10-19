@@ -3,7 +3,7 @@
 Instructions for Claude Code when working in this repository.
 
 This repo is the **Engineering Excellence Playbook** — see `README.md` for the full
-principles/philosophy and `00_UniversalStandards/` → `05_Metadata/` for the detailed zone
+principles/philosophy and `00_UniversalStandards/` → `06_AgentZone/` for the detailed zone
 docs. The rules below are the enforceable, mechanical subset Claude must follow when writing
 or reviewing code here (IaC and Node/TypeScript). They narrow the general philosophy in
 `03_InfrastructureZone/01_IaC_Standards.md` (plus `01a_GCP_Specifics.md` / `01b_AWS_Specifics.md`) and `02_BackendZone/` to concrete gates.
@@ -32,7 +32,8 @@ or reviewing code here (IaC and Node/TypeScript). They narrow the general philos
 ## Observability Rules
 
 Telemetry ships with the first line of code, not after the feature works (see
-`docs/RED_METHOD.md`, `docs/USE_METHOD.md`, `metrics/promql/MASTER_INDEX.md`).
+`02_BackendZone/04_Telemetry_Standards.md`, `docs/RED_METHOD.md`, `docs/USE_METHOD.md`,
+`metrics/promql/MASTER_INDEX.md`).
 
 - Every new service or agent emits **traces, metrics, and logs** through the OpenTelemetry SDK
   (`@opentelemetry/sdk-node`) over OTLP. Telemetry setup loads before any application code.
@@ -52,7 +53,8 @@ Telemetry ships with the first line of code, not after the feature works (see
 
 ## Agent Rules
 
-Rules for the Builder / Reviewer agents and any future agent in the control plane.
+Rules for the Builder / Reviewer agents and any future agent in the control plane (rationale in
+`06_AgentZone/01_Agent_Standards.md`).
 
 - **Plan, never apply.** Agents may run `terragrunt plan` / `validate` only. `apply` runs in a
   separate post-merge pipeline with its own scoped identity and is never exposed as an agent tool.

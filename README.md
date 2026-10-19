@@ -53,10 +53,11 @@ Engineering_Excellence_Playbook/
 ├── CLAUDE.md                # Enforceable rules for Claude Code (IaC, TS, observability, agents)
 ├── 00_UniversalStandards/   # Lifecycle, Definition of Done, post-mortems, concurrency governors
 ├── 01_FrontendZone/         # React patterns, clean code, performance
-├── 02_BackendZone/          # API architecture, async processing, database health
-├── 03_InfrastructureZone/   # Terraform/Terragrunt, security & IAM, Kubernetes
+├── 02_BackendZone/          # API architecture, async processing, database health, telemetry
+├── 03_InfrastructureZone/   # IaC core + GCP/AWS specifics, security & IAM, Kubernetes
 ├── 04_OperationalRunbooks/  # Rollbacks, incident response, alert thresholds
 ├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
+├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks
 ├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
 └── metrics/promql/          # Master Metric Index (PromQL constants)
 ```
@@ -72,4 +73,5 @@ Engineering_Excellence_Playbook/
 3. Use **FrontendZone**, **BackendZone**, and **InfrastructureZone** for implementation guidelines and operational standards.
 4. Reference **OperationalRunbooks** for reactive flows (rollbacks, monitoring).
 5. Consult **Metadata** for high-level decision frameworks (Red/Green logic, Two Sides of the Coin, least privilege).
-6. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.
+6. Use **AgentZone** when building or changing an AI agent (contracts, guardrails, risk routing).
+7. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.

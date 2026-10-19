@@ -39,6 +39,24 @@ I design asynchronous workflows to ensure:
 
 ---
 
+## 3️⃣a Idempotency & Safe Retries
+
+Retries and at-least-once delivery mean every consumer **will** see duplicates. Handlers must be
+safe to run more than once.
+
+- **Idempotency key on every message / webhook.** Use the producer's event ID (e.g. GitHub
+  `X-GitHub-Delivery`) or a deterministic hash of the payload — never a value generated on receipt.
+- **Dedup store.** Record processed keys with a TTL at least as long as the producer's retry
+  window. Check-and-record atomically (conditional write / unique constraint), not read-then-write.
+- **Side effects keyed too.** Outbound effects (opening a PR, writing a file, calling an API)
+  carry the same key so a replay finds the existing result instead of creating a second one.
+- **Verify before dedup.** Authenticate the message (e.g. HMAC signature) before recording its
+  key, so forged messages cannot poison the dedup store.
+- **Retry policy.** Exponential backoff with jitter, a max attempt count, then the dead-letter
+  queue. Only transient errors are retried; validation errors go straight to the DLQ.
+
+---
+
 ## 4️⃣ Observability & Monitoring
 
 - Track queue depth, processing latency, and failure rates  

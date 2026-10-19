@@ -37,6 +37,8 @@ I define “done” not as code pushed, but as **work that is complete, observab
 | **Documentation** | Markdown or Confluence updated with clear instructions, diagrams, references. |
 | **Operational Readiness** | Rollback procedures confirmed; failover or retry flows tested. |
 | **Security / IAM** | Access follows least privilege; secrets and keys managed securely. |
+| **Telemetry** | Traces, metrics, and correlated logs emitted from the first version (`02_BackendZone/04_Telemetry_Standards.md`); dashboard JSON committed. |
+| **Agents** | Input/output schemas validated; tools sandboxed; loops bounded; golden tasks (incl. one designed-to-fail) pass; no `apply` capability (`06_AgentZone/01_Agent_Standards.md`). |
 
 ---
 
