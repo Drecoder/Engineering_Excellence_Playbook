@@ -1,4 +1,5 @@
 # Kubernetes Production Troubleshooting Cheat Sheet
+
 *Quick reference for anchors, drills, and frequency.*
 
 | Anchor / Step | Drill / Mental Simulation | Frequency | Key Focus | Notes |

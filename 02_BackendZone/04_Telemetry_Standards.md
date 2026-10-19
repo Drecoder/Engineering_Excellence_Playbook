@@ -1,4 +1,5 @@
 # Telemetry Standards (OpenTelemetry)
+
 *Traces, metrics, and logs ship with the first line of code.*
 
 The enforceable subset lives in `CLAUDE.md` → **Observability Rules**. Query definitions live in

@@ -1,4 +1,5 @@
 # Frontend Performance Guide
+
 *Guidelines to ensure React apps are fast, responsive, and scalable.*
 
 ---

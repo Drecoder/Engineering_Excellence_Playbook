@@ -1,4 +1,5 @@
 # Metadata Overview
+
 *Index of the decision frameworks used across the platform.*
 
 The core principles and philosophies live in one place: the [README](../README.md) (Core Principles and Core Philosophies).

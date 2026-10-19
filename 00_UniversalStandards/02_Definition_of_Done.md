@@ -1,9 +1,11 @@
 # Definition of Done (DoD)
+
 *Establishing clear, cross-layer criteria for completing work.*
 
 ---
 
 ## 🟢 The Flow Audit (Technical Gate)
+
 A task is not "Done" until it passes the **Flow Audit**. This ensures the technical "physics" of the change are sound:
 
 * [ ] **Standardized Semantics:** Code is idiomatic (Go/Python/Node) and maintainable by any industry professional.
@@ -15,13 +17,14 @@ A task is not "Done" until it passes the **Flow Audit**. This ensures the techni
 ---
 
 ## 1️⃣ Philosophy
+
 I define “done” not as code pushed, but as **work that is complete, observable, tested, and aligned across layers**:
 
-- Fully implemented and peer-reviewed.
-- Observable and monitored in production.
-- Documented in code and operational standards.
-- Tested at unit, integration, and contract levels.
-- Cross-layer impact considered (frontend, backend, infra, async, DB).
+* Fully implemented and peer-reviewed.
+* Observable and monitored in production.
+* Documented in code and operational standards.
+* Tested at unit, integration, and contract levels.
+* Cross-layer impact considered (frontend, backend, infra, async, DB).
 
 ---
 
@@ -43,6 +46,7 @@ I define “done” not as code pushed, but as **work that is complete, observab
 ---
 
 ## 3️⃣ Principle
-Work is **only done when it can be reliably operated, observed, and extended**. 
+
+Work is **only done when it can be reliably operated, observed, and extended**.
 
 Pushing code is **not enough** — completeness requires cross-layer verification, technical flow auditing, and operational readiness.

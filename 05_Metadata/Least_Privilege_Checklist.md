@@ -1,4 +1,5 @@
 # Least Privilege Checklist
+
 *Stand-alone reference for ensuring minimal necessary access across the platform.*
 
 ---

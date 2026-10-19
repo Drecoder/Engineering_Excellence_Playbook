@@ -6,7 +6,9 @@ This document explains the mathematical foundations of our **Definition of Done*
 α / β / γ (Gunther's current notation) so the symbols never collide.
 
 ## 1. Little’s Law ($L = \lambda W$)
+
 We use Little's Law to determine our **Governor Limits**.
+
 * **L:** The average number of items in the system (in flight or queued).
 * **$\lambda$ (Lambda):** The arrival rate of requests.
 * **W:** The mean residence time (wait + service) in the system.
@@ -18,6 +20,7 @@ for W: this over-provisions the Governor so that slow requests do not cause queu
 Governor must be set to at least $L = 50 \times 0.2 = 10$ to prevent queuing.
 
 ## 2. Universal Scalability Law (USL)
+
 The USL helps us identify why performance plateaus.
 $$X(N) = \frac{\gamma N}{1 + \alpha(N - 1) + \beta N(N - 1)}$$
 
@@ -33,7 +36,9 @@ throughput (retrograde scaling).
 latency spikes.
 
 ## 3. The −1σ Invariant
+
 We do not alert at 100% capacity. We alert at the point of **Resonance Friction**.
+
 * **Knee:** The saturation point measured by load testing (where latency departs from linear).
 * **σ:** The standard deviation of the knee across repeated load-test runs.
 * **Standard:** Set the saturation threshold at **knee − 1σ**.

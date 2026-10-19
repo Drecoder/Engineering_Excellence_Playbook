@@ -1,4 +1,5 @@
 # GCP Specifics
+
 *Only what differs on GCP. Everything else follows `01_IaC_Standards.md`.*
 
 ---

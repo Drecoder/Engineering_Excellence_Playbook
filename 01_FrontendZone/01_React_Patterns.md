@@ -1,4 +1,5 @@
 # React Patterns
+
 *Guidelines for building maintainable, observable, and consistent frontend components.*
 
 ---

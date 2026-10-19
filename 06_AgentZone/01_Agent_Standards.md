@@ -1,4 +1,5 @@
 # Agent Standards
+
 *Agents are services. They follow the same lifecycle, contracts, and observability rules — plus
 guardrails for the fact that their decisions come from a model.*
 
