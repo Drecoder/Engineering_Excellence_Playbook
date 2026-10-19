@@ -1,0 +1,88 @@
+name: Sync Playbook Rules
+
+# Vendors CLAUDE.md (+ AGENTS.md copy) and schemas/ into each consumer repo via PR.
+# See 00_UniversalStandards/05_Standards_Distribution.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - CLAUDE.md
+      - schemas/**
+      - .github/workflows/sync-playbook-rules.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-playbook-rules
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        # Consumer repos under the same owner as this playbook.
+        repo: [Genesis, sovereign-vpc]
+
+    steps:
+      - name: Checkout playbook
+        uses: actions/checkout@v4
+        with:
+          path: playbook
+
+      - name: Mint scoped GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.PLAYBOOK_SYNC_APP_ID }}
+          private-key: ${{ secrets.PLAYBOOK_SYNC_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ matrix.repo }}
+
+      - name: Checkout consumer
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/${{ matrix.repo }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: consumer
+
+      - name: Vendor rules into .playbook/
+        run: |
+          set -euo pipefail
+          dest=consumer/.playbook
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp playbook/CLAUDE.md "$dest/CLAUDE.md"
+          cp playbook/CLAUDE.md "$dest/AGENTS.md"
+          if [ -d playbook/schemas ]; then
+            cp -r playbook/schemas "$dest/schemas"
+          fi
+          cat > "$dest/README.md" <<EOF
+          # Vendored Playbook Rules
+
+          Synced from ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}.
+
+          **Do not edit files in this directory.** Change the playbook instead; this directory is
+          replaced on every sync.
+          EOF
+
+      - name: Open or update sync PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: consumer
+          token: ${{ steps.app-token.outputs.token }}
+          branch: chore/playbook-sync
+          add-paths: .playbook/**
+          commit-message: "chore: sync playbook rules (${{ github.sha }})"
+          title: "chore: sync Engineering Excellence Playbook rules"
+          body: |
+            Automated sync from ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}.
+
+            Files under `.playbook/` are vendored from the playbook. Review the rule changes here;
+            merging this PR adopts them for this repo.
+          delete-branch: true

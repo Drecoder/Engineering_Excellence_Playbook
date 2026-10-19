@@ -1,12 +1,18 @@
 # CLAUDE.md
 
-Instructions for Claude Code when working in this repository.
+Instructions for Claude Code (and, via `AGENTS.md`, other agents) when writing or reviewing code.
 
-This repo is the **Engineering Excellence Playbook** — see `README.md` for the full
-principles/philosophy and `00_UniversalStandards/` → `06_AgentZone/` for the detailed zone
-docs. The rules below are the enforceable, mechanical subset Claude must follow when writing
-or reviewing code here (IaC and Node/TypeScript). They narrow the general philosophy in
-`03_InfrastructureZone/01_IaC_Standards.md` (plus `01a_GCP_Specifics.md` / `01b_AWS_Specifics.md`) and `02_BackendZone/` to concrete gates.
+This file is the canonical rule set of the **Engineering Excellence Playbook**
+(`github.com/Drecoder/Engineering_Excellence_Playbook`). It is vendored into consumer repos as
+`.playbook/CLAUDE.md` and `.playbook/AGENTS.md` by CI (see
+`00_UniversalStandards/05_Standards_Distribution.md`), so **keep every rule repo-agnostic**.
+All doc paths below refer to the playbook repo.
+
+See `README.md` for the full principles/philosophy and `00_UniversalStandards/` →
+`06_AgentZone/` for the detailed zone docs. The rules below are the enforceable, mechanical
+subset (IaC and Node/TypeScript). They narrow the general philosophy in
+`03_InfrastructureZone/01_IaC_Standards.md` (plus `01a_GCP_Specifics.md` /
+`01b_AWS_Specifics.md`) and `02_BackendZone/` to concrete gates.
 
 ## IaC Rules
 
