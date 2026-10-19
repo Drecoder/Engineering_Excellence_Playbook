@@ -1,74 +1,57 @@
-# Engineering Excellence Playbook
+# Deliverable Lifecycle
+*One lifecycle for every deliverable: Terraform modules, APIs, frontend features, pipelines,
+monitoring rules, and agents.*
 
-A GitOps-driven, cross-platform engineering operating system.
+**Design → Build → Validate → Deploy → Observe → Improve**
 
-This repository defines my universal standards for delivering infrastructure, backend systems, frontend applications, and operational automation.
-
-It serves as:
-
-- A consulting execution framework
-- A platform governance model
-- A living documentation system
+Each stage has an entry gate (what must be true to start), core activities, and an exit gate
+(what must be true to move on). A stage that fails its exit gate is **Red** — it does not
+advance (see `05_Metadata/RedGreen_Logic.md`).
 
 ---
 
-## Philosophy
+## 1. Design
 
-I treat documentation as infrastructure.
+| Entry gate | Activities | Exit gate |
+| :--- | :--- | :--- |
+| Problem and owner identified | Define contracts (API schema, module inputs/outputs, JSON schemas); identify cross-layer impact; weigh trade-offs (`Two_Sides_of_the_Coin.md`); define SLOs and the telemetry the change will emit | Contracts and SLOs written down and reviewed |
 
-All standards:
+## 2. Build
 
-- Live in Git
-- Evolve through Pull Requests
-- Apply across infrastructure, backend, frontend, and operations
-- Are observable and continuously improved
+| Entry gate | Activities | Exit gate |
+| :--- | :--- | :--- |
+| Design exit gate met | Implement with telemetry from the first commit; keep structural and behavioral changes in separate PRs; bound all concurrency with a Governor (`04_CONCURRENCY_GOVERNORS.md`) | Local validation commands in `CLAUDE.md` pass |
 
-If it affects production behavior, it belongs in version control.
+## 3. Validate
 
-In any given project, we may implement a GitHub Action (e.g., md2conf) to auto-populate our Confluence site, ensuring the "Map" is never out of date.
+| Entry gate | Activities | Exit gate |
+| :--- | :--- | :--- |
+| Build exit gate met | Unit, integration, and contract tests; `terragrunt plan` reviewed (no unexplained deletes/replaces); `tflint` / `checkov`; rollback path confirmed | PR approved; plan and test evidence attached |
 
----
+## 4. Deploy
 
-## Structure
+| Entry gate | Activities | Exit gate |
+| :--- | :--- | :--- |
+| Validate exit gate met | Deploy only through CI/CD with federated identity; `apply` runs post-merge, never by hand | Deployed state matches the reviewed plan; no drift |
 
-```text
-00_UniversalStandards/  → Cross-layer lifecycle + governance
-01_FrontendZone/        → React, performance, UI patterns
-02_BackendZone/         → API architecture, async systems, database health
-03_InfrastructureZone/  → Terraform/Terragrunt, Kubernetes, IAM standards
-04_OperationalRunbooks/ → Rollbacks, monitoring thresholds
-05_Metadata/            → Red/Green logic, system philosophy
-```
+## 5. Observe
 
----
+| Entry gate | Activities | Exit gate |
+| :--- | :--- | :--- |
+| Deployed | Watch RED/USE signals and SLO burn rate; verify dashboards and alerts reflect the change (`02_Monitoring_Alert_Thresholds.md`) | Signals within SLO for the agreed soak period |
 
-## Operating Model
+## 6. Improve
 
-All changes follow:
-
-Design → Build → Validate → Deploy → Observe → Improve
-
-This lifecycle applies equally to:
-- Terraform modules
-- Backend APIs
-- Frontend features
-- CI/CD pipelines
-- Monitoring rules
+| Entry gate | Activities | Exit gate |
+| :--- | :--- | :--- |
+| Observation data or an incident | Post-mortems (`03_Post_Mortem_Template.md`); tune thresholds; update standards via PR | Learnings merged into the playbook |
 
 ---
 
-## Why Git First?
+## Documentation as Infrastructure
 
-- Version control for architecture decisions
-- Peer-reviewable standards
-- Automation-ready (GitHub Actions)
-- Confluence-sync capable
-- Portfolio visibility
+If it affects production behavior, it belongs in version control. Standards live in Git, evolve
+through Pull Requests, and may be published to Confluence automatically (e.g., an `md2conf`
+GitHub Action) so the docs never drift from the repo.
 
----
-
-## Status
-
-This is a living system.
-
-Standards evolve through pull requests and operational feedback.
+The work is complete when it meets the [Definition of Done](02_Definition_of_Done.md).
