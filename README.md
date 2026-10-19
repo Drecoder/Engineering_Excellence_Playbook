@@ -51,7 +51,7 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 ```text
 Engineering_Excellence_Playbook/
 ├── CLAUDE.md                # Enforceable rules for Claude Code (IaC, TS, observability, agents)
-├── 00_UniversalStandards/   # Lifecycle, DoD, post-mortems, concurrency governors, standards distribution
+├── 00_UniversalStandards/   # Lifecycle, DoD, post-mortems, governors, distribution, refactor framework
 ├── 01_FrontendZone/         # React patterns, clean code, performance
 ├── 02_BackendZone/          # API architecture, async processing, database health, telemetry
 ├── 03_InfrastructureZone/   # IaC core + GCP/AWS specifics, security & IAM, Kubernetes

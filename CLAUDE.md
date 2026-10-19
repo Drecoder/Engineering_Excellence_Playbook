@@ -25,7 +25,7 @@ subset (IaC and Node/TypeScript). They narrow the general philosophy in
 - Never mix a **structural** change (moving/renaming resources, splitting modules, changing
   state layout) with a **behavioral** change (changing resource arguments/behavior) in the
   same refactor step. Split them into separate commits/PRs so `terragrunt plan` stays easy to
-  read and diff.
+  read and diff. Sequence refactors per `00_UniversalStandards/06_Module_Refactor_Framework.md`.
 
 ## TypeScript / Node Rules
 
