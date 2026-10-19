@@ -59,6 +59,21 @@ Telemetry ships with the first line of code, not after the feature works (see
   its dashboards and alerts in the same change.
 - New metrics are added to `metrics/promql/MASTER_INDEX.md`.
 
+## Security Rules
+
+Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`
+policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
+
+- **People:** SSO with MFA; no shared accounts; staging and prod merges need human approval.
+- **Workloads and agents:** short-lived federated identity only — never static keys or service
+  account keys; trust policies pin repo, branch, and environment.
+- **In transit:** TLS 1.2+ on every connection; service-to-service traffic (including telemetry)
+  is authenticated with mTLS or signed tokens; webhooks are signature-verified.
+- **At rest:** storage is encrypted (customer-managed keys where classification requires) and
+  public access is blocked by default; state buckets are encrypted, versioned, and access-logged.
+- **Enforced as code:** `SEC-*` policies run on every plan; a failing policy blocks the change.
+  Exceptions live in a reviewed policy file with an owner and an expiry.
+
 ## Agent Rules
 
 Rules for the Builder / Reviewer agents and any future agent in the control plane (rationale in

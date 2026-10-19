@@ -2,6 +2,10 @@
 
 *Guidelines for managing identities, access, and privileges across the platform.*
 
+This doc details the identity and access layers of the central standard,
+`00_UniversalStandards/07_Security_In_Depth.md`, which also covers data in transit, data at rest,
+and audit.
+
 ---
 
 ## 1️⃣ Philosophy
