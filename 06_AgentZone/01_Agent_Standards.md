@@ -189,20 +189,37 @@ stopped, token cost, and a trace link.
 
 ---
 
-## 9️⃣ Golden Tasks and Change Control
+## 9️⃣ Supported Stacks
 
-Every agent keeps a fixed suite of golden tasks:
+Agents build and verify in four languages — one **stack** each, matching the playbook zones:
 
-- 3–5 representative tasks that must succeed
-- At least one task designed to fail, which must end in a clean `gave_up` / rejection
-- A telemetry assertion: the expected spans and attributes are emitted
+| Stack | Writes | Verifies with (never deploys) |
+| :--- | :--- | :--- |
+| `iac` | HCL / Terraform | `terragrunt validate`, `terragrunt plan` (no delete/replace) |
+| `typescript` | `.ts` / `.tsx` | `tsc --noEmit`, the test suite |
+| `python` | `.py` | `mypy`, `pytest` |
+| `go` | `.go` | `go vet`, `go build`, `go test` |
 
-Changing an agent's **prompt, tools, model, routing rules, or budgets** is a behavioral change:
-it ships only after the golden suite passes, in its own PR, with before/after results attached.
+A new language is a new stack (its write allow-list, tools, terminal verify tool, and prompt
+guidance) — never a change to the agent loop. Verification stops at plan / static-check + tests;
+applying and deploying stay in the post-merge pipeline.
 
 ---
 
-## 🔟 Measure Before Adding Model Steps
+## 🔟 Golden Tasks and Change Control
+
+Every agent keeps a fixed suite of golden tasks, **covering each stack it builds in**:
+
+- 3–5 representative tasks per stack that must succeed
+- At least one task per stack designed to fail, ending in a clean `gave_up` / rejection
+- A telemetry assertion: the expected spans and attributes are emitted
+
+Changing an agent's **prompt, tools, stacks, model, routing rules, or budgets** is a behavioral
+change: it ships only after the golden suite passes, in its own PR, with before/after results.
+
+---
+
+## 1️⃣1️⃣ Measure Before Adding Model Steps
 
 Every model-backed step reports whether it pays for itself:
 
