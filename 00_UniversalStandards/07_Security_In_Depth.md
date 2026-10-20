@@ -40,6 +40,10 @@ guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity 
 - Access is granted by **role and environment**, never individually where a group will do.
 - **Branch protection** on every default branch: required reviews, required status checks, no
   force-push. Merges to staging and prod require human approval.
+- **The merge is the gate.** Human approval is enforced by the forge on the merge itself (protected
+  branches with required reviewers and checks, no bypass — admins included). A deploy that runs
+  automatically after an approved merge is fine; a manual deploy button without merge approval
+  does not satisfy this rule.
 - **Separation of duties:** the person who writes a change is not its only approver for prod.
 - **Break-glass access** is time-limited, requires a reason, alerts on use, and is reviewed in
   the post-mortem.
@@ -133,6 +137,31 @@ and PR — no model, no tokens, no reliance on memory. Policy ids appear in find
 
 A failing `SEC-*` policy blocks the change. Exceptions are granted per unit in a reviewed policy
 file, with an owner and an expiry date.
+
+### Gate thresholds — block on critical, report nothing else
+
+Pipeline gates stay quiet: a change is blocked, and the pull request shows a finding, only when
+it is critical. No noise below that line.
+
+| Check type | Blocks on | Pull request shows |
+| :--- | :--- | :--- |
+| Format, lint errors, type check, compile (`terragrunt hcl fmt`, `tflint`, `tsc --noEmit`, `go vet`, Python compile) | Any failure (pass/fail, no severity) | The failure |
+| Dependency and image scanners (`npm audit`, `pip-audit`, `trivy`) | **CRITICAL** severity, or any vulnerability on the **CISA KEV** list regardless of severity | Only the blocking findings |
+| `govulncheck` | Any finding (it reports only vulnerabilities the code actually calls) | Only the blocking findings |
+| IaC scanners (`checkov`) | The `SEC-*` check list (hard-fail); all other checks soft-fail | Only the blocking findings |
+| `SEC-*` policies | Always, whatever the severity | The failing policy |
+
+- **KEV overrides severity.** A vulnerability that is being exploited in the wild blocks even when
+  it is rated below critical. The gate reads a pinned, regularly refreshed copy of the KEV
+  catalog, not a live call.
+- **Below-critical findings are counted, not shown.** They go to a dashboard metric
+  (`gate_findings_total{severity}`), never to the pull request, so a growing backlog is visible
+  without adding noise.
+- Tools without a severity filter (`pip-audit`) run through a thin wrapper that maps findings to
+  severity (OSV data) and applies this table. Open-source `checkov` has no severities, so it
+  gates on check IDs instead.
+- Exceptions follow the same reviewed policy file (owner and expiry); a KEV finding cannot be
+  excepted past its CISA due date.
 
 ---
 

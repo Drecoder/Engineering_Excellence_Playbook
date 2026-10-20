@@ -28,7 +28,7 @@ subset (IaC and Node/TypeScript). They narrow the general philosophy in
   in new work. This includes bootstrap units (`live/_bootstrap/…`).
 - Every Deployment Unit declares a class: `persistent` or `ephemeral`. Ephemeral units carry a
   TTL label, are destroyed only through the apply pipeline, and are swept by a scheduled cleanup.
-- Keep state configuration DRY: define backend/provider config once in a root `terragrunt.hcl`
+- Keep state configuration DRY: define backend/provider config once in a root `root.hcl`
   and have child `terragrunt.hcl` files `include` it rather than repeating backend blocks.
 - Keep modules isolated — a module must not reach into another module's state or resources
   directly; pass values across modules via `dependency` blocks / outputs only.
@@ -72,7 +72,9 @@ Telemetry ships with the first line of code, not after the feature works (see
 Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`
 policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
 
-- **People:** SSO with MFA; no shared accounts; staging and prod merges need human approval.
+- **People:** SSO with MFA; no shared accounts; staging and prod merges need human approval,
+  enforced by branch protection on the merge (no bypass, admins included) — not by a manual
+  deploy button.
 - **Workloads and agents:** short-lived federated identity only — never static keys or service
   account keys; trust policies pin repo, branch, and environment.
 - **In transit:** TLS 1.2+ on every connection; service-to-service traffic (including telemetry)
@@ -81,6 +83,10 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   public access is blocked by default; state buckets are encrypted, versioned, and access-logged.
 - **Enforced as code:** `SEC-*` policies run on every plan; a failing policy blocks the change.
   Exceptions live in a reviewed policy file with an owner and an expiry.
+- **Gates block on critical only:** scanners block on CRITICAL severity or any CISA KEV entry;
+  pass/fail checks (format, lint, type check) and `SEC-*` always block. Below-critical findings
+  are counted on a dashboard, never shown in the pull request (see
+  `00_UniversalStandards/07_Security_In_Depth.md`).
 
 ## Agent Rules
 
@@ -134,7 +140,7 @@ Run the relevant commands before calling IaC or Node/TypeScript work complete:
 
 | Command | Purpose |
 | :--- | :--- |
-| `terragrunt hclfmt` | Format all HCL files |
+| `terragrunt hcl fmt` | Format all HCL files |
 | `terragrunt validate` | Validate HCL syntax and module wiring |
 | `tflint` | Lint Terraform for provider-specific errors and conventions |
 | `terragrunt plan` | Verify the intended infrastructure diff |

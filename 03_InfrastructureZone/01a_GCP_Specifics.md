@@ -11,7 +11,7 @@
 - The bucket lives in a dedicated state/admin project, not in the workload project.
 
 ```hcl
-# root terragrunt.hcl
+# root.hcl (units include it with find_in_parent_folders("root.hcl"))
 remote_state {
   backend = "gcs"
   config = {

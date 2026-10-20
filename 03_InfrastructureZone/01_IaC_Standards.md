@@ -50,7 +50,7 @@ Infrastructure must not ship if:
 Infrastructure is production-ready when:
 
 - All resources are defined in code and applied through Terragrunt
-- Remote backend configured once in the root `terragrunt.hcl`, with locking
+- Remote backend configured once in the root `root.hcl`, with locking
 - IAM follows least privilege
 - Variables used for environment abstraction
 - Modules used for reusable patterns, isolated from each other's state
@@ -76,7 +76,7 @@ Infrastructure is production-ready when:
 
 ```text
 <repo>/
-├── terragrunt.hcl              # root: remote_state + provider generation, defined once
+├── root.hcl                    # root: remote_state + provider generation, defined once
 ├── modules/<module>/           # reusable Terraform modules
 └── live/
     ├── _bootstrap/<cloud>/identity/   # OIDC trust, plan + apply identities (applied once by a human)
@@ -112,7 +112,9 @@ and blast radius. DUs never read each other's state; they share values only thro
 
 Spin up only what is used, and make idle cost visible:
 
-- **Dev first.** Add staging and prod only once the dev loop works.
+- **Prove the loop in dev first.** Staging and prod may exist from day one, each with its own
+  state and identity, but keep their fixed-cost resources minimal or scaled to zero until the
+  dev loop works.
 - **Avoid fixed hourly costs in dev:** no NAT gateways, managed Kubernetes clusters, or idle load
   balancers unless the unit truly needs them.
 - **GPUs are on demand.** Prefer a scale-to-zero service (e.g. Cloud Run with a GPU) over a

@@ -123,8 +123,10 @@ code; analysis tools and reviewers return findings, never patches.
 
 ## 6️⃣ Risk Routing
 
-**Rules before routers.** Deterministic rules decide first; a learned router (e.g. Jev) only
-handles what the rules leave, and only once metrics show the rules route badly.
+**Rules before routers.** Deterministic rules decide first; a decision model (e.g. TypeSafe's
+Jev, which returns typed values with calibrated probabilities instead of text) only handles what
+the rules leave, and only once metrics show the rules route badly. Its confidence feeds the
+fail-closed threshold below, and its output is still schema-validated at the boundary.
 
 | Tier | Handles | Examples |
 | :--- | :--- | :--- |

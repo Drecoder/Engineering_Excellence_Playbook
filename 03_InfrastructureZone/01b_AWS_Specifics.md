@@ -13,7 +13,7 @@
 - The bucket lives in a dedicated state/admin account, not in the workload account.
 
 ```hcl
-# root terragrunt.hcl
+# root.hcl (units include it with find_in_parent_folders("root.hcl"))
 remote_state {
   backend = "s3"
   config = {
