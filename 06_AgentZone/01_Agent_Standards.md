@@ -101,8 +101,12 @@ code; analysis tools and reviewers return findings, never patches.
 
 ## 5️⃣ Prompts
 
-- **One versioned registry per agent.** Prompts live in files with ids (`explain_failure.v1`);
-  no duplicate inline copies. Changing a prompt is a behavioral change (see §9).
+- **Single-source, versioned, change-gated.** Every prompt has one home, no duplicate copies, is
+  versioned (a change is a behavioral change per §9 and re-runs the golden suite). **Reusable
+  "skill" prompts** — standalone, shared, or non-engineer-edited — live in files with ids
+  (`explain_failure.v1`); a registry is required there. **Structural prompts** an agent owns in
+  code — a builder's system prompt and per-stack scope/spec guidance — may stay centralized code
+  constants, as long as they meet the same single-source and change-gated bar.
 - **System vs user.** Stable rules go in the system prompt, phrased positively. The user turn
   carries only inputs.
 - **Untrusted input is data.** Code, diffs, logs, and findings are wrapped in explicit delimiters
