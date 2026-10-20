@@ -1,0 +1,72 @@
+name: Sync Engineering Excellence Playbook Rules
+description: >
+  Vendor the playbook's tool-neutral rules (AGENTS.md, plus tool shims such as CLAUDE.md, and
+  schemas/) into the calling repo at the
+  pinned playbook version and open a PR. The playbook never lists its consumers; each consumer
+  declares this action as a dependency. See 00_UniversalStandards/05_Standards_Distribution.md.
+
+inputs:
+  destination:
+    description: Directory (relative to the calling repo root) that receives the vendored rules.
+    default: .playbook
+  token:
+    description: Token used to push the sync branch and open the PR.
+    default: ${{ github.token }}
+  branch:
+    description: Branch name for the sync PR.
+    default: chore/playbook-sync
+
+outputs:
+  pull-request-url:
+    description: URL of the opened or updated sync PR (empty when nothing changed).
+    value: ${{ steps.pr.outputs.pull-request-url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Vendor rules
+      shell: bash
+      env:
+        SRC: ${{ github.action_path }}
+        DEST: ${{ inputs.destination }}
+        PLAYBOOK_REF: ${{ github.action_ref }}
+        PLAYBOOK_REPO: ${{ github.action_repository }}
+      run: |
+        set -euo pipefail
+        # Refuse anything that could wipe the repo or escape it.
+        case "$DEST" in
+          ""|"."|"./"|/*|*..*) echo "::error::destination must be a relative subdirectory" >&2; exit 1 ;;
+        esac
+        rm -rf "$DEST"
+        mkdir -p "$DEST"
+        cp "$SRC/AGENTS.md" "$DEST/AGENTS.md"
+        # Tool shims only import AGENTS.md, so every tool sees the same rules.
+        cp "$SRC/CLAUDE.md" "$DEST/CLAUDE.md"
+        if [ -d "$SRC/schemas" ]; then
+          cp -r "$SRC/schemas" "$DEST/schemas"
+        fi
+        cat > "$DEST/README.md" <<EOF
+        # Vendored Playbook Rules
+
+        Synced from \`${PLAYBOOK_REPO:-Drecoder/Engineering_Excellence_Playbook}@${PLAYBOOK_REF:-unknown}\`.
+
+        **Do not edit files in this directory.** Change the playbook instead; this directory is
+        replaced on every sync. To adopt a newer rule version, bump the playbook ref in
+        \`.github/workflows/sync-playbook-rules.yml\`.
+        EOF
+
+    - name: Open or update sync PR
+      id: pr
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ inputs.token }}
+        branch: ${{ inputs.branch }}
+        add-paths: ${{ inputs.destination }}/**
+        commit-message: "chore: sync playbook rules (${{ github.action_ref }})"
+        title: "chore: sync Engineering Excellence Playbook rules (${{ github.action_ref }})"
+        body: |
+          Vendored rules from `${{ github.action_repository }}@${{ github.action_ref }}`.
+
+          Files under `${{ inputs.destination }}/` are generated. Review the rule changes here;
+          merging this PR adopts them for this repo.
+        delete-branch: true

@@ -1,0 +1,9 @@
+# Copy into a consumer repo at .github/dependabot.yml (or merge into the existing one).
+# Bumps the pinned playbook version in sync-playbook-rules.yml when a new release is tagged.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

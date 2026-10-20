@@ -11,9 +11,8 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Markdown Lint
-        uses: avto-dev/markdown-lint@v1
-        with:
-          args: "**/*.md"
+        # Reads .markdownlint-cli2.jsonc at the repo root (globs + rule config).
+        uses: DavidAnson/markdownlint-cli2-action@v20

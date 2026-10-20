@@ -1,0 +1,19 @@
+// markdownlint-cli2 config for the Engineering Excellence Playbook.
+// Keeps structural rules on; relaxes only the ones that fight house style.
+{
+  "config": {
+    "default": true,
+    // Prose paragraphs, PromQL/YAML snippets and wide tables run long by design.
+    "MD013": false,
+    // Italic subtitle lines under H1 and bold flow taglines are house style, not fake headings.
+    "MD036": false,
+    // Emoji-numbered headings (e.g. "## 1️⃣ Philosophy") may repeat across sections.
+    "MD024": { "siblings_only": true },
+    // Allow either list marker, but keep each file consistent.
+    "MD004": { "style": "consistent" },
+    // Trailing punctuation such as "?" is used in question-style headings.
+    "MD026": { "punctuation": ".,;:" }
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["**/node_modules/**", ".claude/**"]
+}

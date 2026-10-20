@@ -1,4 +1,5 @@
 # Red / Green Logic
+
 *Operational decision framework for consistent platform governance.*
 
 ---

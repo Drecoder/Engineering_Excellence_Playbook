@@ -1,4 +1,5 @@
 # Frontend Clean Code Checklist
+
 *Ensuring maintainable, readable, and consistent React code.*
 
 ---

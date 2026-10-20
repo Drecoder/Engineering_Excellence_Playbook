@@ -48,16 +48,22 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 
 ## 📂 Repo Structure Overview
 
+```text
 Engineering_Excellence_Playbook/
-├── 00_UniversalStandards/
-├── 01_FrontendZone/
-├── 02_BackendZone/
-├── 03_InfrastructureZone/
-├── 04_OperationalRunbooks/
-├── 05_Metadata/
-├── 04_OperationalRunbooks/ # Rollbacks, Incident Response
-├── docs/ # Deep dives: USL, Little's Law, and The Playbook
-└── metrics/promql/ # Master Metric Index (PromQL Constants)
+├── AGENTS.md                # Enforceable standards for engineers, assistants, and agents
+├── CLAUDE.md                # Shim: imports AGENTS.md for Claude Code
+├── 00_UniversalStandards/   # Lifecycle, DoD, security in depth, governors, distribution, refactors
+├── 01_FrontendZone/         # React patterns, clean code, performance
+├── 02_BackendZone/          # API architecture, async processing, database health, telemetry
+├── 03_InfrastructureZone/   # IaC core + GCP/AWS specifics, security & IAM, Kubernetes
+├── 04_OperationalRunbooks/  # Rollbacks, incident response, alert thresholds
+├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
+├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks
+├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
+├── metrics/promql/          # Master Metric Index (PromQL constants)
+├── templates/consumer/      # Files a consumer repo copies to depend on the playbook
+└── action.yml               # GitHub Action that vendors AGENTS.md / schemas into a consumer
+```
 
 > Each folder contains templates, standards, and reference guides to manage platform flow effectively.
 
@@ -70,4 +76,5 @@ Engineering_Excellence_Playbook/
 3. Use **FrontendZone**, **BackendZone**, and **InfrastructureZone** for implementation guidelines and operational standards.
 4. Reference **OperationalRunbooks** for reactive flows (rollbacks, monitoring).
 5. Consult **Metadata** for high-level decision frameworks (Red/Green logic, Two Sides of the Coin, least privilege).
-6. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.
+6. Use **AgentZone** when building or changing an AI agent (contracts, guardrails, risk routing).
+7. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.

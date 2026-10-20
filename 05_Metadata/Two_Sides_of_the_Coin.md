@@ -1,4 +1,5 @@
 # Two Sides of the Coin
+
 *Framework for evaluating trade-offs in engineering decisions.*
 
 ---
