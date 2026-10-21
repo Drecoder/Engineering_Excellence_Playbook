@@ -24,10 +24,14 @@
     "controls": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/control" } }
   },
   "$defs": {
+    "stage": {
+      "description": "How far a control's proof has got on one cloud. Enforcement is live state Genesis reports, not a stage.",
+      "enum": ["specified", "schema_validated", "integration_tested", "adversarially_verified", "not_applicable"]
+    },
     "control": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "intent", "guarantees", "does_not_guarantee", "sec", "mode", "verified", "gcp", "aws"],
+      "required": ["id", "intent", "guarantees", "does_not_guarantee", "sec", "mode", "verification", "gcp", "aws"],
       "properties": {
         "id": { "type": "string", "pattern": "^GOV-[0-9]{3}$" },
         "intent": { "type": "string", "minLength": 1 },
@@ -35,11 +39,11 @@
         "does_not_guarantee": { "type": "string", "minLength": 1 },
         "sec": { "type": ["string", "null"], "pattern": "^SEC-[0-9]{3}$" },
         "mode": { "enum": ["dry_run", "enforce"] },
-        "verified": {
+        "verification": {
           "type": "object",
           "additionalProperties": false,
           "required": ["gcp", "aws"],
-          "properties": { "gcp": { "type": "boolean" }, "aws": { "type": "boolean" } }
+          "properties": { "gcp": { "$ref": "#/$defs/stage" }, "aws": { "$ref": "#/$defs/stage" } }
         },
         "gcp": { "$ref": "#/$defs/gcpImpl" },
         "aws": { "$ref": "#/$defs/awsImpl" }

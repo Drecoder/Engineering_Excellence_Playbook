@@ -140,9 +140,23 @@ only the cloud API can.
   network interface, launch into a subnet that maps public IPs) and asserts the API **denies** it.
 - Each test also performs one **allowed** action nearby, so a control that blocks too much fails
   too.
-- The contract records the result per cloud in `verified`. Genesis sets it to `true` only from a
-  passing test run, and a control is not promoted to `enforce` on a cloud where `verified` is
-  `false`.
+- The contract records how far each control's proof has got, per cloud, in `verification`:
+
+  | Stage | Evidence |
+  | :--- | :--- |
+  | `specified` | The contract states the invariant |
+  | `schema_validated` | The contract passes `governance_baseline.v1.schema.json` |
+  | `integration_tested` | The real cloud API accepts the configuration and denies the forbidden action in a test project or account |
+  | `adversarially_verified` | Every known bypass path, the exception path, and the authorization boundary (only the governance identity can change it) are tested |
+
+  A stage moves forward only from a passing test run, and a control is promoted to `enforce` only on
+  a cloud where it has reached `adversarially_verified`.
+- **Verified is not enforced.** A passing test in a test project proves the control works; it does
+  not prove the production organization is configured. Whether a control is enforced in each
+  environment is live state Genesis observes (drift detection, `governance_controls_total{mode}`),
+  never a claim written into the contract.
+- **The unit of progress is a verified control, not a documented one.** Genesis takes a few
+  high-value controls end to end before the baseline grows.
 - Conformance tests rerun on every Genesis change and on a schedule, because cloud authorization
   semantics change underneath policies.
 - The contract is validated against `schemas/governance_baseline.v1.schema.json` in the playbook's
