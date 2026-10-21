@@ -128,18 +128,38 @@ Jev, which returns typed values with calibrated probabilities instead of text) o
 the rules leave, and only once metrics show the rules route badly. Its confidence feeds the
 fail-closed threshold below, and its output is still schema-validated at the boundary.
 
-| Tier | Handles | Examples |
-| :--- | :--- | :--- |
-| **TIER_0 — Deterministic** | Gates, zero-diff, docs, policy | `tflint`, `checkov`, OPA, no-delete gate, `terraform-docs` |
-| **TIER_1 — Private SLM** | Single-shot judgment without IAM or state impact | Intent check, plan summary, failure triage |
-| **TIER_2 — Frontier LLM** | IAM, state, multi-file or high-complexity changes | `moved` blocks, replacements, policy changes |
+Routing has **two axes**, kept separate: a coarse **scrutiny tier** (safety, rule-driven) and a
+continuous **model weight** (cost, score-driven). Conflating them wastes money — a two-rung switch
+throws away most of the router's signal.
 
-Routing rules:
+### Scrutiny tier — safety, decided by rules
+
+| Tier | Handles |
+| :--- | :--- |
+| **TIER_0 — Deterministic** | Gates, zero-diff, docs, policy (`tflint`, `checkov`, OPA, no-delete gate) — no model is called |
+| **TIER_1 — Judgment** | A unit that needs a model's opinion, without IAM or state impact |
+| **TIER_2 — Highest scrutiny / ceiling** | IAM, state, or any fail-closed case — always takes the top of the ladder |
 
 1. **Gates first.** A failing TIER_0 gate returns to the Builder; no model is called.
-2. **Hard overrides.** IAM or state impact (taken from the plan JSON) → TIER_2.
+2. **Hard overrides.** IAM or state impact (from the plan JSON, never model output) → TIER_2.
 3. **Fail closed.** Unknown, malformed, or low-confidence classification → TIER_2.
 4. A model verdict never overrides a failing TIER_0 gate.
+
+### Model weight — a ladder, not a tier
+
+Within the judgment path, the router emits a **continuous score** (rules first, then Jev for what
+rules leave). The score selects the **cheapest model on an ordered ladder** that fits the
+difficulty; easy, high-confidence units take a small local SLM, and only hard units climb. The
+fail-closed ceiling (TIER_2) forces the top rung. This is where cost is controlled — **compute
+proportional to difficulty, not a frontier model for everything.**
+
+- The ladder is **configuration** (ordered rungs with score bands and a model id per rung), not
+  code; adding or reordering a rung is a config change.
+- **Hosting follows the ladder** (`03_InfrastructureZone/01_IaC_Standards.md`): the low rungs stay
+  **warm and cheap** (they serve most traffic); the top rungs run on **cold / spot GPU**, as an
+  ephemeral DU with a TTL, since their latency tax is paid rarely.
+- Each finding records the **actual model** that produced it; the score and rung are span
+  attributes.
 
 ---
 

@@ -114,6 +114,13 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   rig-scan gates pass (plus self-review when enabled).
 - **AI review advises; humans approve.** Merges to staging and prod require human approval.
   Auto-merge is limited to explicitly allow-listed low-risk paths.
+- **Third-party coding agents are allowed only behind the same invariant.** A platform-external
+  agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
+  passes the same deterministic gates and the same human-approved merge, and never bypasses them.
+  Branch protection is what enforces this for every agent, ours and theirs alike.
+- **Model weight is a ladder, not a tier.** Rules/Jev emit a continuous difficulty score that
+  selects the cheapest model that fits (config-driven rungs); the fail-closed ceiling forces the
+  top rung. Spend compute proportional to difficulty (`06_AgentZone/01_Agent_Standards.md` §6).
 - **Spend tokens only where code cannot decide.** Rules run before any router or model; a model
   step stays only if its metrics show it improves outcomes.
 - **Models are injected.** Agents depend on a provider-agnostic model interface; the provider and
