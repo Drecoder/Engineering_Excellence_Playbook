@@ -91,6 +91,9 @@ cloud, and services are built inside them (rationale in
 Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`
 policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
 
+- **Session lifetimes:** cloud credentials (human and workload) live 1 hour by default and at most;
+  longer needs a reviewed exception. Sign-in sessions re-authenticate within 24 hours (AAL2; 8 hours
+  by default), and within 12 hours for prod/admin access (AAL3, phishing-resistant MFA).
 - **People:** SSO with MFA; no shared accounts; staging and prod merges need human approval,
   enforced by branch protection on the merge (no bypass, admins included) — not by a manual
   deploy button.

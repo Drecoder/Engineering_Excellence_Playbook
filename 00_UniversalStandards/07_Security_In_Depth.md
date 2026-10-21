@@ -34,6 +34,26 @@ policies, SCPs) are in `08_Governance_Guardrails.md`.
   sessions.
 - Offboarding removes access in one place (the identity provider), not in each tool.
 
+### Session lifetimes
+
+Two timers, set separately. The sign-in session decides how often a person re-authenticates. The
+cloud credential lifetime decides how long stolen credentials stay usable. The SDKs refresh cloud
+credentials from a valid sign-in session automatically, so a short credential lifetime never
+interrupts work.
+
+| Timer | Everyone (NIST SP 800-63B-4 AAL2) | Prod or admin access (AAL3) |
+| :--- | :--- | :--- |
+| Sign-in session: re-authenticate at least every | 24 hours (platform default: 8 hours) | 12 hours |
+| Sign-in session: inactivity timeout, where the IdP supports it | 1 hour | 15 minutes |
+| Cloud credentials (AWS permission set, GCP token, Azure token) | 1 hour | 1 hour |
+
+- **1 hour is the default and the ceiling for cloud credentials.** A longer lifetime (AWS allows up
+  to 12 hours) needs a reviewed exception with an owner and an expiry, like any other exception.
+- The 8-hour sign-in session is one MFA login per working day. Teams may set it shorter, never
+  longer than the column above allows.
+- AAL3 requires phishing-resistant MFA (security keys or passkeys), which this section already
+  requires for prod and admin access.
+
 ---
 
 ## 3️⃣ Human Authorization
@@ -56,6 +76,10 @@ policies, SCPs) are in `08_Governance_Guardrails.md`.
 
 - CI, agents, and services authenticate with **federated, short-lived credentials** (GitHub OIDC,
   AWS IAM roles, GCP Workload Identity Federation). **No static keys.**
+- **Workload credentials live 1 hour at most**, the cloud default (AWS STS role sessions, GCP
+  service account tokens). They are never extended: on GCP,
+  `iam.allowServiceAccountCredentialLifetimeExtension` stays unset, and a job that runs longer
+  re-exchanges its OIDC token instead.
 - Trust policies pin the token's subject to the exact repository, branch, and environment.
 - **Separate identities per purpose:** a read-only plan identity and a post-merge apply identity;
   one identity per Deployment Unit per environment.
