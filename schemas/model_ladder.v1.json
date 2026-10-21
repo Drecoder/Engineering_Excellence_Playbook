@@ -1,0 +1,10 @@
+{
+  "schema_version": "model_ladder.v1",
+  "description": "The canonical model ladder: a continuous difficulty score selects the cheapest model that fits. Both the Builder (for fix downgrades) and the Reviewer (for every review) consume this. Vendored into consumer repos as .playbook/schemas/model_ladder.v1.json; the agents read it so the ladder has one source of truth and cannot drift. Rungs are ordered cheap -> heavy; a score picks the lowest rung whose maxScore it does not exceed; the last rung is the fail-closed ceiling.",
+  "rungs": [
+    { "maxScore": 0.3, "modelId": "qwen2.5-coder:1.5b", "label": "slm-fast" },
+    { "maxScore": 0.55, "modelId": "qwen2.5:3b", "label": "slm-mid" },
+    { "maxScore": 0.8, "modelId": "qwen2.5-coder:7b", "label": "slm-code" },
+    { "maxScore": 1.01, "modelId": "deepseek-r1:8b", "label": "reasoner" }
+  ]
+}
