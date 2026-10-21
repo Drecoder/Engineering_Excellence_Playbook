@@ -75,10 +75,10 @@ Each control states the intent once, then how each cloud enforces it. The contra
 | :--- | :--- | :--- | :--- | :--- |
 | `GOV-001` | No default networks; every network is declared in IaC | `compute.skipDefaultNetworkCreation` | Default VPCs deleted at account vending | — |
 | `GOV-002` | No long-lived workload keys | `iam.disableServiceAccountKeyCreation`, `iam.disableServiceAccountKeyUpload` | SCP denies `iam:CreateAccessKey` | `SEC-004` |
-| `GOV-003` | No public IPs on VMs | `compute.vmExternalIpAccess` (deny all) | SCP denies `ec2:RunInstances` with a public IP | — |
+| `GOV-003` | No VM directly reachable from the internet | `compute.vmExternalIpAccess` (deny all) | SCPs deny public IPs at launch, Elastic IP association, and internet gateways outside the platform network role | — |
 | `GOV-004` | Storage is never public | `storage.publicAccessPrevention` | S3 account Block Public Access; SCP denies changing it | `SEC-002` |
 | `GOV-005` | Access to storage is IAM-only, no ACLs | `storage.uniformBucketLevelAccess` | S3 Object Ownership `BucketOwnerEnforced` at vending | `SEC-002` |
-| `GOV-006` | Resources only in approved regions | `gcp.resourceLocations` | SCP denies `aws:RequestedRegion` outside the list | — |
+| `GOV-006` | Resources only in approved regions | `gcp.resourceLocations` | SCP denies `aws:RequestedRegion` outside the list; global-service exclusions come from AWS's maintained reference SCP, not a hand-kept list | — |
 | `GOV-007` | Access only for identities in the platform's own directory | `iam.allowedPolicyMemberDomains` | SCP denies RAM shares to external principals; `aws:PrincipalOrgID` checked at plan time | — |
 | `GOV-008` | VMs cannot act as routers | `compute.vmCanIpForward` (deny all) | SCP denies disabling `SourceDestCheck` | — |
 | `GOV-009` | No network side channels between projects | `compute.restrictVpcPeering` (deny all) | SCP denies `ec2:CreateVpcPeeringConnection` | — |
@@ -88,6 +88,22 @@ Each control states the intent once, then how each cloud enforces it. The contra
 | `GOV-013` | Guardrails cannot be changed or escaped from inside | Only the governance identity holds Org Policy Administrator | SCP denies `organizations:LeaveOrganization` and changes to governance roles | — |
 
 Controls marked `—` for a cloud are recorded as `not_applicable` in the contract, with the reason.
+
+### What a control guarantees, and what it does not
+
+A control enforces one narrow invariant. Reading it as a broader security outcome is how a false
+sense of security starts. For example, `GOV-003` keeps VMs off the internet, but a load balancer can
+still be public. `GOV-004` keeps buckets from being public, but an authorized identity with
+over-broad access can still leak the data.
+
+So every control in the contract states both:
+
+- `guarantees`: the exact invariant the cloud enforces.
+- `does_not_guarantee`: the outcome it is most often mistaken for, and which other control or
+  practice covers it.
+
+When a control's description and its `guarantees` disagree, `guarantees` wins and the description
+is the bug.
 
 ---
 
@@ -100,7 +116,8 @@ is each control's **target**, and Genesis reaches it in two steps:
    logged (GCP Organization Policy dry run; AWS SCP attached to a test OU first) and nothing is
    blocked.
 2. **Promote to the target.** Once the dry-run log shows no violations, or every violation has an
-   approved exception, a reviewed Genesis change promotes the control to its target mode.
+   approved exception, **and** the control's conformance test passes for that cloud (§5a), a
+   reviewed Genesis change promotes the control to its target mode.
 
 - A target of `enforce` means the control blocks once staged. A target of `dry_run` means the
   control stays in dry run until a prerequisite is met (a parameter, an exception), which the
@@ -110,6 +127,27 @@ is each control's **target**, and Genesis reaches it in two steps:
 - New projects and accounts get every `enforce` control from their first API call.
 - A control never moves back from `enforce` to `dry_run` to unblock a change. That is what
   exceptions are for.
+
+### 5a. Conformance tests: proof the cloud enforces it
+
+A policy that looks right but does not match the cloud's authorization semantics is worse than no
+policy, because everyone believes it holds. A plan, a lint, or a review cannot prove enforcement;
+only the cloud API can.
+
+- Genesis keeps a **conformance test per control per cloud**, run against a dedicated test project
+  or account in the test folder or OU. It attempts the forbidden action through every known path
+  (e.g. `GOV-003` on AWS: launch with and without a launch template, attach an Elastic IP to a
+  network interface, launch into a subnet that maps public IPs) and asserts the API **denies** it.
+- Each test also performs one **allowed** action nearby, so a control that blocks too much fails
+  too.
+- The contract records the result per cloud in `verified`. Genesis sets it to `true` only from a
+  passing test run, and a control is not promoted to `enforce` on a cloud where `verified` is
+  `false`.
+- Conformance tests rerun on every Genesis change and on a schedule, because cloud authorization
+  semantics change underneath policies.
+- The contract is validated against `schemas/governance_baseline.v1.schema.json` in the playbook's
+  CI and again by Genesis before it reads the baseline. An invalid baseline is rejected, not
+  repaired.
 
 ---
 

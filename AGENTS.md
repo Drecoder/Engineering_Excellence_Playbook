@@ -80,7 +80,10 @@ cloud, and services are built inside them (rationale in
   implemented **only** in Genesis, from the vendored baseline. A service repo never creates,
   changes, or excepts an org policy or SCP.
 - Every new or changed guardrail is staged in dry run, then promoted to the target mode in the
-  baseline through a reviewed change.
+  baseline through a reviewed change, and only on a cloud where its conformance test (a real
+  denied attempt through every known path, plus one allowed action) passes.
+- The baseline is validated against `schemas/governance_baseline.v1.schema.json`; an invalid
+  baseline is rejected, not repaired.
 - Exceptions live in Genesis's reviewed exceptions file, at the narrowest scope, with an owner, a
   reason, and an expiry.
 - Only Genesis's apply identity can change guardrails; Genesis merges need human approval.
