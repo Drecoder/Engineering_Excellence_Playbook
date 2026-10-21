@@ -67,6 +67,25 @@ Telemetry ships with the first line of code, not after the feature works (see
   its dashboards and alerts in the same change.
 - New metrics are added to `metrics/promql/MASTER_INDEX.md`.
 
+## Governance Rules
+
+Governance comes before everything: the playbook defines the guardrails, Genesis enforces them per
+cloud, and services are built inside them (rationale in
+`00_UniversalStandards/08_Governance_Guardrails.md`; baseline in
+`schemas/governance_baseline.v1.json`).
+
+- Every cloud project and account lives in the governance hierarchy (Organization → folder or OU).
+  A standalone project inherits no guardrails and is a finding.
+- `GOV-*` guardrails are enforced by the cloud control plane (GCP org policies, AWS SCPs) and
+  implemented **only** in Genesis, from the vendored baseline. A service repo never creates,
+  changes, or excepts an org policy or SCP.
+- Every new or changed guardrail is staged in dry run, then promoted to the target mode in the
+  baseline through a reviewed change.
+- Exceptions live in Genesis's reviewed exceptions file, at the narrowest scope, with an owner, a
+  reason, and an expiry.
+- Only Genesis's apply identity can change guardrails; Genesis merges need human approval.
+- New services are vended by Genesis into the hierarchy, not hand-built.
+
 ## Security Rules
 
 Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`

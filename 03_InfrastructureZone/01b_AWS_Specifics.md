@@ -37,7 +37,8 @@ remote_state {
 - One role per workload per environment. Separate roles for `plan` (read-only) and `apply`
   (post-merge pipeline only), matching the Agent Rules in `AGENTS.md`.
 - Never attach `AdministratorAccess` or `*` actions on `*` resources to workloads; guard
-  accounts with SCPs.
+  accounts with SCPs per the governance baseline (`GOV-*` in
+  `00_UniversalStandards/08_Governance_Guardrails.md`), applied by Genesis at the organization.
 
 ---
 

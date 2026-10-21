@@ -48,4 +48,5 @@ remote_state {
 
 - Cloud Logging and Cloud Monitoring enabled per project
 - Audit logs (Admin Activity is always on; enable Data Access logs for sensitive services)
-- Organization policies for: no external SA keys, restricted resource locations
+- Organization policies per the governance baseline (`GOV-*` in
+  `00_UniversalStandards/08_Governance_Guardrails.md`), applied by Genesis at the organization

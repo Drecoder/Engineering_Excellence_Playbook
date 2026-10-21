@@ -25,3 +25,14 @@ Standardized queries for validating the **Flow Audit** across the platform.
 | :--- | :--- |
 | **Concurrency Saturation** | `avg(governor_active_tasks / governor_max_limit)` |
 | **Queue Jitter** | `histogram_quantile(0.99, sum by (le) (rate(governor_wait_duration_seconds_bucket[5m])))` |
+
+## 4. Governance Guardrails
+
+See `00_UniversalStandards/08_Governance_Guardrails.md` §9.
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Controls Enforced** | `sum(governance_controls_total{mode="enforce"}) / sum(governance_controls_total)` |
+| **Dry-Run Violations** | `sum by (control) (increase(governance_dry_run_violations_total[1d]))` |
+| **Active Exceptions** | `sum by (control) (governance_exceptions_active)` |
+| **Drift Findings** | `increase(governance_drift_findings_total[1d])` |
