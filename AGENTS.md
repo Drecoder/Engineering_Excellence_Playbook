@@ -77,6 +77,9 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   deploy button.
 - **Workloads and agents:** short-lived federated identity only — never static keys or service
   account keys; trust policies pin repo, branch, and environment.
+- **CI least privilege:** workflows default to `permissions: contents: read` and grant more per
+  job. Shared reusable workflows are reachable only by the owning user/org (never public), receive
+  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a tag or SHA.
 - **In transit:** TLS 1.2+ on every connection; service-to-service traffic (including telemetry)
   is authenticated with mTLS or signed tokens; webhooks are signature-verified.
 - **At rest:** storage is encrypted (customer-managed keys where classification requires) and

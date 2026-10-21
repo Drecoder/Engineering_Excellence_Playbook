@@ -68,6 +68,17 @@ guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity 
 - Agents are limited by their **tool allow-list** and sandbox; they never apply infrastructure and
   never write outside their sandbox (`06_AgentZone/01_Agent_Standards.md`).
 - Deployment Units never read each other's state; they share values only through outputs.
+- **CI pipelines are workloads too.** Every workflow declares `permissions:` with read-only
+  defaults (`contents: read`) and grants more per job, only where that job needs it (e.g.
+  `id-token: write` for the plan or apply job alone).
+- **Shared CI is shared code, not shared identity.** Reusable workflows live once in a central
+  repo, and its Actions access is set to the narrowest scope that reaches its callers: the owning
+  user or organization, never public. Prefer a dedicated repo that holds only shared workflows, so
+  granting access exposes nothing else. Callers pass secrets explicitly, never `secrets: inherit`,
+  and cloud trust policies keep pinning the caller repo, so calling a shared workflow never grants
+  its home repo's identities.
+- Callers pin shared workflows to a release tag or commit SHA. Tracking a branch (`@main`) is
+  tolerated only until the central repo tags releases.
 
 ---
 
