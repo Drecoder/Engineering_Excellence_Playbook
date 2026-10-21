@@ -36,3 +36,14 @@ See `00_UniversalStandards/08_Governance_Guardrails.md` §9.
 | **Dry-Run Violations** | `sum by (control) (increase(governance_dry_run_violations_total[1d]))` |
 | **Active Exceptions** | `sum by (control) (governance_exceptions_active)` |
 | **Drift Findings** | `increase(governance_drift_findings_total[1d])` |
+| **Conformance Failures** | `sum by (control, cloud) (increase(governance_conformance_checks_total{result="fail"}[1d]))` (must be 0; `result="fail"` means `observed != expected`) |
+| **Exception Expiry Latency (P99)** | `histogram_quantile(0.99, sum by (le, control) (rate(governance_exception_expiry_latency_seconds_bucket[30d])))` |
+
+## 5. CI Health
+
+Found missing in the 2026-10-21 incidents (sovereign-vpc-gcp `docs/incidents/`): every CI failure that day was found by a person looking.
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Runner Bootstrap Failures** | `sum by (pool) (increase(ci_runner_bootstrap_failures_total[15m])) > 0` |
+| **Stuck Apply Jobs** | `max(ci_job_queue_age_seconds{workflow="apply"}) > 900` |
