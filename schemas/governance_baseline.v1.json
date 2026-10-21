@@ -8,6 +8,22 @@
     "aws_network_admin_role_pattern": "arn:aws:iam::*:role/governance-network-*",
     "hierarchy": ["governance", "platform", "dev", "staging", "prod"]
   },
+  "evidence": {
+    "description": "The signals a conformance result must exist as before it can advance a control's verification stage (08_Governance_Guardrails.md section 9a). A result missing any of them does not count.",
+    "span": {
+      "name": "conformance.attempt",
+      "attributes": ["control", "cloud", "test", "expected", "observed", "result", "principal", "scope"]
+    },
+    "log": {
+      "format": "json",
+      "fields": ["control", "cloud", "test", "expected", "observed", "result", "principal", "scope", "request", "response", "effective_policy", "timestamp", "trace_id", "span_id"]
+    },
+    "metrics": [
+      { "name": "governance_conformance_checks_total", "type": "counter", "labels": ["control", "cloud", "test", "expected", "observed", "result"] },
+      { "name": "governance_exception_expiry_latency_seconds", "type": "histogram", "labels": ["control", "cloud"] }
+    ],
+    "incident_records": "docs/incidents/ in the Genesis repo, post-mortem format; a control in an incident drops back to integration_tested on that cloud"
+  },
   "controls": [
     {
       "id": "GOV-001",

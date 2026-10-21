@@ -5,7 +5,7 @@
   "description": "Validates schemas/governance_baseline.v1.json. Genesis validates the vendored baseline against this schema before reading it and rejects an invalid baseline instead of repairing it.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "description", "parameters", "controls"],
+  "required": ["schema_version", "description", "parameters", "evidence", "controls"],
   "properties": {
     "schema_version": { "const": "governance_baseline.v1" },
     "description": { "type": "string", "minLength": 1 },
@@ -19,6 +19,51 @@
         "gcp_directory_customer_ids": { "type": "array", "items": { "type": "string" } },
         "aws_network_admin_role_pattern": { "type": "string", "pattern": "^arn:aws:iam::" },
         "hierarchy": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "span", "log", "metrics", "incident_records"],
+      "properties": {
+        "description": { "type": "string" },
+        "span": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "attributes"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "attributes": { "type": "array", "items": { "type": "string" }, "contains": { "const": "result" } }
+          }
+        },
+        "log": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["format", "fields"],
+          "properties": {
+            "format": { "const": "json" },
+            "fields": {
+              "type": "array",
+              "items": { "type": "string" },
+              "allOf": [{ "contains": { "const": "trace_id" } }, { "contains": { "const": "span_id" } }]
+            }
+          }
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "type", "labels"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^governance_[a-z_]+$" },
+              "type": { "enum": ["counter", "histogram", "gauge"] },
+              "labels": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "incident_records": { "type": "string" }
       }
     },
     "controls": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/control" } }

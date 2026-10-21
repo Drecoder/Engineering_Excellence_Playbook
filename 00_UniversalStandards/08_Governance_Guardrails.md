@@ -230,7 +230,36 @@ The service repo then holds only the service's own Deployment Units.
 - Policy changes, exception use, and dry-run violations are logged centrally and alerted on
   (`07_Security_In_Depth.md` §9).
 - Metrics: `governance_controls_total{mode}`, `governance_dry_run_violations_total{control}`,
-  `governance_exceptions_active{control}`, `governance_drift_findings_total`.
+  `governance_exceptions_active{control}`, `governance_drift_findings_total`,
+  `governance_conformance_checks_total{control,cloud,test,expected,observed,result}`,
+  `governance_exception_expiry_latency_seconds{control,cloud}`.
+
+### 9a. Evidence is telemetry
+
+Governance makes claims about the platform; telemetry is how those claims are checked by someone
+other than the person who made them.
+
+- A conformance result advances a control's `verification` stage only when it exists as **all** the
+  signals the baseline's `evidence` block requires: a span per attempt, a structured log line
+  carrying that span's `trace_id`, and an increment of the conformance counter. A result that exists
+  only as a file, a screenshot, or a CI log line does not count.
+- The required signals are part of the contract (`evidence` in `governance_baseline.v1.json`), so
+  Genesis enforces them by validation rather than by convention.
+- The pipeline that applies governance is instrumented like any service (`AGENTS.md` →
+  Observability Rules): a failed or stuck Genesis apply alerts, it is not discovered later.
+
+### 9b. Governance incidents
+
+A control that failed to deny, a drift event, an exception used after expiry, a policy changed
+outside Genesis, or a governance apply that failed partway is a **governance incident**:
+
+- It gets an incident record in the Genesis repo (`docs/incidents/`), in the post-mortem format
+  (`03_Post_Mortem_Template.md`), with its evidence: the conformance spans, the audit-log entries,
+  the plan or apply run.
+- A control involved in an incident drops back to `integration_tested` on that cloud until its
+  conformance test is extended to cover the path that failed and passes again.
+- When an incident was found by a person instead of an alert, its preventive actions add the missing
+  signal.
 
 ---
 

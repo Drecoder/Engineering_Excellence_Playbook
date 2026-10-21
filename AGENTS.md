@@ -66,6 +66,15 @@ Telemetry ships with the first line of code, not after the feature works (see
 - A metric or span name is a contract like an exported interface: renaming one requires updating
   its dashboards and alerts in the same change.
 - New metrics are added to `metrics/promql/MASTER_INDEX.md`.
+- **The platform instruments itself.** CI and its runners are services too: runner bootstrap
+  failures, queued-job age, and failed applies are metrics with alerts. A failure found by a person
+  looking is a finding in itself: its record adds the missing signal.
+- **Evidence is telemetry.** A verification result (conformance test, chaos experiment, golden
+  task) counts only when it exists as a span, a structured log line with `trace_id`, and a metric,
+  not only as a file or a screenshot.
+- **Every failure and near miss gets an incident record** in the affected repo's `docs/incidents/`,
+  in the post-mortem format (`00_UniversalStandards/03_Post_Mortem_Template.md`), with checkable
+  evidence pointers (run IDs, log queries, trace IDs, PRs).
 
 ## Governance Rules
 
@@ -86,6 +95,9 @@ cloud, and services are built inside them (rationale in
   observes, never a claim in the contract.
 - The baseline is validated against `schemas/governance_baseline.v1.schema.json`; an invalid
   baseline is rejected, not repaired.
+- A verification stage advances only on evidence with every signal the baseline's `evidence` block
+  requires (span, log, metric). Governance incidents (a control that failed to deny, a drift event,
+  an exception misused) get incident records like any other failure.
 - Exceptions live in Genesis's reviewed exceptions file, at the narrowest scope, with an owner, a
   reason, and an expiry.
 - Only Genesis's apply identity can change guardrails; Genesis merges need human approval.
