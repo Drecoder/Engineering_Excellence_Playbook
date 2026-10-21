@@ -161,6 +161,22 @@ proportional to difficulty, not a frontier model for everything.**
 - Each finding records the **actual model** that produced it; the score and rung are span
   attributes.
 
+### How each agent consumes the ladder (they differ)
+
+The picker is shared; the two agents use it differently, by design:
+
+- **Builder — the edge model is home.** Its default is the **edge/frontier model**, because novel
+  generation is cutting-edge and quality matters most. A build error, though, is often *not*
+  cutting-edge, so a **fix task** is scored and gets a **ladder-assigned model proportional to the
+  error** (cheap for a trivial fix). When the fix task finishes, the Builder **reverts to the edge
+  model** — the downgrade is transient and per-task; the Builder never *stays* downgraded.
+- **Reviewer — no home model.** It holds no default; **every unit is assigned a model** by the
+  rig → Jev → ladder outcome. Pure ladder, model-per-unit.
+
+Model selection happens at the **task boundary**, never mid-loop (a provider's opaque state, e.g.
+thinking blocks, cannot move between models). A new generation task defaults to edge; a fix task
+picks its rung from the score.
+
 ---
 
 ## 7️⃣ The Change Loop
