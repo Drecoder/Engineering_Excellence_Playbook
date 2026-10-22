@@ -65,6 +65,11 @@ How services are shaped (rationale in `02_BackendZone/05_Application_Architectur
 - **Every remote call has a timeout**; retries only for idempotent operations, with backoff, jitter,
   and idempotency keys for writes.
 - **Never cache an authorization decision** longer than the credential it rests on.
+- **The rules are checked from one file.** Each rule has an `ARCH-*` ID in
+  `schemas/architecture_rules.v1.json`. rig runs its static checks on the diff and its trace checks
+  on the targeted test run's traces; the Reviewer's `architecture` lens rubric is generated from the
+  same file, only for the rules matching what the unit touches. A span missing an attribute a check
+  needs is unverifiable, never compliant.
 
 ## Observability Rules
 
@@ -221,7 +226,7 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
 - **Evidence is requested, never fetched by the model.** Models emit declarative
   `evidence_request.v1` (`symbol_context`, or `run_tests` on symbols, never commands); code
   validates and fulfils them. At most 2 model calls and 1 evidence round per review unit.
-- **Lenses, not extra agents.** Reuse and security are Reviewer lenses. Deterministic security
+- **Lenses, not extra agents.** Reuse, security, and architecture are Reviewer lenses. Deterministic security
   tools block; the security lens escalates to required human approval and never blocks by itself.
 - **Gates before PRs.** The Builder opens a PR only after the no-op, scope, duplicate, and
   rig-scan gates pass (plus self-review when enabled).

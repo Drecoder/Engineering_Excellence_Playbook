@@ -228,20 +228,27 @@ A recurring failure fingerprint marks a stalled fix; the next fix task reverts t
 ### Review lenses and evidence
 
 - The Reviewer reviews each unit through **lenses** (`blast`, `simple`, `chaos`, `benchmark`,
-  `doc`, and the `reuse` and `security` lenses); policy code picks which lenses apply from the
-  complexity answers. Lenses are views of one Reviewer, not separate agents.
+  `doc`, and the `reuse`, `security`, and `architecture` lenses); policy code picks which lenses
+  apply from the complexity answers. Lenses are views of one Reviewer, not separate agents.
 - **Security:** deterministic tools (secret scanning, `SEC-*`, injection rules, IAM from the plan
   JSON) **block**. The `security` lens **escalates**: a high-confidence finding sets a label that
   requires human approval, and never blocks by itself.
 - **Reuse:** see `00_UniversalStandards/09_Reuse_and_DRY.md`. Deterministic DRY findings (a clone,
   or a hash or signature match against the reuse map) are fixed in the same PR; the lens's
   "looks similar" findings stay advisory.
+- **Architecture:** the lens rubric is generated from `schemas/architecture_rules.v1.json`, only
+  for the `ARCH-*` rules whose `applies_when` matches the unit's `features.v1` `structure.touches`;
+  rig's static and trace hits for those rules go in as known findings. Deterministic hits on
+  blocking rules block; the lens's findings are advisory, except a protected class (`ARCH-009`
+  irreversible, `ARCH-022` security), which escalates
+  (`02_BackendZone/05_Application_Architecture.md` §10).
 - **Evidence, declaratively.** The model never calls tools. It emits `evidence_request.v1`
   (`symbol_context`, or `run_tests` on symbols, never commands); the orchestrator validates and
   fulfils it and appends `evidence_response.v1` (with provenance, limits, and uncertainty) to the
   unit's `review_context.v1`. At most **2 model calls and 1 evidence round per unit**. Runtime
-  evidence is targeted test results; traces and state snapshots are added only when the benchmark
-  shows they pay for themselves.
+  evidence is targeted test results; raw traces and state snapshots are added to the model's context
+  only when the benchmark shows they pay for themselves. rig's deterministic trace checks are
+  separate: they read the test run's traces in code and cost no tokens.
 
 ### PR review rounds
 
