@@ -103,6 +103,26 @@ cloud, and services are built inside them (rationale in
 - Only Genesis's apply identity can change guardrails; Genesis merges need human approval.
 - New services are vended by Genesis into the hierarchy, not hand-built.
 
+## Reuse Rules
+
+Say each thing once, in the right place (rationale in `00_UniversalStandards/09_Reuse_and_DRY.md`;
+the reuse map is rig's `schemas/symbol_index.v1.json`).
+
+- **Extract on the third copy, or the second for security code and contracts.** Prefer duplication
+  over an abstraction that needs flags and special cases to fit its callers.
+- **Two scopes.** `internal` = inside one declared boundary (TS package, Go module, Python package,
+  Terraform module); `shared` = exported symbols in `packages/` or `schemas/`, or marked `@shared`.
+  Undeclared or ambiguous is `internal`. Exported is not shared.
+- **Never import another boundary's `internal` symbol.** Promotion to `shared` is its own reviewed
+  change.
+- **The reuse map is generated, never hand-written,** by rig on every merge. Agents get a slice of
+  it, never the whole index, and never see another boundary's internals.
+- **Contracts have one home:** the playbook's `schemas/`, vendored as `.playbook/schemas/`. A copy
+  of a contract or an exact reuse of a string contract (metric, span, env var, label name) blocks.
+- **Across languages, share the spec and test vectors, not code.**
+- **DRY findings are fixed in the same PR** when deterministic (a clone, or a hash or signature
+  match against the reuse map); the fix stays inside the PR's files.
+
 ## Security Rules
 
 Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`
@@ -150,8 +170,18 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   never free-form.
 - **Bounded loops.** Every agent loop is a Governor: a configurable max attempt count, a **token
   budget per change**, a timeout / `AbortSignal` per tool and model call, and a terminal `gave_up`
-  status. PR review rounds end at no blocking findings, **round 3**, or a **stalled** round (no
-  finding fingerprints resolved), then escalate to a human. Only blocking findings start a round.
+  status. PR review rounds end at no blocking findings, **round 4**, or a **stalled** round (no
+  finding fingerprints resolved) or **oscillating** round (a resolved fingerprint reintroduced),
+  then escalate to a human. Only blocking findings and deterministic DRY findings start a round.
+  Round 4 is headroom: the expected outcome is 3 rounds or fewer (`review_loop_rounds` p90 ≤ 3).
+- **Classify build failures before fixing.** rig classifies each failure
+  (`build_failure.v1`); only `code` and `config` failures reach the Builder. `infra` and `unknown`
+  go to a human, `flaky` gets one rerun, `mechanical` gets a deterministic auto-fix.
+- **Evidence is requested, never fetched by the model.** Models emit declarative
+  `evidence_request.v1` (`symbol_context`, or `run_tests` on symbols, never commands); code
+  validates and fulfils them. At most 2 model calls and 1 evidence round per review unit.
+- **Lenses, not extra agents.** Reuse and security are Reviewer lenses. Deterministic security
+  tools block; the security lens escalates to required human approval and never blocks by itself.
 - **Gates before PRs.** The Builder opens a PR only after the no-op, scope, duplicate, and
   rig-scan gates pass (plus self-review when enabled).
 - **AI review advises; humans approve.** Merges to staging and prod require human approval.
@@ -160,9 +190,13 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
   passes the same deterministic gates and the same human-approved merge, and never bypasses them.
   Branch protection is what enforces this for every agent, ours and theirs alike.
-- **Model weight is a ladder, not a tier.** Rules/Jev emit a continuous difficulty score that
-  selects the cheapest model that fits (config-driven rungs); the fail-closed ceiling forces the
-  top rung. Spend compute proportional to difficulty (`06_AgentZone/01_Agent_Standards.md` §6).
+- **Model weight is a ladder, not a tier.** Rules, then a complexity assessor, produce a continuous
+  difficulty score that selects the cheapest model that fits (config-driven rungs); the fail-closed
+  ceiling forces the top rung. Spend compute proportional to difficulty
+  (`06_AgentZone/01_Agent_Standards.md` §6).
+- **The complexity assessor answers complexity, never routing.** It reads rig's `features.v1` (never
+  raw code) and judges the change; policy code maps its answers to the rung, the lenses, and whether
+  evidence may be fetched.
 - **Spend tokens only where code cannot decide.** Rules run before any router or model; a model
   step stays only if its metrics show it improves outcomes.
 - **Models are injected.** Agents depend on a provider-agnostic model interface; the provider and

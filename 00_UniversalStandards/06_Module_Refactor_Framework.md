@@ -174,8 +174,8 @@ These apply when the Builder / Reviewer agents perform a refactor (see
    - State-touching steps (Stage 3 `moved` / `removed` / `import`) → **TIER_2**, always.
 3. **Remediation cap:** the Builder fixes deterministic findings (no-delete gate, scanners) in its
    own bounded loop before opening a PR. PR review rounds follow the change-loop rules in the
-   agent standards: they end at no blocking findings, round 3, or a stalled round, then escalate
-   to a human. The loop never "fixes" a plan by accepting a replacement.
+   agent standards: they end at no blocking findings, round 4, or a stalled or oscillating round,
+   then escalate to a human. The loop never "fixes" a plan by accepting a replacement.
 4. **Human approval:** every refactor PR that reaches staging or prod is approved by a human.
 
 ---
