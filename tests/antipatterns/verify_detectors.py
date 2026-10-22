@@ -218,6 +218,14 @@ def sqlfluff(d, rule, config):
         raise RuntimeError(f"sqlfluff failed: {(out or err).strip()[:300]}")
 
 
+def kube_linter(d, check):
+    out, err = run(["kube-linter", "lint", "--format", "json", "--include", check, "."], d)
+    try:
+        return {r["Check"] for r in json.loads(out or "{}").get("Reports") or []}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"kube-linter failed: {(out or err).strip()[:300]}")
+
+
 VERSIONS = {
     "squawk": ["squawk", "--version"], "sqlfluff": ["sqlfluff", "--version"],
     "spectral": ["spectral", "--version"], "buf": ["buf", "--version"],
@@ -244,7 +252,7 @@ def detect(rule, d):
     if tool == "semgrep":
         return semgrep(d, det.get("config", "auto"))
     if tool == "checkov":
-        return checkov(d, "dockerfile" if rule["stack"] == "docker" else "terraform")
+        return checkov(d, {"docker": "dockerfile", "kubernetes": "kubernetes"}.get(rule["stack"], "terraform"))
     if tool == "trivy":
         return trivy(d)
     if tool == "tflint":
@@ -265,6 +273,8 @@ def detect(rule, d):
         return squawk(d)
     if tool == "sqlfluff":
         return sqlfluff(d, rid, det["config"])
+    if tool == "kube-linter":
+        return kube_linter(d, rid)
     return None  # no runner in the toolchain (e.g. golangci-lint): stays mapped
 
 
@@ -277,6 +287,8 @@ def tool_version(tool):
         return f"{name}@{pkg[name]} (eslint@{pkg['eslint']})"
     if tool == "oasdiff":
         return "oasdiff v1.34.1 (go install; the binary reports no release tag)"
+    if tool == "kube-linter":
+        return "kube-linter v0.8.3 (go install; the binary reports no release tag)"
     return version(VERSIONS[tool])
 
 

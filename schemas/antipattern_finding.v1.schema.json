@@ -8,7 +8,7 @@
   "required": ["schema_version", "rule_id", "rule_revision", "catalog_version", "detector", "file", "start_line", "end_line", "severity", "confidence", "enforcement_state", "blocking", "reported_by", "fingerprint"],
   "properties": {
     "schema_version": { "const": "antipattern_finding.v1" },
-    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB)-[0-9]{3}$" },
+    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB|K8S)-[0-9]{3}$" },
     "rule_revision": { "type": "integer", "minimum": 1 },
     "catalog_version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
     "detector": {

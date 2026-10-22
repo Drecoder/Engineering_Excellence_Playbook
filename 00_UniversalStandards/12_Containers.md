@@ -51,7 +51,15 @@ Every tool the platform runs (builds, tests, linters, scanners, benchmarks, veri
 - **Provenance**: images are built by the pipeline and pushed to the organization's registry; a
   locally built image is never deployed.
 
-## 4️⃣ Rolling It Out
+## 4️⃣ Orchestrated Workloads
+
+Kubernetes manifests carry the same rules at run time, checked by kube-linter and Checkov
+(`AP-K8S-*` in `schemas/antipatterns.v1.json`): run as non-root, never privileged, no host network,
+no `latest` images, memory limits set, a read-only root filesystem, no privilege escalation, and a
+readiness probe. Helm charts are rendered (`helm template`) and the rendered manifests are checked
+by the same rules; rendering is a pipeline step, not yet part of the catalog's verification.
+
+## 5️⃣ Rolling It Out
 
 The rules apply to new work immediately. Existing repositories move to containerized execution
 step by step, each step its own change; until a tool runs in a container, its results carry the

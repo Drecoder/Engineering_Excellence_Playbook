@@ -6,7 +6,8 @@ FROM golang:1.26-bookworm@sha256:632dff7351799a5a9954a48dc06670ade72ee44e8c351cd
 RUN GOBIN=/out go install honnef.co/go/tools/cmd/staticcheck@2026.2.2 \
     && GOBIN=/out go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 \
     && GOBIN=/out go install github.com/oasdiff/oasdiff@v1.34.1 \
-    && GOBIN=/out go install github.com/bufbuild/buf/cmd/buf@v1.75.0
+    && GOBIN=/out go install github.com/bufbuild/buf/cmd/buf@v1.75.0 \
+    && GOBIN=/out go install golang.stackrox.io/kube-linter/cmd/kube-linter@v0.8.3
 
 FROM node:22.18.0-bookworm-slim@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e AS node
 WORKDIR /opt/eslint
@@ -71,7 +72,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt \
     && ln -s /opt/checkov/bin/checkov /usr/local/bin/checkov
 
 COPY --from=golang:1.26-bookworm@sha256:632dff7351799a5a9954a48dc06670ade72ee44e8c351cdc0e5a57af2fea21af /usr/local/go /usr/local/go
-COPY --from=go /out/staticcheck /out/actionlint /out/oasdiff /out/buf /usr/local/bin/
+COPY --from=go /out/staticcheck /out/actionlint /out/oasdiff /out/buf /out/kube-linter /usr/local/bin/
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /opt/eslint /opt/eslint
 
