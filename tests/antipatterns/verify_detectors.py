@@ -199,7 +199,27 @@ def buf(d, mode):
     return {json.loads(l)["type"] for l in lines}
 
 
+def squawk(d):
+    files = [str(p) for p in d.rglob("*.sql")]
+    out, err = run(["squawk", "--reporter", "json", *files], d)
+    try:
+        return {v["rule_name"] for v in json.loads(out or "[]")}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"squawk failed: {(out or err).strip()[:300]}")
+
+
+def sqlfluff(d, rule, config):
+    dialect = dict(kv.split("=", 1) for kv in config.split(","))["dialect"]
+    files = [str(p) for p in d.rglob("*.sql")]
+    out, err = run(["sqlfluff", "lint", "--dialect", dialect, "--rules", rule, "--format", "json", *files], d)
+    try:
+        return {v["code"] for f in json.loads(out or "[]") for v in f["violations"]}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"sqlfluff failed: {(out or err).strip()[:300]}")
+
+
 VERSIONS = {
+    "squawk": ["squawk", "--version"], "sqlfluff": ["sqlfluff", "--version"],
     "spectral": ["spectral", "--version"], "buf": ["buf", "--version"],
     "zizmor": ["zizmor", "--version"], "actionlint": ["actionlint", "-version"], "shellcheck": ["shellcheck", "--version"],
     "go-vet": ["go", "version"], "staticcheck": ["staticcheck", "-version"], "ruff": ["ruff", "--version"],
@@ -241,6 +261,10 @@ def detect(rule, d):
         return oasdiff(d, rule["test_cases"]["positive"][0]["file"])
     if tool == "buf":
         return buf(d, det["config"])
+    if tool == "squawk":
+        return squawk(d)
+    if tool == "sqlfluff":
+        return sqlfluff(d, rid, det["config"])
     return None  # no runner in the toolchain (e.g. golangci-lint): stays mapped
 
 

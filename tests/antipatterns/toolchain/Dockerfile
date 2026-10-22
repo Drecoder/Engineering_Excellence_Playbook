@@ -25,6 +25,8 @@ ARG HADOLINT_SHA256=c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8
 # shellcheck publishes no checksum file; this is the hash of the release artifact when first pinned.
 ARG SHELLCHECK_VERSION=0.11.0
 ARG SHELLCHECK_SHA256=8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+ARG SQUAWK_VERSION=2.70.0
+ARG SQUAWK_SHA256=836ba2ab0c0ec30ae02c9f2cec065b341ff853765ceaa3965c22109c2f53eb1c
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -46,6 +48,9 @@ RUN curl -sSfLo /tmp/trivy.tgz "https://github.com/aquasecurity/trivy/releases/d
     && echo "${SHELLCHECK_SHA256}  /tmp/sc.txz" | sha256sum -c - \
     && tar -xJf /tmp/sc.txz -C /tmp \
     && mv "/tmp/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/ \
+    && curl -sSfLo /usr/local/bin/squawk "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
+    && echo "${SQUAWK_SHA256}  /usr/local/bin/squawk" | sha256sum -c - \
+    && chmod 0755 /usr/local/bin/squawk \
     && rm -rf /tmp/trivy.tgz /tmp/tflint.zip /tmp/sc.txz /tmp/shellcheck-*
 
 COPY requirements.txt /tmp/requirements.txt
@@ -58,6 +63,9 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt \
     && python -m venv /opt/zizmor \
     && /opt/zizmor/bin/pip install --no-cache-dir zizmor==1.31.1 \
     && ln -s /opt/zizmor/bin/zizmor /usr/local/bin/zizmor \
+    && python -m venv /opt/sqlfluff \
+    && /opt/sqlfluff/bin/pip install --no-cache-dir sqlfluff==4.4.0 \
+    && ln -s /opt/sqlfluff/bin/sqlfluff /usr/local/bin/sqlfluff \
     && python -m venv /opt/checkov \
     && /opt/checkov/bin/pip install --no-cache-dir checkov==3.3.29 \
     && ln -s /opt/checkov/bin/checkov /usr/local/bin/checkov

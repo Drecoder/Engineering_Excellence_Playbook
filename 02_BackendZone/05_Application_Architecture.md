@@ -81,6 +81,10 @@ step.
   `00_UniversalStandards/10_Autonomy_by_Evidence.md`, so a person approves it at every autonomy
   level, after confirming a backup exists (`ARCH-009`).
 - Migrations run through the pipeline, never by hand against a live database.
+- **Migrations are linted before they run.** squawk finds the unsafe forms (`AP-DB-*` in
+  `schemas/antipatterns.v1.json`): a required column without a default, a rename or type change in
+  place, a dropped column, an index built without `CONCURRENTLY`, a constraint validated in the same
+  step, and a migration with no `lock_timeout`. sqlfluff checks application queries.
 
 ---
 

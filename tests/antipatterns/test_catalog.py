@@ -64,7 +64,7 @@ class CatalogContract(unittest.TestCase):
                      ("typescript", "angular"), ("python", "none"), ("python", "django"), ("python", "fastapi"),
                      ("hcl", "terraform"), ("hcl", "terragrunt"), ("docker", "dockerfile"),
                      ("ci", "github-actions"), ("contracts", "openapi"), ("contracts", "asyncapi"),
-                     ("contracts", "protobuf")]:
+                     ("contracts", "protobuf"), ("database", "postgres"), ("database", "sql")]:
             self.assertIn(need, covered, need)
 
     def test_terragrunt_checks_are_marked_custom(self):
