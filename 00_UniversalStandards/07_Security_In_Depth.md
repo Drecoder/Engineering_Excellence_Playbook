@@ -104,6 +104,10 @@ interrupts work.
   its home repo's identities.
 - Callers pin shared workflows to a release tag or commit SHA. Tracking a branch (`@main`) is
   tolerated only until the central repo tags releases.
+- **Workflow files are code and are checked like code.** actionlint and zizmor find the workflow
+  anti-patterns (`AP-GHA-*` in `schemas/antipatterns.v1.json`): untrusted input expanded into a
+  script, actions not pinned to a commit SHA, broad job permissions, `pull_request_target`,
+  persisted checkout credentials, and `secrets: inherit`.
 
 ---
 

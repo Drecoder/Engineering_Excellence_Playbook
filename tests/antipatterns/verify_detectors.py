@@ -151,7 +151,26 @@ def hadolint(d):
     return ids
 
 
+def zizmor(d, config):
+    persona = dict(kv.split("=", 1) for kv in (config or "persona=regular").split(","))["persona"]
+    out, err = run(["zizmor", "--offline", f"--persona={persona}", "--format", "json", "."], d)
+    try:
+        return {f["ident"] for f in json.loads(out or "[]")}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"zizmor failed: {err.strip()[:300]}")
+
+
+def actionlint(d):
+    files = [str(p) for p in d.rglob("*.yml")]
+    out, err = run(["actionlint", "-format", "{{json .}}", *files], d)
+    try:
+        return {e["kind"] for e in json.loads(out or "[]")}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"actionlint failed: {(out or err).strip()[:300]}")
+
+
 VERSIONS = {
+    "zizmor": ["zizmor", "--version"], "actionlint": ["actionlint", "-version"], "shellcheck": ["shellcheck", "--version"],
     "go-vet": ["go", "version"], "staticcheck": ["staticcheck", "-version"], "ruff": ["ruff", "--version"],
     "bandit": ["bandit", "--version"], "semgrep": ["semgrep", "--version"], "checkov": ["checkov", "--version"],
     "trivy": ["trivy", "--version"], "tflint": ["tflint", "--version"], "hadolint": ["hadolint", "--version"],
@@ -181,6 +200,10 @@ def detect(rule, d):
         return tflint(d, rid)
     if tool == "hadolint":
         return hadolint(d)
+    if tool == "zizmor":
+        return zizmor(d, det.get("config"))
+    if tool == "actionlint":
+        return actionlint(d)
     return None  # no runner in the toolchain (e.g. golangci-lint): stays mapped
 
 

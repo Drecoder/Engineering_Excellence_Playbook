@@ -31,7 +31,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Call defer cancel() immediately after creating the context.",
@@ -83,7 +83,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Pass a pointer to the struct, or keep the lock behind a pointer.",
@@ -132,7 +132,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Check err first, then defer resp.Body.Close().",
@@ -181,7 +181,7 @@
           "tool_version": "staticcheck 2026.2.2 (0.8.2)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Pass context.TODO() or, better, the caller's context.",
@@ -276,7 +276,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "await it, return it, or attach an explicit .catch with handling.",
@@ -325,7 +325,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Wrap the call so the promise is awaited and its rejection handled.",
@@ -374,7 +374,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use unknown and narrow it, or a precise type.",
@@ -424,7 +424,7 @@
           "tool_version": "eslint@9.39.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Parse data with JSON.parse or a schema validator; never execute strings.",
@@ -473,7 +473,7 @@
           "tool_version": "eslint-plugin-n@18.5.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use the fs/promises API and await it.",
@@ -522,7 +522,7 @@
           "tool_version": "1.182.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         },
         "config": "p/security-audit"
       },
@@ -618,7 +618,7 @@
           "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Call hooks unconditionally at the top level of the component; branch inside the hook.",
@@ -667,7 +667,7 @@
           "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "List every reactive value the callback reads, or move it inside the effect.",
@@ -716,7 +716,7 @@
           "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use a stable ID from the data as the key.",
@@ -765,7 +765,7 @@
           "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Render text as children; if HTML is required, sanitize it with a vetted library first.",
@@ -814,7 +814,7 @@
           "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Move the shared logic into a private method and call that.",
@@ -863,7 +863,7 @@
           "tool_version": "eslint-plugin-rxjs-x@0.9.6 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use the async pipe, takeUntilDestroyed(), or keep and unsubscribe the subscription.",
@@ -912,7 +912,7 @@
           "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Give the output a distinct, domain-specific name.",
@@ -961,7 +961,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Pass an argument list without shell=True; validate inputs.",
@@ -1010,7 +1010,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Catch the specific exception and handle or log it with context; re-raise otherwise.",
@@ -1059,7 +1059,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use ast.literal_eval for literals or a real parser.",
@@ -1108,7 +1108,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Always pass timeout= (connect and read), shorter than the caller's deadline.",
@@ -1160,7 +1160,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use yaml.safe_load.",
@@ -1209,7 +1209,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Default to None and create the value inside the function.",
@@ -1306,7 +1306,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use ORM expressions, or parameterized raw queries with params=.",
@@ -1355,7 +1355,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use format_html with arguments, which escapes them.",
@@ -1404,7 +1404,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use blank=True with default ''; reserve null for non-string fields.",
@@ -1498,7 +1498,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use an async client (httpx.AsyncClient) or run the call in a thread pool.",
@@ -1547,7 +1547,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use await asyncio.sleep().",
@@ -1596,7 +1596,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Declare Annotated[T, Depends(dep)].",
@@ -1645,7 +1645,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Restrict the source to the IAP range or a bastion; prefer OS Login through IAP.",
@@ -1700,7 +1700,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Grant predefined or custom roles scoped to the task.",
@@ -1753,7 +1753,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Remove public members; serve public content through a CDN or signed URLs.",
@@ -1806,7 +1806,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Pin git sources to a full commit SHA (ref=<sha>).",
@@ -1855,7 +1855,7 @@
           "tool_version": "Version: 0.71.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Restrict egress destinations and ports to what the workload needs; record exceptions with an owner and expiry.",
@@ -1904,7 +1904,7 @@
           "tool_version": "TFLint version 0.65.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Declare every provider in required_providers with a version constraint.",
@@ -2180,7 +2180,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Pin the base image to a version tag and its digest.",
@@ -2233,7 +2233,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "End with a non-root USER (a numeric UID); do privileged setup in an earlier stage.",
@@ -2286,7 +2286,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Create a user and set USER to its UID before CMD.",
@@ -2339,7 +2339,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use COPY for files and directories.",
@@ -2388,7 +2388,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Pin package versions, or install from a pinned base image and rebuild deliberately.",
@@ -2437,7 +2437,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Set SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"] before piped RUN instructions.",
@@ -2486,7 +2486,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use the JSON (exec) form: CMD [\"python\", \"app.py\"].",
@@ -2536,7 +2536,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Declare a HEALTHCHECK, or HEALTHCHECK NONE when the orchestrator probes the service itself.",
@@ -2586,7 +2586,7 @@
           "tool_version": "Version: 0.71.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
         }
       },
       "remediation": "Use build secrets (RUN --mount=type=secret) at build time and a secret manager at run time.",
@@ -2619,6 +2619,414 @@
         "SEC-010",
         "SEC-012"
       ]
+    },
+    {
+      "id": "AP-GHA-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Untrusted input expanded into a run script",
+      "description": "A ${{ }} expression with attacker-controlled data (PR title, branch name, issue body) is expanded inside run:.",
+      "rationale": "The value is pasted into the shell before it runs: script injection with the workflow's token and secrets.",
+      "severity": "critical",
+      "confidence": "high",
+      "detector": {
+        "tool": "zizmor",
+        "rule_id": "template-injection",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "zizmor 1.31.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        },
+        "config": "persona=regular"
+      },
+      "remediation": "Pass the value through env: and reference the environment variable, quoted, in the script.",
+      "references": [
+        "https://docs.zizmor.sh/audits/#template-injection",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2\n        with:\n          persist-credentials: false\n      - run: echo \"${{ github.event.pull_request.title }}\"\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2\n        with:\n          persist-credentials: false\n      - env:\n          TITLE: ${{ github.event.pull_request.title }}\n        run: echo \"$TITLE\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-010"
+      ]
+    },
+    {
+      "id": "AP-GHA-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Action not pinned to a commit SHA",
+      "description": "uses: references an action by tag or branch instead of a full commit SHA.",
+      "rationale": "A tag can be moved to malicious code; the playbook requires callers to pin by SHA.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "zizmor",
+        "rule_id": "unpinned-uses",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "zizmor 1.31.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        },
+        "config": "persona=regular"
+      },
+      "remediation": "Pin to the full 40-character commit SHA, with the version in a trailing comment.",
+      "references": [
+        "https://docs.zizmor.sh/audits/#unpinned-uses",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          persist-credentials: false\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2\n        with:\n          persist-credentials: false\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GHA-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Excessive workflow permissions",
+      "description": "A job grants write-all or broad write scopes (at the default persona, zizmor reports job-level grants; a workflow-level grant only at its pedantic persona).",
+      "rationale": "Every step in the job, and every action it runs, gets the broad token; the playbook defaults to contents: read.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "zizmor",
+        "rule_id": "excessive-permissions",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "zizmor 1.31.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        },
+        "config": "persona=regular"
+      },
+      "remediation": "Set permissions: contents: read at the top; grant more per job, only what that job needs.",
+      "references": [
+        "https://docs.zizmor.sh/audits/#excessive-permissions",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\njobs:\n  build:\n    runs-on: ubuntu-latest\n    permissions: write-all\n    steps:\n      - run: echo hi\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\njobs:\n  build:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - run: echo hi\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GHA-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Dangerous trigger",
+      "description": "The workflow runs on pull_request_target or workflow_run.",
+      "rationale": "These run with the base repository's token and secrets while handling code or data from a fork.",
+      "severity": "high",
+      "confidence": "medium",
+      "detector": {
+        "tool": "zizmor",
+        "rule_id": "dangerous-triggers",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "zizmor 1.31.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        },
+        "config": "persona=regular"
+      },
+      "remediation": "Use pull_request; if a privileged trigger is unavoidable, never check out or execute the fork's code.",
+      "references": [
+        "https://docs.zizmor.sh/audits/#dangerous-triggers",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request_target:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"labeling\"\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"labeling\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GHA-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Checkout persists credentials",
+      "description": "actions/checkout leaves the token in .git/config (persist-credentials defaults to true).",
+      "rationale": "Any later step, or an uploaded artifact containing .git, can read the token.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "zizmor",
+        "rule_id": "artipacked",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "zizmor 1.31.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        },
+        "config": "persona=regular"
+      },
+      "remediation": "Set persist-credentials: false unless a later step must push.",
+      "references": [
+        "https://docs.zizmor.sh/audits/#artipacked",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2\n        with:\n          persist-credentials: false\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GHA-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Reusable workflow called with secrets: inherit",
+      "description": "A reusable workflow receives every secret of the caller.",
+      "rationale": "The callee gets far more than it needs; the playbook requires secrets to be passed explicitly.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "zizmor",
+        "rule_id": "secrets-inherit",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "zizmor 1.31.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        },
+        "config": "persona=regular"
+      },
+      "remediation": "Pass each secret the callee needs by name under secrets:.",
+      "references": [
+        "https://docs.zizmor.sh/audits/#secrets-inherit",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  gates:\n    uses: org/platform/.github/workflows/gates.yml@11bd71901bbe5b1630ceea73d27597364c9af683\n    secrets: inherit\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  gates:\n    uses: org/platform/.github/workflows/gates.yml@11bd71901bbe5b1630ceea73d27597364c9af683\n    secrets:\n      token: ${{ secrets.GATES_TOKEN }}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GHA-007",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Expression refers to something that does not exist",
+      "description": "An expression references an undefined step, output, or context property, or has a type error.",
+      "rationale": "It evaluates to an empty string at run time, so the step silently does the wrong thing.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "actionlint",
+        "rule_id": "expression",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "v1.7.12",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        }
+      },
+      "remediation": "Reference only defined step IDs and outputs; actionlint type-checks the expression.",
+      "references": [
+        "https://github.com/rhysd/actionlint/blob/main/docs/checks.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - id: build\n        run: echo \"v=1\" >> \"$GITHUB_OUTPUT\"\n      - run: echo \"${{ steps.biuld.outputs.v }}\"\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - id: build\n        run: echo \"v=1\" >> \"$GITHUB_OUTPUT\"\n      - run: echo \"${{ steps.build.outputs.v }}\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GHA-008",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "ci",
+      "framework": "github-actions",
+      "title": "Shell bug in a run script",
+      "description": "A run: script has a ShellCheck finding, such as an unquoted variable.",
+      "rationale": "Word splitting and globbing change what the command does with unexpected input.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "actionlint",
+        "rule_id": "shellcheck",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "v1.7.12",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+        }
+      },
+      "remediation": "Quote expansions and fix the ShellCheck finding; actionlint runs ShellCheck on every run: block.",
+      "references": [
+        "https://github.com/rhysd/actionlint/blob/main/docs/checks.md",
+        "https://www.shellcheck.net/wiki/SC2086"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: rm -rf $TARGET_DIR\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".github/workflows/ci.yml",
+            "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: rm -rf \"$TARGET_DIR\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
     }
   ]
 }
