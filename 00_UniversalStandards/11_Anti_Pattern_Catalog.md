@@ -16,17 +16,17 @@ Each rule maps **one detector rule** to a stable ID, `AP-<STACK>-<NNN>`:
 | Field | Meaning |
 | :--- | :--- |
 | `id`, `revision`, `added_in` | The ID never changes; `revision` increments when the meaning or mapping changes; `added_in` is the catalog version |
-| `stack`, `framework` | Go, TypeScript (Node.js, React, Angular), Python (Django, FastAPI), HCL (Terraform, Terragrunt), Docker, CI (GitHub Actions) |
+| `stack`, `framework` | Go, TypeScript (Node.js, React, Angular), Python (Django, FastAPI), HCL (Terraform, Terragrunt), Docker, CI (GitHub Actions), contracts (OpenAPI, AsyncAPI, Protobuf) |
 | `severity`, `confidence` | The catalog's own impact scale and expected hit quality, not the tool's |
 | `detector` | The tool, its own rule ID exactly as reported, whether it is a custom rig check, and the mapping status |
 | `remediation`, `references`, `related` | The fix, the tool's documentation, and the `ARCH-*`/`SEC-*`/`GOV-*` rules it also violates |
-| `test_cases` | At least one positive case (must be reported) and one negative case (the fixed form, must not be) |
+| `test_cases` | At least one positive case (must be reported) and one negative case (the fixed form, must not be); breaking-change rules add the previous version as `base` |
 | `enforcement` | `planned`, `advisory`, or `retired`; `blocks` is the constant `false` in v1 |
 | `benchmark` | `unmeasured`, or the measured counts and precision (§4) |
 
 **Existing tools first.** A rule points at an existing tool's rule (go vet, staticcheck, ESLint and
-its plugins, Ruff, Bandit, Semgrep, Checkov, Trivy, tflint, hadolint, actionlint, zizmor) and never
-re-implements it.
+its plugins, Ruff, Bandit, Semgrep, Checkov, Trivy, tflint, hadolint, actionlint, zizmor, Spectral,
+oasdiff, buf) and never re-implements it.
 A **custom rig check** (`tool: rig`, `custom: true`) exists only where no tool covers the pattern,
 such as the Terragrunt rules and dependency conflicts.
 

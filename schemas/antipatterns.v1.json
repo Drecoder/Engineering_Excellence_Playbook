@@ -31,7 +31,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Call defer cancel() immediately after creating the context.",
@@ -83,7 +83,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Pass a pointer to the struct, or keep the lock behind a pointer.",
@@ -132,7 +132,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Check err first, then defer resp.Body.Close().",
@@ -181,7 +181,7 @@
           "tool_version": "staticcheck 2026.2.2 (0.8.2)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Pass context.TODO() or, better, the caller's context.",
@@ -276,7 +276,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "await it, return it, or attach an explicit .catch with handling.",
@@ -325,7 +325,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Wrap the call so the promise is awaited and its rejection handled.",
@@ -374,7 +374,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use unknown and narrow it, or a precise type.",
@@ -424,7 +424,7 @@
           "tool_version": "eslint@9.39.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Parse data with JSON.parse or a schema validator; never execute strings.",
@@ -473,7 +473,7 @@
           "tool_version": "eslint-plugin-n@18.5.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use the fs/promises API and await it.",
@@ -522,7 +522,7 @@
           "tool_version": "1.182.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "p/security-audit"
       },
@@ -618,7 +618,7 @@
           "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Call hooks unconditionally at the top level of the component; branch inside the hook.",
@@ -667,7 +667,7 @@
           "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "List every reactive value the callback reads, or move it inside the effect.",
@@ -716,7 +716,7 @@
           "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use a stable ID from the data as the key.",
@@ -765,7 +765,7 @@
           "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Render text as children; if HTML is required, sanitize it with a vetted library first.",
@@ -814,7 +814,7 @@
           "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Move the shared logic into a private method and call that.",
@@ -863,7 +863,7 @@
           "tool_version": "eslint-plugin-rxjs-x@0.9.6 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use the async pipe, takeUntilDestroyed(), or keep and unsubscribe the subscription.",
@@ -912,7 +912,7 @@
           "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Give the output a distinct, domain-specific name.",
@@ -961,7 +961,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Pass an argument list without shell=True; validate inputs.",
@@ -1010,7 +1010,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Catch the specific exception and handle or log it with context; re-raise otherwise.",
@@ -1059,7 +1059,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use ast.literal_eval for literals or a real parser.",
@@ -1108,7 +1108,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Always pass timeout= (connect and read), shorter than the caller's deadline.",
@@ -1160,7 +1160,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use yaml.safe_load.",
@@ -1209,7 +1209,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Default to None and create the value inside the function.",
@@ -1306,7 +1306,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use ORM expressions, or parameterized raw queries with params=.",
@@ -1355,7 +1355,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use format_html with arguments, which escapes them.",
@@ -1404,7 +1404,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use blank=True with default ''; reserve null for non-string fields.",
@@ -1498,7 +1498,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use an async client (httpx.AsyncClient) or run the call in a thread pool.",
@@ -1547,7 +1547,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use await asyncio.sleep().",
@@ -1596,7 +1596,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Declare Annotated[T, Depends(dep)].",
@@ -1645,7 +1645,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Restrict the source to the IAP range or a bastion; prefer OS Login through IAP.",
@@ -1700,7 +1700,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Grant predefined or custom roles scoped to the task.",
@@ -1753,7 +1753,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Remove public members; serve public content through a CDN or signed URLs.",
@@ -1806,7 +1806,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Pin git sources to a full commit SHA (ref=<sha>).",
@@ -1855,7 +1855,7 @@
           "tool_version": "Version: 0.71.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Restrict egress destinations and ports to what the workload needs; record exceptions with an owner and expiry.",
@@ -1904,7 +1904,7 @@
           "tool_version": "TFLint version 0.65.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Declare every provider in required_providers with a version constraint.",
@@ -2180,7 +2180,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Pin the base image to a version tag and its digest.",
@@ -2233,7 +2233,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "End with a non-root USER (a numeric UID); do privileged setup in an earlier stage.",
@@ -2286,7 +2286,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Create a user and set USER to its UID before CMD.",
@@ -2339,7 +2339,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use COPY for files and directories.",
@@ -2388,7 +2388,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Pin package versions, or install from a pinned base image and rebuild deliberately.",
@@ -2437,7 +2437,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Set SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"] before piped RUN instructions.",
@@ -2486,7 +2486,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use the JSON (exec) form: CMD [\"python\", \"app.py\"].",
@@ -2536,7 +2536,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Declare a HEALTHCHECK, or HEALTHCHECK NONE when the orchestrator probes the service itself.",
@@ -2586,7 +2586,7 @@
           "tool_version": "Version: 0.71.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Use build secrets (RUN --mount=type=secret) at build time and a secret manager at run time.",
@@ -2640,7 +2640,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "persona=regular"
       },
@@ -2694,7 +2694,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "persona=regular"
       },
@@ -2745,7 +2745,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "persona=regular"
       },
@@ -2796,7 +2796,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "persona=regular"
       },
@@ -2847,7 +2847,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "persona=regular"
       },
@@ -2898,7 +2898,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         },
         "config": "persona=regular"
       },
@@ -2949,7 +2949,7 @@
           "tool_version": "v1.7.12",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Reference only defined step IDs and outputs; actionlint type-checks the expression.",
@@ -2998,7 +2998,7 @@
           "tool_version": "v1.7.12",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:bbb1712a43e3c1e8a16434385f05625e7041366728b7a29f71fb0a52728f4aa8"
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
         }
       },
       "remediation": "Quote expansions and fix the ShellCheck finding; actionlint runs ShellCheck on every run: block.",
@@ -3017,6 +3017,488 @@
           {
             "file": ".github/workflows/ci.yml",
             "code": "name: ci\non:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: rm -rf \"$TARGET_DIR\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-API-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "openapi",
+      "title": "Path parameter not declared",
+      "description": "A path template such as /users/{id} has no matching parameter definition.",
+      "rationale": "Clients and generated code disagree with the server about the URL; validation silently skips the parameter.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "spectral",
+        "rule_id": "path-params",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "6.17.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "spectral:oas"
+      },
+      "remediation": "Declare every path template variable as a required path parameter.",
+      "references": [
+        "https://docs.stoplight.io/docs/spectral/4dec24461f3af-open-api-rules#path-params",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users/{id}:\n    get:\n      operationId: getUser\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users/{id}:\n    get:\n      operationId: getUser\n      parameters:\n        - {name: id, in: path, required: true, schema: {type: string}}\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-API-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "openapi",
+      "title": "Operation without a success response",
+      "description": "An operation documents no 2xx or 3xx response.",
+      "rationale": "Consumers cannot know what success looks like, so the contract does not describe the API.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "spectral",
+        "rule_id": "operation-success-response",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "6.17.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "spectral:oas"
+      },
+      "remediation": "Document the success response and its schema.",
+      "references": [
+        "https://docs.stoplight.io/docs/spectral/4dec24461f3af-open-api-rules#operation-success-response",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /health:\n    get:\n      operationId: health\n      responses:\n        \"500\": {description: error}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /health:\n    get:\n      operationId: health\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-API-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "openapi",
+      "title": "Operation without an operationId",
+      "description": "An operation has no operationId.",
+      "rationale": "Generated clients invent unstable names, and telemetry and logs cannot name the operation consistently.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "spectral",
+        "rule_id": "operation-operationId",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "6.17.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "spectral:oas"
+      },
+      "remediation": "Give every operation a stable, unique operationId.",
+      "references": [
+        "https://docs.stoplight.io/docs/spectral/4dec24461f3af-open-api-rules#operation-operationId",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /health:\n    get:\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /health:\n    get:\n      operationId: health\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-API-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "openapi",
+      "title": "Required response field removed",
+      "description": "A new API version removes a field that responses always carried.",
+      "rationale": "Every client that reads the field breaks; a breaking change must ship as a new version next to the old one.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "oasdiff",
+        "rule_id": "response-required-property-removed",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "oasdiff v1.34.1 (go install; the binary reports no release tag)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        }
+      },
+      "remediation": "Keep the field (deprecate it) and add a new API version for the new shape: expand, then contract.",
+      "references": [
+        "https://github.com/oasdiff/oasdiff/blob/main/BREAKING-CHANGES.md",
+        "02_BackendZone/01_API_Architecture.md",
+        "02_BackendZone/05_Application_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users/{id}:\n    get:\n      operationId: getUser\n      parameters:\n        - {name: id, in: path, required: true, schema: {type: string}}\n      responses:\n        \"200\":\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [id]\n                properties:\n                  id: {type: string}\n",
+            "base": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users/{id}:\n    get:\n      operationId: getUser\n      parameters:\n        - {name: id, in: path, required: true, schema: {type: string}}\n      responses:\n        \"200\":\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [id, email]\n                properties:\n                  id: {type: string}\n                  email: {type: string}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users/{id}:\n    get:\n      operationId: getUser\n      parameters:\n        - {name: id, in: path, required: true, schema: {type: string}}\n      responses:\n        \"200\":\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [id, email]\n                properties:\n                  id: {type: string}\n                  email: {type: string}\n                  name: {type: string}\n",
+            "base": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users/{id}:\n    get:\n      operationId: getUser\n      parameters:\n        - {name: id, in: path, required: true, schema: {type: string}}\n      responses:\n        \"200\":\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                required: [id, email]\n                properties:\n                  id: {type: string}\n                  email: {type: string}\n",
+            "note": "Adding an optional field is not breaking"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-004"
+      ]
+    },
+    {
+      "id": "AP-API-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "openapi",
+      "title": "Request field became required",
+      "description": "A new API version makes a previously optional request field required.",
+      "rationale": "Existing clients that omit the field start failing validation.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "oasdiff",
+        "rule_id": "request-property-became-required",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "oasdiff v1.34.1 (go install; the binary reports no release tag)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        }
+      },
+      "remediation": "Keep the field optional with a server-side default, or require it only in a new API version.",
+      "references": [
+        "https://github.com/oasdiff/oasdiff/blob/main/BREAKING-CHANGES.md",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users:\n    post:\n      operationId: createUser\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [nick]\n              properties:\n                name: {type: string}\n                nick: {type: string}\n      responses:\n        \"200\": {description: ok}\n",
+            "base": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users:\n    post:\n      operationId: createUser\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                name: {type: string}\n                nick: {type: string}\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "api.yaml",
+            "code": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users:\n    post:\n      operationId: createUser\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                name: {type: string}\n                nick: {type: string}\n      responses:\n        \"200\": {description: ok}\n",
+            "base": "openapi: 3.0.3\ninfo: {title: users, version: \"1.0.0\"}\npaths:\n  /users:\n    post:\n      operationId: createUser\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                name: {type: string}\n                nick: {type: string}\n      responses:\n        \"200\": {description: ok}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-004"
+      ]
+    },
+    {
+      "id": "AP-API-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "protobuf",
+      "title": "Protobuf field deleted",
+      "description": "A field is removed from a message without reserving its number and name.",
+      "rationale": "Old and new binaries disagree on the wire; a later field can reuse the number and corrupt data.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "buf",
+        "rule_id": "FIELD_NO_DELETE",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "1.75.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "breaking"
+      },
+      "remediation": "Deprecate the field, or delete it and add reserved for its number and name in a new package version.",
+      "references": [
+        "https://buf.build/docs/breaking/rules/",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "user.proto",
+            "code": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n}\n",
+            "base": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  string email = 2;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "user.proto",
+            "code": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  string email = 2 [deprecated = true];\n}\n",
+            "base": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  string email = 2;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-004"
+      ]
+    },
+    {
+      "id": "AP-API-007",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "protobuf",
+      "title": "Protobuf field type changed",
+      "description": "A field keeps its number but changes type.",
+      "rationale": "Existing producers and consumers decode each other's messages incorrectly.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "buf",
+        "rule_id": "FIELD_SAME_TYPE",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "1.75.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "breaking"
+      },
+      "remediation": "Add a new field with a new number and the new type; deprecate the old one.",
+      "references": [
+        "https://buf.build/docs/breaking/rules/",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "user.proto",
+            "code": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  int64 email = 2;\n}\n",
+            "base": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  string email = 2;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "user.proto",
+            "code": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  string email = 2;\n  int64 email_id = 3;\n}\n",
+            "base": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n  string email = 2;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-004"
+      ]
+    },
+    {
+      "id": "AP-API-008",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "protobuf",
+      "title": "Protobuf package without a version",
+      "description": "The proto package has no version suffix (acme.users instead of acme.users.v1).",
+      "rationale": "There is no way to ship a breaking change next to the old contract; the playbook's contracts are versioned.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "buf",
+        "rule_id": "PACKAGE_VERSION_SUFFIX",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "1.75.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "lint"
+      },
+      "remediation": "Name packages with a version suffix (.v1) and add .v2 for breaking changes.",
+      "references": [
+        "https://buf.build/docs/lint/rules/",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "user.proto",
+            "code": "syntax = \"proto3\";\npackage acme.users;\nmessage User {\n  string id = 1;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "user.proto",
+            "code": "syntax = \"proto3\";\npackage acme.users.v1;\nmessage User {\n  string id = 1;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-004"
+      ]
+    },
+    {
+      "id": "AP-API-009",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "contracts",
+      "framework": "asyncapi",
+      "title": "Event operation without an operationId",
+      "description": "An AsyncAPI publish or subscribe operation has no operationId.",
+      "rationale": "Producers, consumers, and traces cannot name the event operation consistently, and generated code is unstable.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "spectral",
+        "rule_id": "asyncapi-operation-operationId",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "6.17.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:bba4ff5664065206ee4061b40d770d32573ddd167d9ceb8f8024d2c155a9031c"
+        },
+        "config": "spectral:asyncapi"
+      },
+      "remediation": "Give every operation a stable operationId.",
+      "references": [
+        "https://docs.stoplight.io/docs/spectral/1e63ffd0220f3-async-api-rules#asyncapi-operation-operationId",
+        "02_BackendZone/01_API_Architecture.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "events.yaml",
+            "code": "asyncapi: 2.6.0\ninfo: {title: orders, version: \"1.0.0\"}\nchannels:\n  order.created:\n    publish:\n      message:\n        payload:\n          type: object\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "events.yaml",
+            "code": "asyncapi: 2.6.0\ninfo: {title: orders, version: \"1.0.0\"}\nchannels:\n  order.created:\n    publish:\n      operationId: publishOrderCreated\n      message:\n        payload:\n          type: object\n"
           }
         ]
       },

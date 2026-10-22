@@ -1,10 +1,11 @@
 {
   "name": "antipattern-toolchain",
   "private": true,
-  "description": "Pinned ESLint stack for verifying antipatterns.v1 mappings inside the toolchain image.",
+  "description": "Pinned Node tools (ESLint stack, Spectral) for verifying antipatterns.v1 mappings inside the toolchain image.",
   "dependencies": {
     "@angular-eslint/eslint-plugin": "22.6.0",
     "@angular/core": "22.2.3",
+    "@stoplight/spectral-cli": "6.17.0",
     "@types/react": "19.3.0",
     "eslint": "9.39.5",
     "eslint-plugin-n": "18.5.0",

@@ -4,12 +4,15 @@
 
 FROM golang:1.26-bookworm@sha256:632dff7351799a5a9954a48dc06670ade72ee44e8c351cdc0e5a57af2fea21af AS go
 RUN GOBIN=/out go install honnef.co/go/tools/cmd/staticcheck@2026.2.2 \
-    && GOBIN=/out go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+    && GOBIN=/out go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 \
+    && GOBIN=/out go install github.com/oasdiff/oasdiff@v1.34.1 \
+    && GOBIN=/out go install github.com/bufbuild/buf/cmd/buf@v1.75.0
 
 FROM node:22.18.0-bookworm-slim@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e AS node
 WORKDIR /opt/eslint
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+# npm ls fails the build on any invalid or missing peer dependency (AP-NODE-004).
+RUN npm ci --no-audit --no-fund && npm ls --all >/dev/null
 
 FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70
 
@@ -60,7 +63,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt \
     && ln -s /opt/checkov/bin/checkov /usr/local/bin/checkov
 
 COPY --from=golang:1.26-bookworm@sha256:632dff7351799a5a9954a48dc06670ade72ee44e8c351cdc0e5a57af2fea21af /usr/local/go /usr/local/go
-COPY --from=go /out/staticcheck /out/actionlint /usr/local/bin/
+COPY --from=go /out/staticcheck /out/actionlint /out/oasdiff /out/buf /usr/local/bin/
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /opt/eslint /opt/eslint
 

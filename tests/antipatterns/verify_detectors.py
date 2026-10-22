@@ -169,7 +169,38 @@ def actionlint(d):
         raise RuntimeError(f"actionlint failed: {(out or err).strip()[:300]}")
 
 
+def spectral(d, ruleset):
+    (d / ".spectral.yaml").write_text(f'extends: ["{ruleset}"]\n')
+    files = [str(p) for p in d.rglob("*.yaml") if p.name != ".spectral.yaml"]
+    out, err = run(["spectral", "lint", *files, "-f", "json", "--quiet"], d)
+    try:
+        return {x["code"] for x in json.loads(out or "[]")}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"spectral failed: {(out or err).strip()[:300]}")
+
+
+def oasdiff(d, file):
+    out, err = run(["oasdiff", "breaking", f"old/{file}", f"new/{file}", "--format", "json"], d)
+    try:
+        return {x["id"] for x in json.loads(out or "[]")}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"oasdiff failed: {(out or err).strip()[:300]}")
+
+
+def buf(d, mode):
+    if mode == "breaking":
+        for side in ("old", "new"):
+            (d / side / "buf.yaml").write_text("version: v2\n")
+        out, err = run(["buf", "breaking", "--against", "../old", "--error-format", "json"], d / "new")
+    else:
+        (d / "buf.yaml").write_text("version: v2\n")
+        out, err = run(["buf", "lint", "--error-format", "json"], d)
+    lines = [l for l in (out + err).splitlines() if l.strip().startswith("{")]
+    return {json.loads(l)["type"] for l in lines}
+
+
 VERSIONS = {
+    "spectral": ["spectral", "--version"], "buf": ["buf", "--version"],
     "zizmor": ["zizmor", "--version"], "actionlint": ["actionlint", "-version"], "shellcheck": ["shellcheck", "--version"],
     "go-vet": ["go", "version"], "staticcheck": ["staticcheck", "-version"], "ruff": ["ruff", "--version"],
     "bandit": ["bandit", "--version"], "semgrep": ["semgrep", "--version"], "checkov": ["checkov", "--version"],
@@ -204,6 +235,12 @@ def detect(rule, d):
         return zizmor(d, det.get("config"))
     if tool == "actionlint":
         return actionlint(d)
+    if tool == "spectral":
+        return spectral(d, det["config"])
+    if tool == "oasdiff":
+        return oasdiff(d, rule["test_cases"]["positive"][0]["file"])
+    if tool == "buf":
+        return buf(d, det["config"])
     return None  # no runner in the toolchain (e.g. golangci-lint): stays mapped
 
 
@@ -214,12 +251,20 @@ def tool_version(tool):
                 "eslint-plugin-react": "eslint-plugin-react", "eslint-plugin-react-hooks": "eslint-plugin-react-hooks",
                 "angular-eslint": "@angular-eslint/eslint-plugin", "eslint-plugin-rxjs-x": "eslint-plugin-rxjs-x"}[tool]
         return f"{name}@{pkg[name]} (eslint@{pkg['eslint']})"
+    if tool == "oasdiff":
+        return "oasdiff v1.34.1 (go install; the binary reports no release tag)"
     return version(VERSIONS[tool])
 
 
 def case_dir(case):
     base = ESLINT_HOME if case["file"].endswith((".ts", ".tsx", ".js")) else None
     d = Path(tempfile.mkdtemp(dir=base))
+    if "base" in case:  # two-version detectors compare old/<file> with new/<file>
+        for side, text in (("old", case["base"]), ("new", case["code"])):
+            target = d / side / case["file"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text)
+        return d
     target = d / case["file"]
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(case["code"])
