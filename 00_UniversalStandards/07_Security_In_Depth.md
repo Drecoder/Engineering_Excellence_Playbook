@@ -171,6 +171,7 @@ and PR — no model, no tokens, no reliance on memory. Policy ids appear in find
 | `SEC-009` | Audit logging is enabled in every account and project |
 | `SEC-010` | No secrets in code or config (secret scanning) |
 | `SEC-011` | No firewall or security-group rule allows `0.0.0.0/0` or `::/0` to management ports (SSH 22, RDP 3389) |
+| `SEC-012` | Container images run as a non-root user, pin their base image by digest, carry no secrets in layers or build arguments, and pass the image scan (`00_UniversalStandards/12_Containers.md`) |
 
 A failing `SEC-*` policy blocks the change. Exceptions are granted per unit in a reviewed policy
 file, with an owner and an expiry date.

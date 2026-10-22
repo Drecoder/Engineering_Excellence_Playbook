@@ -71,6 +71,34 @@ How services are shaped (rationale in `02_BackendZone/05_Application_Architectur
   same file, only for the rules matching what the unit touches. A span missing an attribute a check
   needs is unverifiable, never compliant.
 
+## Container Rules
+
+How work runs and how images are built (rationale in `00_UniversalStandards/12_Containers.md`).
+
+- **Everything runs in a pinned container.** Builds, tests, linters, scanners, benchmarks, and
+  verification run in a container image pinned by digest, the same image locally and in CI. A
+  result names the image it ran in; a result from host-installed tools is provisional.
+- **Pin completely:** base images by digest, packages by exact version with a lockfile, downloaded
+  binaries by checksum. Tools with conflicting dependencies get separate environments.
+- **Images are multi-stage, minimal, stateless, and non-root**, run one process in exec form, take
+  configuration from the environment, and are built once and promoted by digest.
+- **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
+
+## Anti-Pattern Rules
+
+One catalog, two consumers (rationale in `00_UniversalStandards/11_Anti_Pattern_Catalog.md`;
+catalog in `schemas/antipatterns.v1.json`).
+
+- **rig and the Reviewer read the same catalog** and normalize detector hits to
+  `antipattern_finding.v1` identically, proven by the shared conformance vectors.
+- **Map existing tools before writing checks.** A custom rig check exists only where no tool covers
+  the pattern, and is marked `custom`.
+- **Anti-pattern findings are advisory and never block** in v1. The CI gate's own thresholds are
+  unchanged by the catalog.
+- **Verified means run:** a mapping is `verified` only when the tool ran on the rule's positive and
+  negative cases in the pinned toolchain image. Promotion needs measured precision, never an
+  assumption.
+
 ## Observability Rules
 
 Telemetry ships with the first line of code, not after the feature works (see
