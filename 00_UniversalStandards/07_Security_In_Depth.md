@@ -185,7 +185,11 @@ it is critical. No noise below that line.
 | Format, lint errors, type check, compile (`terragrunt hcl fmt`, `tflint`, `tsc --noEmit`, `go vet`, Python compile) | Any failure (pass/fail, no severity) | The failure |
 | Dependency and image scanners (`npm audit`, `pip-audit`, `trivy`) | **CRITICAL** severity, or any vulnerability on the **CISA KEV** list regardless of severity | Only the blocking findings |
 | `govulncheck` | Any finding (it reports only vulnerabilities the code actually calls) | Only the blocking findings |
+| IaC and dependency scanners (`trivy fs`: vulnerabilities and misconfigurations) | **CRITICAL** severity, or a CISA KEV entry | Only the blocking findings |
 | IaC scanners (`checkov`) | The `SEC-*` check list (hard-fail); all other checks soft-fail | Only the blocking findings |
+| Static analysis (`semgrep`: language, secrets, and security-audit rulesets) | `ERROR` severity, Semgrep's top level | Only the blocking findings |
+| Python static analysis (`bandit`) | **HIGH** severity with **HIGH** confidence | Only the blocking findings |
+| Secret scanning (`gitleaks`, `SEC-010`) | Any finding | The finding, redacted |
 | `SEC-*` policies | Always, whatever the severity | The failing policy |
 
 - **KEV overrides severity.** A vulnerability that is being exploited in the wild blocks even when
@@ -197,6 +201,10 @@ it is critical. No noise below that line.
 - Tools without a severity filter (`pip-audit`) run through a thin wrapper that maps findings to
   severity (OSV data) and applies this table. Open-source `checkov` has no severities, so it
   gates on check IDs instead.
+- **Every pipeline runs every scanner that fits its stack.** The shared gate workflow runs them all;
+  a scanner that exists only in a local benchmark or on one engineer's machine is a gap, not a
+  control. Each `SEC-*` policy maps to the scanner check IDs that enforce it, kept next to the
+  gate's check list.
 - Exceptions follow the same reviewed policy file (owner and expiry); a KEV finding cannot be
   excepted past its CISA due date.
 
