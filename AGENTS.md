@@ -45,6 +45,27 @@ subset (IaC and Node/TypeScript). They narrow the general philosophy in
   never change their shape without updating all consumers in the same change, and never
   silently widen/narrow an exported type.
 
+## Application Architecture Rules
+
+How services are shaped (rationale in `02_BackendZone/05_Application_Architecture.md`).
+
+- **Start as a modular monolith.** Split a module into its own service only for a measured reason
+  (independent scaling, failure isolation, ownership, a different runtime or security boundary),
+  recorded in the change that splits it.
+- **Each service owns its data.** No other service reads or writes its store; data crosses
+  boundaries only through versioned APIs or events.
+- **No network call inside a database transaction.** Connection pools are sized with Little's Law
+  and bounded like any Governor.
+- **Schemas change by expand, then contract**, one reversible step per change; dropping the old
+  shape is irreversible and always human-approved.
+- **Events are published through a transactional outbox**; consumers record processed event IDs
+  (inbox) and are safe to replay. Multi-service workflows are sagas with compensating actions, never
+  distributed transactions.
+- **Every queue states its ordering and DLQ policy**, and carries trace context in message headers.
+- **Every remote call has a timeout**; retries only for idempotent operations, with backoff, jitter,
+  and idempotency keys for writes.
+- **Never cache an authorization decision** longer than the credential it rests on.
+
 ## Observability Rules
 
 Telemetry ships with the first line of code, not after the feature works (see
