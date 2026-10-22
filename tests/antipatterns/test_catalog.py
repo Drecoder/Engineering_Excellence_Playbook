@@ -65,7 +65,7 @@ class CatalogContract(unittest.TestCase):
                      ("hcl", "terraform"), ("hcl", "terragrunt"), ("docker", "dockerfile"),
                      ("ci", "github-actions"), ("contracts", "openapi"), ("contracts", "asyncapi"),
                      ("contracts", "protobuf"), ("database", "postgres"), ("database", "sql"),
-                     ("kubernetes", "manifests"), ("supply-chain", "scripts")]:
+                     ("kubernetes", "manifests"), ("supply-chain", "scripts"), ("shell", "bash")]:
             self.assertIn(need, covered, need)
 
     def test_terragrunt_checks_are_marked_custom(self):

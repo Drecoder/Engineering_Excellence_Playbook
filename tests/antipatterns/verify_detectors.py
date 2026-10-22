@@ -226,6 +226,15 @@ def kube_linter(d, check):
         raise RuntimeError(f"kube-linter failed: {(out or err).strip()[:300]}")
 
 
+def shellcheck(d):
+    files = [str(p) for p in d.rglob("*.sh")]
+    out, err = run(["shellcheck", "-f", "json", *files], d)
+    try:
+        return {f"SC{x['code']}" for x in json.loads(out or "[]")}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"shellcheck failed: {(out or err).strip()[:300]}")
+
+
 VERSIONS = {
     "squawk": ["squawk", "--version"], "sqlfluff": ["sqlfluff", "--version"],
     "spectral": ["spectral", "--version"], "buf": ["buf", "--version"],
@@ -275,6 +284,8 @@ def detect(rule, d):
         return sqlfluff(d, rid, det["config"])
     if tool == "kube-linter":
         return kube_linter(d, rid)
+    if tool == "shellcheck":
+        return shellcheck(d)
     return None  # no runner in the toolchain (e.g. golangci-lint): stays mapped
 
 

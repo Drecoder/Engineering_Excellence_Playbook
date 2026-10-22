@@ -4638,6 +4638,301 @@
       "benchmark": {
         "status": "unmeasured"
       }
+    },
+    {
+      "id": "AP-SH-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "shell",
+      "framework": "bash",
+      "title": "Unquoted variable expansion",
+      "description": "A variable is expanded without double quotes.",
+      "rationale": "The value is split on spaces and expanded as a glob; a path with a space or a * changes what the command does.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "shellcheck",
+        "rule_id": "SC2086",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ShellCheck - shell script analysis tool",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:591ef39de2c3fbc701134f9a0ae919b8b11c325df40c4708a529a8c9a552f825"
+        }
+      },
+      "remediation": "Quote every expansion: \"$var\".",
+      "references": [
+        "https://www.shellcheck.net/wiki/SC2086",
+        "03_InfrastructureZone/04_Shell_Scripts.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nrm -rf $TARGET_DIR/build\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nrm -rf \"${TARGET_DIR:?}/build\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SH-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "shell",
+      "framework": "bash",
+      "title": "Unquoted command substitution",
+      "description": "The output of $(...) is used without quotes.",
+      "rationale": "The output is word-split and globbed, so file names with spaces become several arguments.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "shellcheck",
+        "rule_id": "SC2046",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ShellCheck - shell script analysis tool",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:591ef39de2c3fbc701134f9a0ae919b8b11c325df40c4708a529a8c9a552f825"
+        }
+      },
+      "remediation": "Quote it, or read the output into an array with mapfile.",
+      "references": [
+        "https://www.shellcheck.net/wiki/SC2046",
+        "03_InfrastructureZone/04_Shell_Scripts.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nchmod 0644 $(find . -name \"*.conf\")\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nfind . -name \"*.conf\" -exec chmod 0644 {} +\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SH-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "shell",
+      "framework": "bash",
+      "title": "cd without handling failure",
+      "description": "cd is used without || exit (or set -e plus a check).",
+      "rationale": "If the directory is missing, the following commands run in the wrong directory, which is how cleanup scripts delete the wrong files.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "shellcheck",
+        "rule_id": "SC2164",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ShellCheck - shell script analysis tool",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:591ef39de2c3fbc701134f9a0ae919b8b11c325df40c4708a529a8c9a552f825"
+        }
+      },
+      "remediation": "Use cd dir || exit 1, or run the commands in a subshell that checks cd.",
+      "references": [
+        "https://www.shellcheck.net/wiki/SC2164",
+        "03_InfrastructureZone/04_Shell_Scripts.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\ncd /var/app/releases\nrm -rf old\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\ncd /var/app/releases || exit 1\nrm -rf old\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SH-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "shell",
+      "framework": "bash",
+      "title": "Declaration masks a command's exit status",
+      "description": "local or export assigns a command substitution in the same statement.",
+      "rationale": "The statement's status is that of local/export, so a failing command is not detected even under set -e.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "shellcheck",
+        "rule_id": "SC2155",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ShellCheck - shell script analysis tool",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:591ef39de2c3fbc701134f9a0ae919b8b11c325df40c4708a529a8c9a552f825"
+        }
+      },
+      "remediation": "Declare first, then assign on its own line.",
+      "references": [
+        "https://www.shellcheck.net/wiki/SC2155",
+        "03_InfrastructureZone/04_Shell_Scripts.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nf() {\n  local sha=$(git rev-parse HEAD)\n  echo \"$sha\"\n}\nf\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nf() {\n  local sha\n  sha=$(git rev-parse HEAD)\n  echo \"$sha\"\n}\nf\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SH-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "shell",
+      "framework": "bash",
+      "title": "Unquoted array or $@ expansion",
+      "description": "$@ or an array is expanded without quotes.",
+      "rationale": "Arguments containing spaces are split into several arguments when passed on.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "shellcheck",
+        "rule_id": "SC2068",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ShellCheck - shell script analysis tool",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:591ef39de2c3fbc701134f9a0ae919b8b11c325df40c4708a529a8c9a552f825"
+        }
+      },
+      "remediation": "Use \"$@\" and \"${array[@]}\".",
+      "references": [
+        "https://www.shellcheck.net/wiki/SC2068",
+        "03_InfrastructureZone/04_Shell_Scripts.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nrun() {\n  exec $@\n}\nrun \"$@\"\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nrun() {\n  exec \"$@\"\n}\nrun \"$@\"\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SH-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "shell",
+      "framework": "bash",
+      "title": "Script without strict mode",
+      "description": "A bash script does not start with set -euo pipefail (or document why not).",
+      "rationale": "Failed commands, unset variables, and failed pipeline stages are ignored and the script carries on.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.shell.missing_strict_mode",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Start every bash script with set -euo pipefail.",
+      "references": [
+        "03_InfrastructureZone/04_Shell_Scripts.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nterragrunt plan\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\nterragrunt plan\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
     }
   ]
 }
