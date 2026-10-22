@@ -60,7 +60,7 @@
           "additionalProperties": false,
           "required": ["tool", "rule_id", "custom", "mapping"],
           "properties": {
-            "tool": { "type": "string", "enum": ["go-vet", "staticcheck", "golangci-lint", "eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react", "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "ruff", "semgrep", "bandit", "tflint", "checkov", "trivy", "hadolint", "actionlint", "zizmor", "shellcheck", "spectral", "oasdiff", "buf", "squawk", "sqlfluff", "kube-linter", "pint", "rig"] },
+            "tool": { "type": "string", "enum": ["go-vet", "staticcheck", "golangci-lint", "eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react", "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "eslint-plugin-jsx-a11y", "ruff", "semgrep", "bandit", "tflint", "checkov", "trivy", "hadolint", "actionlint", "zizmor", "shellcheck", "spectral", "oasdiff", "buf", "squawk", "sqlfluff", "kube-linter", "pint", "rig"] },
             "rule_id": { "type": "string", "minLength": 1, "description": "The detector's own rule ID, exactly as the tool reports it." },
             "config": { "type": "string", "description": "Ruleset or plugin config the rule ships in, when the tool needs one (e.g. a Semgrep registry ruleset)." },
             "custom": { "type": "boolean", "description": "True only for checks rig implements itself (tool rig); false for an existing tool's rule." },

@@ -29,7 +29,7 @@ ESLINT_HOME = Path(os.environ.get("ESLINT_WORKDIR", "/opt/eslint/work"))
 TIMEOUT = 300
 
 ESLINT_TOOLS = {"eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react",
-                "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x"}
+                "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "eslint-plugin-jsx-a11y"}
 
 ESLINT_CONFIG = """import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
@@ -37,14 +37,25 @@ import hooks from 'eslint-plugin-react-hooks';
 import n from 'eslint-plugin-n';
 import angular from '@angular-eslint/eslint-plugin';
 import rxjsX from 'eslint-plugin-rxjs-x';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 export default [{
   files: ['**/*.ts', '**/*.tsx', '**/*.js'],
   languageOptions: {
     parser: tseslint.parser,
     parserOptions: { projectService: { allowDefaultProject: ['*.js'] }, tsconfigRootDir: import.meta.dirname, ecmaFeatures: { jsx: true } },
   },
-  plugins: { '@typescript-eslint': tseslint.plugin, react, 'react-hooks': hooks, n, '@angular-eslint': angular, 'rxjs-x': rxjsX },
+  plugins: { '@typescript-eslint': tseslint.plugin, react, 'react-hooks': hooks, n, '@angular-eslint': angular, 'rxjs-x': rxjsX, 'jsx-a11y': jsxA11y },
   settings: { react: { version: '19.0' } },
+  rules: { 'RULE': 'error' },
+}];
+"""
+
+ESLINT_TEMPLATE_CONFIG = """import templateParser from '@angular-eslint/template-parser';
+import template from '@angular-eslint/eslint-plugin-template';
+export default [{
+  files: ['**/*.html'],
+  languageOptions: { parser: templateParser },
+  plugins: { '@angular-eslint/template': template },
   rules: { 'RULE': 'error' },
 }];
 """
@@ -89,7 +100,8 @@ def staticcheck(d):
 
 
 def eslint(d, rule):
-    (d / "eslint.config.mjs").write_text(ESLINT_CONFIG.replace("RULE", rule))
+    template = rule.startswith("@angular-eslint/template/")
+    (d / "eslint.config.mjs").write_text((ESLINT_TEMPLATE_CONFIG if template else ESLINT_CONFIG).replace("RULE", rule))
     (d / "tsconfig.json").write_text(json.dumps(TSCONFIG))
     out, err = run(["eslint", "--format", "json", "--no-warn-ignored", "."], d)
     try:
@@ -307,7 +319,8 @@ def tool_version(tool):
         pkg = json.loads((Path("/opt/eslint/package.json")).read_text())["dependencies"]
         name = {"eslint": "eslint", "typescript-eslint": "typescript-eslint", "eslint-plugin-n": "eslint-plugin-n",
                 "eslint-plugin-react": "eslint-plugin-react", "eslint-plugin-react-hooks": "eslint-plugin-react-hooks",
-                "angular-eslint": "@angular-eslint/eslint-plugin", "eslint-plugin-rxjs-x": "eslint-plugin-rxjs-x"}[tool]
+                "angular-eslint": "@angular-eslint/eslint-plugin", "eslint-plugin-rxjs-x": "eslint-plugin-rxjs-x",
+                "eslint-plugin-jsx-a11y": "eslint-plugin-jsx-a11y"}[tool]
         return f"{name}@{pkg[name]} (eslint@{pkg['eslint']})"
     if tool == "oasdiff":
         return "oasdiff v1.34.1 (go install; the binary reports no release tag)"
@@ -317,7 +330,7 @@ def tool_version(tool):
 
 
 def case_dir(case):
-    base = ESLINT_HOME if case["file"].endswith((".ts", ".tsx", ".js")) else None
+    base = ESLINT_HOME if case["file"].endswith((".ts", ".tsx", ".js", ".html")) else None
     d = Path(tempfile.mkdtemp(dir=base))
     if "base" in case:  # two-version detectors compare old/<file> with new/<file>
         for side, text in (("old", case["base"]), ("new", case["code"])):

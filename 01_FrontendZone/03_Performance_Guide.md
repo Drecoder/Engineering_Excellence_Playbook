@@ -27,6 +27,7 @@ I design frontend performance around **user experience and platform flow**, not 
 | **Monitoring** | Log slow renders, API latency, component load times |
 | **Bundle Size** | Remove unused dependencies, tree-shake, compress assets |
 | **Profiling** | Use React Profiler for bottlenecks |
+| **Budgets** | Every app declares performance budgets (Core Web Vitals: LCP, INP, CLS; and JavaScript bundle size) checked by Lighthouse CI on the built app in the pipeline. A budget breach fails the change like a failing test. Budgets are measured on a running build, so they are pipeline checks, not catalog rules |
 
 ---
 

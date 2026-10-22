@@ -31,7 +31,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Call defer cancel() immediately after creating the context.",
@@ -83,7 +83,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Pass a pointer to the struct, or keep the lock behind a pointer.",
@@ -132,7 +132,7 @@
           "tool_version": "go version go1.26.10 linux/amd64",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Check err first, then defer resp.Body.Close().",
@@ -181,7 +181,7 @@
           "tool_version": "staticcheck 2026.2.2 (0.8.2)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Pass context.TODO() or, better, the caller's context.",
@@ -276,7 +276,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "await it, return it, or attach an explicit .catch with handling.",
@@ -325,7 +325,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Wrap the call so the promise is awaited and its rejection handled.",
@@ -374,7 +374,7 @@
           "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use unknown and narrow it, or a precise type.",
@@ -424,7 +424,7 @@
           "tool_version": "eslint@9.39.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Parse data with JSON.parse or a schema validator; never execute strings.",
@@ -473,7 +473,7 @@
           "tool_version": "eslint-plugin-n@18.5.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use the fs/promises API and await it.",
@@ -522,7 +522,7 @@
           "tool_version": "1.182.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "p/security-audit"
       },
@@ -618,7 +618,7 @@
           "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Call hooks unconditionally at the top level of the component; branch inside the hook.",
@@ -667,7 +667,7 @@
           "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "List every reactive value the callback reads, or move it inside the effect.",
@@ -716,7 +716,7 @@
           "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use a stable ID from the data as the key.",
@@ -765,7 +765,7 @@
           "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Render text as children; if HTML is required, sanitize it with a vetted library first.",
@@ -814,7 +814,7 @@
           "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Move the shared logic into a private method and call that.",
@@ -863,7 +863,7 @@
           "tool_version": "eslint-plugin-rxjs-x@0.9.6 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use the async pipe, takeUntilDestroyed(), or keep and unsubscribe the subscription.",
@@ -912,7 +912,7 @@
           "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Give the output a distinct, domain-specific name.",
@@ -961,7 +961,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Pass an argument list without shell=True; validate inputs.",
@@ -1010,7 +1010,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Catch the specific exception and handle or log it with context; re-raise otherwise.",
@@ -1059,7 +1059,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use ast.literal_eval for literals or a real parser.",
@@ -1108,7 +1108,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Always pass timeout= (connect and read), shorter than the caller's deadline.",
@@ -1160,7 +1160,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use yaml.safe_load.",
@@ -1209,7 +1209,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Default to None and create the value inside the function.",
@@ -1306,7 +1306,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use ORM expressions, or parameterized raw queries with params=.",
@@ -1355,7 +1355,7 @@
           "tool_version": "bandit 1.9.4",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use format_html with arguments, which escapes them.",
@@ -1404,7 +1404,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use blank=True with default ''; reserve null for non-string fields.",
@@ -1498,7 +1498,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use an async client (httpx.AsyncClient) or run the call in a thread pool.",
@@ -1547,7 +1547,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use await asyncio.sleep().",
@@ -1596,7 +1596,7 @@
           "tool_version": "ruff 0.17.2",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Declare Annotated[T, Depends(dep)].",
@@ -1645,7 +1645,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Restrict the source to the IAP range or a bastion; prefer OS Login through IAP.",
@@ -1700,7 +1700,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Grant predefined or custom roles scoped to the task.",
@@ -1753,7 +1753,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Remove public members; serve public content through a CDN or signed URLs.",
@@ -1806,7 +1806,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Pin git sources to a full commit SHA (ref=<sha>).",
@@ -1855,7 +1855,7 @@
           "tool_version": "Version: 0.71.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Restrict egress destinations and ports to what the workload needs; record exceptions with an owner and expiry.",
@@ -1904,7 +1904,7 @@
           "tool_version": "TFLint version 0.65.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Declare every provider in required_providers with a version constraint.",
@@ -2180,7 +2180,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Pin the base image to a version tag and its digest.",
@@ -2233,7 +2233,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "End with a non-root USER (a numeric UID); do privileged setup in an earlier stage.",
@@ -2286,7 +2286,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Create a user and set USER to its UID before CMD.",
@@ -2339,7 +2339,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use COPY for files and directories.",
@@ -2388,7 +2388,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Pin package versions, or install from a pinned base image and rebuild deliberately.",
@@ -2437,7 +2437,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Set SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"] before piped RUN instructions.",
@@ -2486,7 +2486,7 @@
           "tool_version": "Haskell Dockerfile Linter 2.15.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use the JSON (exec) form: CMD [\"python\", \"app.py\"].",
@@ -2536,7 +2536,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Declare a HEALTHCHECK, or HEALTHCHECK NONE when the orchestrator probes the service itself.",
@@ -2586,7 +2586,7 @@
           "tool_version": "Version: 0.71.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use build secrets (RUN --mount=type=secret) at build time and a secret manager at run time.",
@@ -2640,7 +2640,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "persona=regular"
       },
@@ -2694,7 +2694,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "persona=regular"
       },
@@ -2745,7 +2745,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "persona=regular"
       },
@@ -2796,7 +2796,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "persona=regular"
       },
@@ -2847,7 +2847,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "persona=regular"
       },
@@ -2898,7 +2898,7 @@
           "tool_version": "zizmor 1.31.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "persona=regular"
       },
@@ -2949,7 +2949,7 @@
           "tool_version": "v1.7.12",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Reference only defined step IDs and outputs; actionlint type-checks the expression.",
@@ -2998,7 +2998,7 @@
           "tool_version": "v1.7.12",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Quote expansions and fix the ShellCheck finding; actionlint runs ShellCheck on every run: block.",
@@ -3048,7 +3048,7 @@
           "tool_version": "6.17.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "spectral:oas"
       },
@@ -3099,7 +3099,7 @@
           "tool_version": "6.17.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "spectral:oas"
       },
@@ -3150,7 +3150,7 @@
           "tool_version": "6.17.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "spectral:oas"
       },
@@ -3201,7 +3201,7 @@
           "tool_version": "oasdiff v1.34.1 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Keep the field (deprecate it) and add a new API version for the new shape: expand, then contract.",
@@ -3258,7 +3258,7 @@
           "tool_version": "oasdiff v1.34.1 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Keep the field optional with a server-side default, or require it only in a new API version.",
@@ -3313,7 +3313,7 @@
           "tool_version": "1.75.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "breaking"
       },
@@ -3369,7 +3369,7 @@
           "tool_version": "1.75.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "breaking"
       },
@@ -3425,7 +3425,7 @@
           "tool_version": "1.75.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "lint"
       },
@@ -3479,7 +3479,7 @@
           "tool_version": "6.17.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "spectral:asyncapi"
       },
@@ -3530,7 +3530,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Add the column nullable (expand), backfill in batches, then add the constraint in a later change.",
@@ -3583,7 +3583,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Stop writing, switch reads, confirm a backup, then drop in its own human-approved change.",
@@ -3636,7 +3636,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Add the new column, dual-write, backfill, switch reads, then drop the old one: expand, then contract.",
@@ -3689,7 +3689,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Add a column with the new type, dual-write and backfill, then switch reads.",
@@ -3742,7 +3742,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use CREATE INDEX CONCURRENTLY, outside a transaction.",
@@ -3795,7 +3795,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Add the constraint NOT VALID, then VALIDATE CONSTRAINT in a separate step.",
@@ -3848,7 +3848,7 @@
           "tool_version": "squawk 2.70.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "SET lock_timeout at the start of the migration and retry on timeout.",
@@ -3901,7 +3901,7 @@
           "tool_version": "sqlfluff, version 4.4.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "dialect=postgres"
       },
@@ -3951,7 +3951,7 @@
           "tool_version": "sqlfluff, version 4.4.0",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "dialect=postgres"
       },
@@ -4001,7 +4001,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Set runAsNonRoot: true and a numeric runAsUser.",
@@ -4054,7 +4054,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Remove privileged; grant only the specific capability the workload needs, through a reviewed exception.",
@@ -4107,7 +4107,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Remove hostNetwork; expose the workload through a Service.",
@@ -4160,7 +4160,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Deploy the image by the digest the pipeline built and promoted.",
@@ -4213,7 +4213,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Set memory requests and limits from measured usage.",
@@ -4266,7 +4266,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Set readOnlyRootFilesystem: true; mount an emptyDir for scratch space.",
@@ -4319,7 +4319,7 @@
           "tool_version": "kube-linter v0.8.3 (go install; the binary reports no release tag)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Set allowPrivilegeEscalation: false.",
@@ -4372,7 +4372,7 @@
           "tool_version": "3.3.29",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Add a readinessProbe that checks the service can actually serve.",
@@ -4422,7 +4422,7 @@
           "tool_version": "1.182.1",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "p/default"
       },
@@ -4659,7 +4659,7 @@
           "tool_version": "ShellCheck - shell script analysis tool",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Quote every expansion: \"$var\".",
@@ -4709,7 +4709,7 @@
           "tool_version": "ShellCheck - shell script analysis tool",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Quote it, or read the output into an array with mapfile.",
@@ -4759,7 +4759,7 @@
           "tool_version": "ShellCheck - shell script analysis tool",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use cd dir || exit 1, or run the commands in a subshell that checks cd.",
@@ -4809,7 +4809,7 @@
           "tool_version": "ShellCheck - shell script analysis tool",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Declare first, then assign on its own line.",
@@ -4859,7 +4859,7 @@
           "tool_version": "ShellCheck - shell script analysis tool",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         }
       },
       "remediation": "Use \"$@\" and \"${array[@]}\".",
@@ -4954,7 +4954,7 @@
           "tool_version": "0.89.4 (revision: 08fc34d78afdc71217263b50437b79d18063c6c8)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "metrics/promql/pint.hcl"
       },
@@ -5005,7 +5005,7 @@
           "tool_version": "0.89.4 (revision: 08fc34d78afdc71217263b50437b79d18063c6c8)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "metrics/promql/pint.hcl"
       },
@@ -5056,7 +5056,7 @@
           "tool_version": "0.89.4 (revision: 08fc34d78afdc71217263b50437b79d18063c6c8)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "metrics/promql/pint.hcl"
       },
@@ -5107,7 +5107,7 @@
           "tool_version": "0.89.4 (revision: 08fc34d78afdc71217263b50437b79d18063c6c8)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "metrics/promql/pint.hcl"
       },
@@ -5158,7 +5158,7 @@
           "tool_version": "0.89.4 (revision: 08fc34d78afdc71217263b50437b79d18063c6c8)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "metrics/promql/pint.hcl"
       },
@@ -5209,7 +5209,7 @@
           "tool_version": "0.89.4 (revision: 08fc34d78afdc71217263b50437b79d18063c6c8)",
           "verified_on": "2026-10-22",
           "verified_in": "local",
-          "toolchain": "playbook-antipattern-toolchain@sha256:20ea94ef91285fe9472930b54303776a4da075ab91c0288f1987754dcb5dec18"
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
         },
         "config": "metrics/promql/pint.hcl"
       },
@@ -5230,6 +5230,363 @@
           {
             "file": "alerts/api.rules.yml",
             "code": "groups:\n  - name: api\n    rules:\n      - record: job:http_requests:rate5m\n        expr: sum by (job) (rate(http_requests_total[5m]))\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Image without alt text",
+      "description": "An <img> has no alt attribute.",
+      "rationale": "Screen-reader users get nothing, or the file name read aloud (WCAG 1.1.1).",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "eslint-plugin-jsx-a11y",
+        "rule_id": "jsx-a11y/alt-text",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-jsx-a11y@6.10.2 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Give meaningful images a description and decorative ones alt=\"\".",
+      "references": [
+        "https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/alt-text.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "export function Logo() {\n  return <img src=\"/logo.svg\" />;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "export function Logo() {\n  return <img src=\"/logo.svg\" alt=\"Acme\" />;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Click handler without keyboard support",
+      "description": "A non-interactive element has onClick but no keyboard handler.",
+      "rationale": "Keyboard users cannot trigger the action (WCAG 2.1.1).",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "eslint-plugin-jsx-a11y",
+        "rule_id": "jsx-a11y/click-events-have-key-events",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-jsx-a11y@6.10.2 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Use a <button>, or add a key handler, a role, and tabIndex.",
+      "references": [
+        "https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/click-events-have-key-events.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "export function Row({ open }: { open: () => void }) {\n  return <div onClick={open}>Details</div>;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "export function Row({ open }: { open: () => void }) {\n  return <button type=\"button\" onClick={open}>Details</button>;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-007",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Form label not tied to its control",
+      "description": "A <label> is not associated with an input.",
+      "rationale": "Screen readers announce an unnamed field, and clicking the label does not focus it (WCAG 1.3.1).",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "eslint-plugin-jsx-a11y",
+        "rule_id": "jsx-a11y/label-has-associated-control",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-jsx-a11y@6.10.2 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Nest the input in the label, or use htmlFor with the input's id.",
+      "references": [
+        "https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/label-has-associated-control.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "export function Email() {\n  return (\n    <div>\n      <label>Email</label>\n      <input type=\"email\" />\n    </div>\n  );\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "export function Email() {\n  return (\n    <label>\n      Email\n      <input type=\"email\" />\n    </label>\n  );\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-008",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Link used as a button",
+      "description": "An <a> has no real href (href=\"#\" or javascript:) and acts as a button.",
+      "rationale": "It is announced as a link, breaks open-in-new-tab, and is not keyboard-activated like a button.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "eslint-plugin-jsx-a11y",
+        "rule_id": "jsx-a11y/anchor-is-valid",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-jsx-a11y@6.10.2 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Use <button> for actions and <a href> for navigation.",
+      "references": [
+        "https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/main/docs/rules/anchor-is-valid.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "export function Save({ save }: { save: () => void }) {\n  return <a href=\"#\" onClick={save}>Save</a>;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "export function Save({ save }: { save: () => void }) {\n  return <button type=\"button\" onClick={save}>Save</button>;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-ANGULAR-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "angular",
+      "title": "Image without alt text in a template",
+      "description": "An <img> in an Angular template has no alt attribute.",
+      "rationale": "Screen-reader users get nothing (WCAG 1.1.1).",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "angular-eslint",
+        "rule_id": "@angular-eslint/template/alt-text",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Give meaningful images a description and decorative ones alt=\"\".",
+      "references": [
+        "https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/alt-text.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.component.html",
+            "code": "<img src=\"logo.svg\">\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.component.html",
+            "code": "<img src=\"logo.svg\" alt=\"Acme\">\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-ANGULAR-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "angular",
+      "title": "Click binding without keyboard support",
+      "description": "A non-interactive element has (click) but no key binding.",
+      "rationale": "Keyboard users cannot trigger the action (WCAG 2.1.1).",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "angular-eslint",
+        "rule_id": "@angular-eslint/template/click-events-have-key-events",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Use a <button>, or add (keyup.enter), a role, and tabindex.",
+      "references": [
+        "https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/click-events-have-key-events.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.component.html",
+            "code": "<div (click)=\"open()\">Details</div>\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.component.html",
+            "code": "<button type=\"button\" (click)=\"open()\">Details</button>\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-ANGULAR-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "angular",
+      "title": "Form label not tied to its control in a template",
+      "description": "A <label> in a template is not associated with a control.",
+      "rationale": "Screen readers announce an unnamed field (WCAG 1.3.1).",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "angular-eslint",
+        "rule_id": "@angular-eslint/template/label-has-associated-control",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:aa614952e1ac7537fc3f1e863e484b0cdccd9838b47a80d0b878d4fa8f626ea3"
+        }
+      },
+      "remediation": "Nest the control in the label, or use for with the control's id.",
+      "references": [
+        "https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin-template/docs/rules/label-has-associated-control.md",
+        "https://www.w3.org/TR/WCAG22/",
+        "01_FrontendZone/02_Clean_Code_Checklist.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.component.html",
+            "code": "<label>Email</label>\n<input type=\"email\">\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.component.html",
+            "code": "<label>Email <input type=\"email\"></label>\n"
           }
         ]
       },
