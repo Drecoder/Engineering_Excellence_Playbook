@@ -84,6 +84,18 @@ How work runs and how images are built (rationale in `00_UniversalStandards/12_C
   configuration from the environment, and are built once and promoted by digest.
 - **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
 
+## Supply Chain Rules
+
+Know what goes into every artifact and prove where it came from (rationale in
+`00_UniversalStandards/13_Supply_Chain.md`).
+
+- **Pin every input:** packages by exact version in a committed lockfile, base images by digest,
+  downloads by checksum or signature, actions by commit SHA. Update pins through gated pull
+  requests, never through floating ranges.
+- **Every released artifact has an SBOM** and a keyless signature from the pipeline's identity,
+  with provenance; deploys admit only artifacts whose signature verifies.
+- **Licenses are checked against a reviewed policy;** a denied license blocks.
+
 ## Anti-Pattern Rules
 
 One catalog, two consumers (rationale in `00_UniversalStandards/11_Anti_Pattern_Catalog.md`;

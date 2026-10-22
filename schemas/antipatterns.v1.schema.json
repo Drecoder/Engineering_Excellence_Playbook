@@ -28,7 +28,7 @@
   },
   "$defs": {
     "semver": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
-    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB|K8S)-[0-9]{3}$" },
+    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB|K8S|SC)-[0-9]{3}$" },
     "case": {
       "type": "object",
       "additionalProperties": false,
@@ -48,8 +48,8 @@
         "id": { "$ref": "#/$defs/rule_id" },
         "revision": { "type": "integer", "minimum": 1, "description": "Incremented when the rule's meaning or detector mapping changes. The ID never changes." },
         "added_in": { "$ref": "#/$defs/semver" },
-        "stack": { "type": "string", "enum": ["go", "typescript", "python", "hcl", "docker", "ci", "contracts", "database", "kubernetes"] },
-        "framework": { "type": "string", "enum": ["none", "nodejs", "react", "angular", "django", "fastapi", "terraform", "terragrunt", "dockerfile", "github-actions", "openapi", "asyncapi", "protobuf", "postgres", "sql", "manifests"] },
+        "stack": { "type": "string", "enum": ["go", "typescript", "python", "hcl", "docker", "ci", "contracts", "database", "kubernetes", "supply-chain"] },
+        "framework": { "type": "string", "enum": ["none", "nodejs", "react", "angular", "django", "fastapi", "terraform", "terragrunt", "dockerfile", "github-actions", "openapi", "asyncapi", "protobuf", "postgres", "sql", "manifests", "scripts", "python"] },
         "title": { "type": "string", "minLength": 1, "maxLength": 90 },
         "description": { "type": "string", "minLength": 1 },
         "rationale": { "type": "string", "minLength": 1 },

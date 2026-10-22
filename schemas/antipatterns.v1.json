@@ -4401,6 +4401,243 @@
       "benchmark": {
         "status": "unmeasured"
       }
+    },
+    {
+      "id": "AP-SC-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "supply-chain",
+      "framework": "scripts",
+      "title": "Remote script piped into a shell",
+      "description": "A script downloads code and pipes it straight into sh or bash.",
+      "rationale": "Whatever the server returns runs with the script's privileges, unpinned and unverified; a compromised or spoofed host owns the machine.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "semgrep",
+        "rule_id": "bash.curl.security.curl-pipe-bash.curl-pipe-bash",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "1.182.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:591ef39de2c3fbc701134f9a0ae919b8b11c325df40c4708a529a8c9a552f825"
+        },
+        "config": "p/default"
+      },
+      "remediation": "Download a pinned version to a file, verify its checksum or signature, then run it.",
+      "references": [
+        "https://semgrep.dev/r/bash.curl.security.curl-pipe-bash.curl-pipe-bash",
+        "00_UniversalStandards/13_Supply_Chain.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "install.sh",
+            "code": "#!/bin/bash\ncurl -fsSL https://example.com/install.sh | bash\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "install.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\ncurl -fsSLo /tmp/tool.tgz https://example.com/tool-1.2.3.tgz\necho \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef  /tmp/tool.tgz\" | sha256sum -c -\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SC-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "supply-chain",
+      "framework": "python",
+      "title": "Unpinned Python requirement",
+      "description": "A requirements file lists a package without an exact version (==).",
+      "rationale": "Each install can resolve a different version, including a newly published malicious one.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.supply.unpinned_python_requirement",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Pin exact versions (with hashes for deployables) and update them deliberately.",
+      "references": [
+        "00_UniversalStandards/13_Supply_Chain.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "requirements.txt",
+            "code": "requests\nflask>=2.0\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "requirements.txt",
+            "code": "requests==2.32.5\nflask==3.1.2\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SC-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "supply-chain",
+      "framework": "nodejs",
+      "title": "Node dependencies without a committed lockfile",
+      "description": "package.json declares dependencies but no package-lock.json (or equivalent) is committed.",
+      "rationale": "Every install resolves the dependency tree again; builds are not reproducible and npm ci cannot be used.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.supply.missing_lockfile",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Commit the lockfile and install with npm ci.",
+      "references": [
+        "00_UniversalStandards/13_Supply_Chain.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "package.json",
+            "code": "{\n  \"name\": \"app\",\n  \"dependencies\": { \"express\": \"^5.1.0\" }\n}\n",
+            "note": "No package-lock.json next to it"
+          }
+        ],
+        "negative": [
+          {
+            "file": "package.json",
+            "code": "{\n  \"name\": \"app\",\n  \"dependencies\": { \"express\": \"5.1.0\" }\n}\n",
+            "note": "Committed with package-lock.json"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-SC-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "supply-chain",
+      "framework": "dockerfile",
+      "title": "Base image not pinned by digest",
+      "description": "FROM names a tag without @sha256: digest (hadolint DL3007 catches only latest).",
+      "rationale": "A tag can be moved to a different image; the build changes without a change in the Dockerfile.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.supply.image_without_digest",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Pin FROM to tag@sha256:digest and update it deliberately.",
+      "references": [
+        "00_UniversalStandards/13_Supply_Chain.md",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-012"
+      ]
+    },
+    {
+      "id": "AP-SC-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "supply-chain",
+      "framework": "scripts",
+      "title": "Download used without verifying a checksum",
+      "description": "A script or Dockerfile downloads a binary or archive and uses it without checking a checksum or signature.",
+      "rationale": "A tampered or truncated download is installed silently.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.supply.unverified_download",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Pin the version and verify the published SHA-256 (or a signature) before use.",
+      "references": [
+        "00_UniversalStandards/13_Supply_Chain.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "install.sh",
+            "code": "#!/bin/bash\ncurl -fsSLo /usr/local/bin/tool https://example.com/tool-1.2.3\nchmod +x /usr/local/bin/tool\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "install.sh",
+            "code": "#!/bin/bash\nset -euo pipefail\ncurl -fsSLo /tmp/tool https://example.com/tool-1.2.3\necho \"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef  /tmp/tool\" | sha256sum -c -\ninstall -m 0755 /tmp/tool /usr/local/bin/tool\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
     }
   ]
 }
