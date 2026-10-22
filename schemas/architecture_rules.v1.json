@@ -27,7 +27,7 @@
       "inbox.check": "The consumer's lookup and insert of the event ID in its inbox table."
     },
     "platform_attributes": {
-      "app.timeout_ms": "On every CLIENT span: the timeout configured for the call, in milliseconds.",
+      "app.timeout_ms": "On every CLIENT span: the timeout configured for the call, in milliseconds; 0 when none is set. On a SERVER span: the request's deadline.",
       "app.retry.attempt": "On every CLIENT span: 0 for the first attempt, then 1, 2, ...",
       "app.idempotency_key.present": "On every non-idempotent CLIENT span: true when the request carries an idempotency key.",
       "app.db.isolation_level": "On db.transaction: the isolation level the code chose.",
@@ -208,7 +208,7 @@
       },
       "trace_check": {
         "stage": "specified",
-        "detects": "A PRODUCER span (messaging.operation.type publish or send) whose trace root is not an outbox.relay span.",
+        "detects": "A PRODUCER span (messaging.operation.type publish or send) with no outbox.relay span among its ancestors. A broken ancestor chain is unverifiable.",
         "requires": ["messaging.operation.type", "outbox.relay"]
       },
       "lens": { "ask": "Is every event this change emits written in the same transaction as the state change it announces?" }
@@ -306,7 +306,7 @@
       },
       "trace_check": {
         "stage": "specified",
-        "detects": "A CLIENT span without app.timeout_ms, a CLIENT span that outlasted its app.timeout_ms, or a CLIENT span whose app.timeout_ms is not shorter than its nearest ancestor's.",
+        "detects": "A non-database CLIENT span whose app.timeout_ms is 0 (no timeout), that outlasted its app.timeout_ms by more than 50 ms, or whose app.timeout_ms is not shorter than its nearest ancestor's. A span without app.timeout_ms is unverifiable; the static check catches clients built without a timeout.",
         "requires": ["app.timeout_ms"]
       },
       "lens": { "ask": "Do the timeouts on this path add up to less than the end-to-end deadline, including retries?" }
