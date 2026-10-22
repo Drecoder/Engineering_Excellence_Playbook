@@ -235,7 +235,18 @@ def shellcheck(d):
         raise RuntimeError(f"shellcheck failed: {(out or err).strip()[:300]}")
 
 
+def pint(d, config):
+    """pint has no JSON output for lint; each problem line ends with (check/name)."""
+    files = [str(p) for p in d.rglob("*.yml")]
+    out, err = run(["pint", "--offline", "--no-color", "--config", str(ROOT / config), "lint", *files], d)
+    text = out + err
+    if "Fatal" in text and "problem" not in text.lower():
+        raise RuntimeError(f"pint failed: {text.strip()[:300]}")
+    return set(re.findall(r"^(?:Bug|Warning|Information|Fatal): .*\(([a-z_]+/[a-z_]+)\)$", text, re.M))
+
+
 VERSIONS = {
+    "pint": ["pint", "version"],
     "squawk": ["squawk", "--version"], "sqlfluff": ["sqlfluff", "--version"],
     "spectral": ["spectral", "--version"], "buf": ["buf", "--version"],
     "zizmor": ["zizmor", "--version"], "actionlint": ["actionlint", "-version"], "shellcheck": ["shellcheck", "--version"],
@@ -286,6 +297,8 @@ def detect(rule, d):
         return kube_linter(d, rid)
     if tool == "shellcheck":
         return shellcheck(d)
+    if tool == "pint":
+        return pint(d, det["config"])
     return None  # no runner in the toolchain (e.g. golangci-lint): stays mapped
 
 

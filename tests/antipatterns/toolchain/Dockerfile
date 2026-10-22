@@ -28,6 +28,9 @@ ARG SHELLCHECK_VERSION=0.11.0
 ARG SHELLCHECK_SHA256=8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
 ARG SQUAWK_VERSION=2.70.0
 ARG SQUAWK_SHA256=836ba2ab0c0ec30ae02c9f2cec065b341ff853765ceaa3965c22109c2f53eb1c
+# pint needs a newer Go than the pinned toolchain, so it comes from its release binary.
+ARG PINT_VERSION=0.89.4
+ARG PINT_SHA256=5077e58cc66e40dc60991a3604ee62752b7377a5251cd78745fbe657d5a5ebc9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -52,7 +55,11 @@ RUN curl -sSfLo /tmp/trivy.tgz "https://github.com/aquasecurity/trivy/releases/d
     && curl -sSfLo /usr/local/bin/squawk "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
     && echo "${SQUAWK_SHA256}  /usr/local/bin/squawk" | sha256sum -c - \
     && chmod 0755 /usr/local/bin/squawk \
-    && rm -rf /tmp/trivy.tgz /tmp/tflint.zip /tmp/sc.txz /tmp/shellcheck-*
+    && curl -sSfLo /tmp/pint.tgz "https://github.com/cloudflare/pint/releases/download/v${PINT_VERSION}/pint-${PINT_VERSION}-linux-amd64.tar.gz" \
+    && echo "${PINT_SHA256}  /tmp/pint.tgz" | sha256sum -c - \
+    && mkdir -p /tmp/pint && tar -xzf /tmp/pint.tgz -C /tmp/pint \
+    && find /tmp/pint -type f -name 'pint*' -perm -u+x -exec mv {} /usr/local/bin/pint \; \
+    && rm -rf /tmp/trivy.tgz /tmp/tflint.zip /tmp/sc.txz /tmp/shellcheck-* /tmp/pint.tgz /tmp/pint
 
 COPY requirements.txt /tmp/requirements.txt
 # Each tool with a large dependency tree gets its own virtualenv, so their requirements can never
