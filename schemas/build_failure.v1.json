@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "build_failure.v1",
+  "title": "Build Failure",
+  "description": "rig's normalized record of a failed build or test step (the reject lane). Parsed and classified deterministically. The class decides routing before any model sees the failure: code and config go to the Builder; infra goes to a human; flaky gets one rerun; mechanical gets a deterministic auto-fix. An unrecognized failure is class unknown and is routed to a human (fail closed).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "failure_id", "repo", "sha", "tool", "exit_code", "class", "fingerprint", "errors"],
+  "properties": {
+    "schema_version": { "const": "build_failure.v1" },
+    "failure_id": { "type": "string" },
+    "repo": { "type": "string" },
+    "sha": { "type": "string" },
+    "run_id": { "type": "string", "description": "CI run that produced the failure." },
+    "tool": { "type": "string", "enum": ["tsc", "vitest", "go_build", "go_test", "pytest", "terragrunt", "tflint", "checkov", "runner", "other"] },
+    "exit_code": { "type": "integer" },
+    "class": { "type": "string", "enum": ["code", "config", "infra", "flaky", "mechanical", "unknown"] },
+    "fingerprint": { "type": "string", "description": "Stable hash of the normalized errors; the same fingerprint seen again marks a recurring failure." },
+    "recurrence": { "type": "integer", "minimum": 0, "description": "Times this fingerprint was seen on this change before." },
+    "errors": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["message"],
+        "properties": {
+          "path": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "code": { "type": "string", "description": "Tool error code, e.g. TS2322." },
+          "message": { "type": "string", "maxLength": 500, "description": "Redacted excerpt." },
+          "symbol": { "type": "string", "description": "symbol_index entry the error localizes to, if found." }
+        }
+      }
+    },
+    "truncated": { "type": "boolean", "description": "More errors existed than were kept." },
+    "redacted": { "type": "boolean" }
+  }
+}
