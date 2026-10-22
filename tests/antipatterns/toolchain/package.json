@@ -1,0 +1,20 @@
+{
+  "name": "antipattern-toolchain",
+  "private": true,
+  "description": "Pinned ESLint stack for verifying antipatterns.v1 mappings inside the toolchain image.",
+  "dependencies": {
+    "@angular-eslint/eslint-plugin": "22.6.0",
+    "@angular/core": "22.2.3",
+    "@types/react": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-plugin-n": "18.5.0",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-rxjs-x": "0.9.6",
+    "react": "19.3.1",
+    "rxjs": "7.8.2",
+    "ts-declaration-location": "1.0.7",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.0"
+  }
+}

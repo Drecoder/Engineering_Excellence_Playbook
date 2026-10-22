@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "antipatterns.v1.schema.json",
+  "title": "antipatterns.v1",
+  "description": "Validates schemas/antipatterns.v1.json, the anti-pattern catalog. rig and the Reviewer both read the catalog; each rule maps one detector rule (an existing tool's rule, or a custom rig check) to a stable AP-* ID. In v1 every rule is advisory: enforcement.blocks is the constant false, so the catalog can never add a blocking failure or override the CI gate. Consumers reject an invalid catalog instead of repairing it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "catalog_version", "description", "standard", "promotion", "rules"],
+  "properties": {
+    "schema_version": { "const": "antipatterns.v1" },
+    "catalog_version": { "$ref": "#/$defs/semver", "description": "Bumped on every change to the catalog: patch for wording, minor for new or changed rules, major for removed rules or changed IDs." },
+    "description": { "type": "string", "minLength": 1 },
+    "standard": { "type": "string", "description": "The playbook document that defines the contract, benchmark, and promotion criteria." },
+    "promotion": {
+      "type": "object",
+      "description": "Evidence a rule needs before a reviewed change may propose more than advisory. v1 records the criteria; it grants nothing.",
+      "additionalProperties": false,
+      "required": ["min_true_positives", "min_clean_cases", "min_precision_lower_bound", "confidence_level", "max_age_days"],
+      "properties": {
+        "min_true_positives": { "type": "integer", "minimum": 1 },
+        "min_clean_cases": { "type": "integer", "minimum": 1 },
+        "min_precision_lower_bound": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "confidence_level": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "max_age_days": { "type": "integer", "minimum": 1, "description": "A measurement older than this no longer counts." }
+      }
+    },
+    "rules": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/rule" } }
+  },
+  "$defs": {
+    "semver": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER)-[0-9]{3}$" },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "code"],
+      "properties": {
+        "file": { "type": "string", "minLength": 1, "description": "File name the snippet is written to when a detector runs it; the extension selects the language." },
+        "code": { "type": "string", "minLength": 1 },
+        "note": { "type": "string" }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "revision", "added_in", "stack", "framework", "title", "description", "rationale", "severity", "confidence", "detector", "remediation", "references", "test_cases", "enforcement", "benchmark"],
+      "properties": {
+        "id": { "$ref": "#/$defs/rule_id" },
+        "revision": { "type": "integer", "minimum": 1, "description": "Incremented when the rule's meaning or detector mapping changes. The ID never changes." },
+        "added_in": { "$ref": "#/$defs/semver" },
+        "stack": { "type": "string", "enum": ["go", "typescript", "python", "hcl", "docker"] },
+        "framework": { "type": "string", "enum": ["none", "nodejs", "react", "angular", "django", "fastapi", "terraform", "terragrunt", "dockerfile"] },
+        "title": { "type": "string", "minLength": 1, "maxLength": 90 },
+        "description": { "type": "string", "minLength": 1 },
+        "rationale": { "type": "string", "minLength": 1 },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"], "description": "The catalog's assessment of impact, independent of the detector's own severity. Severity never makes a v1 rule block." },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"], "description": "How often a hit is a real instance, before measurement. Replaced by benchmark precision once measured." },
+        "detector": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tool", "rule_id", "custom", "mapping"],
+          "properties": {
+            "tool": { "type": "string", "enum": ["go-vet", "staticcheck", "golangci-lint", "eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react", "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "ruff", "semgrep", "bandit", "tflint", "checkov", "trivy", "hadolint", "rig"] },
+            "rule_id": { "type": "string", "minLength": 1, "description": "The detector's own rule ID, exactly as the tool reports it." },
+            "config": { "type": "string", "description": "Ruleset or plugin config the rule ships in, when the tool needs one (e.g. a Semgrep registry ruleset)." },
+            "custom": { "type": "boolean", "description": "True only for checks rig implements itself (tool rig); false for an existing tool's rule." },
+            "mapping": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status"],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["verified", "mapped", "planned"],
+                  "description": "verified: the pinned tool was run on every positive and negative case and reported rule_id exactly on the positives. mapped: taken from the tool's documentation, not yet run. planned: no detector exists yet (custom checks rig has not implemented)."
+                },
+                "tool_version": { "type": "string", "minLength": 1 },
+                "verified_on": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+                "toolchain": { "type": "string", "pattern": "^[a-z0-9./_-]+(:[A-Za-z0-9._-]+)?@sha256:[0-9a-f]{64}$", "description": "The toolchain image the verification ran in, pinned by digest." },
+                "verified_in": {
+                  "type": "string",
+                  "enum": ["local", "ci"],
+                  "description": "Where the pinned toolchain image ran. local: on a workstation, provisional until the CI job repeats it. ci: the playbook's verification job, the permanent record. Both run the same image; nothing is verified with host-installed tools."
+                }
+              },
+              "allOf": [
+                {
+                  "if": { "properties": { "status": { "const": "verified" } } },
+                  "then": { "properties": { "tool_version": true, "verified_on": true, "verified_in": true, "toolchain": true }, "required": ["tool_version", "verified_on", "verified_in", "toolchain"] }
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "tool": { "const": "rig" } } },
+              "then": { "properties": { "custom": { "const": true } } },
+              "else": { "properties": { "custom": { "const": false } } }
+            }
+          ]
+        },
+        "remediation": { "type": "string", "minLength": 1 },
+        "references": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^(https://|[0-9A-Za-z_]+\\.md|[0-9A-Za-z_/]+\\.md)" } },
+        "related": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^(ARCH|SEC|GOV)-[0-9]{3}$" }, "description": "Playbook rules this anti-pattern also violates." },
+        "test_cases": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["positive", "negative"],
+          "properties": {
+            "positive": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/case" }, "description": "Must be reported." },
+            "negative": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/case" }, "description": "Must not be reported (the fixed form)." }
+          }
+        },
+        "enforcement": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "blocks"],
+          "properties": {
+            "state": { "type": "string", "enum": ["planned", "advisory", "retired"] },
+            "blocks": { "const": false, "description": "v1 rules never block. Blocking stays with the CI gate's own thresholds, which the catalog neither adds to nor removes from." }
+          }
+        },
+        "benchmark": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {
+            "status": { "type": "string", "enum": ["unmeasured", "measured"] },
+            "corpus": { "type": "string", "description": "Benchmark corpus identifier and hash." },
+            "measured_on": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+            "true_positives": { "type": "integer", "minimum": 0 },
+            "false_positives": { "type": "integer", "minimum": 0 },
+            "false_negatives": { "type": "integer", "minimum": 0 },
+            "clean_cases": { "type": "integer", "minimum": 0 },
+            "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+            "precision_lower_bound": { "type": "number", "minimum": 0, "maximum": 1, "description": "Wilson lower bound at promotion.confidence_level." },
+            "recall": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "status": { "const": "measured" } } },
+              "then": {
+                "properties": { "corpus": true, "measured_on": true, "true_positives": true, "false_positives": true, "false_negatives": true, "clean_cases": true, "precision": true, "precision_lower_bound": true, "recall": true },
+                "required": ["corpus", "measured_on", "true_positives", "false_positives", "false_negatives", "clean_cases", "precision", "precision_lower_bound", "recall"]
+              },
+              "else": {
+                "properties": { "corpus": false, "measured_on": false, "true_positives": false, "false_positives": false, "false_negatives": false, "clean_cases": false, "precision": false, "precision_lower_bound": false, "recall": false }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "description": "A planned detector cannot back an advisory rule, and an advisory rule needs a detector that exists.",
+          "if": { "properties": { "detector": { "properties": { "mapping": { "properties": { "status": { "const": "planned" } } } } } } },
+          "then": { "properties": { "enforcement": { "properties": { "state": { "enum": ["planned", "retired"] } } } } },
+          "else": { "properties": { "enforcement": { "properties": { "state": { "enum": ["advisory", "retired"] } } } } }
+        }
+      ]
+    }
+  }
+}

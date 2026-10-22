@@ -1,0 +1,2624 @@
+{
+  "schema_version": "antipatterns.v1",
+  "catalog_version": "1.0.0",
+  "description": "Anti-pattern catalog read by rig and the Reviewer. Each rule maps one detector rule to a stable AP-* ID. Every rule is advisory; none blocks. Mapping status says whether the detector rule was run (verified), taken from documentation (mapped), or does not exist yet (planned).",
+  "standard": "00_UniversalStandards/11_Anti_Pattern_Catalog.md",
+  "promotion": {
+    "min_true_positives": 20,
+    "min_clean_cases": 50,
+    "min_precision_lower_bound": 0.9,
+    "confidence_level": 0.95,
+    "max_age_days": 90
+  },
+  "rules": [
+    {
+      "id": "AP-GO-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "go",
+      "framework": "none",
+      "title": "Context cancel function discarded",
+      "description": "The cancel function returned by context.WithCancel/WithTimeout/WithDeadline is dropped or never called.",
+      "rationale": "The context's timer and goroutines live until the parent is cancelled: a leak per call on a hot path.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "go-vet",
+        "rule_id": "lostcancel",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "go version go1.26.10 linux/amd64",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Call defer cancel() immediately after creating the context.",
+      "references": [
+        "https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/lostcancel"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport (\n\t\"context\"\n\t\"time\"\n)\n\nfunc work(ctx context.Context) {}\n\nfunc main() {\n\tctx, _ := context.WithTimeout(context.Background(), time.Second)\n\twork(ctx)\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport (\n\t\"context\"\n\t\"time\"\n)\n\nfunc work(ctx context.Context) {}\n\nfunc main() {\n\tctx, cancel := context.WithTimeout(context.Background(), time.Second)\n\tdefer cancel()\n\twork(ctx)\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-017"
+      ]
+    },
+    {
+      "id": "AP-GO-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "go",
+      "framework": "none",
+      "title": "Lock copied by value",
+      "description": "A value containing a sync.Mutex (or other lock) is passed or assigned by value.",
+      "rationale": "The copy has its own lock state, so the code that looks synchronized is not.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "go-vet",
+        "rule_id": "copylocks",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "go version go1.26.10 linux/amd64",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass a pointer to the struct, or keep the lock behind a pointer.",
+      "references": [
+        "https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/copylocks"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"sync\"\n\ntype Counter struct {\n\tmu sync.Mutex\n\tn  int\n}\n\nfunc read(c Counter) int { return c.n }\n\nfunc main() {\n\tvar c Counter\n\t_ = read(c)\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"sync\"\n\ntype Counter struct {\n\tmu sync.Mutex\n\tn  int\n}\n\nfunc read(c *Counter) int { return c.n }\n\nfunc main() {\n\tvar c Counter\n\t_ = read(&c)\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GO-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "go",
+      "framework": "none",
+      "title": "HTTP response used before the error check",
+      "description": "resp.Body is deferred closed (or used) before checking the error from the request.",
+      "rationale": "When the request fails resp is nil, so the deferred Close panics.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "go-vet",
+        "rule_id": "httpresponse",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "go version go1.26.10 linux/amd64",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Check err first, then defer resp.Body.Close().",
+      "references": [
+        "https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/httpresponse"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"net/http\"\n\nfunc main() {\n\tresp, err := http.Get(\"https://example.com\")\n\tdefer resp.Body.Close()\n\tif err != nil {\n\t\treturn\n\t}\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"net/http\"\n\nfunc main() {\n\tresp, err := http.Get(\"https://example.com\")\n\tif err != nil {\n\t\treturn\n\t}\n\tdefer resp.Body.Close()\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GO-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "go",
+      "framework": "none",
+      "title": "nil passed as a context",
+      "description": "A function taking context.Context is called with nil.",
+      "rationale": "Callees that read deadlines or values from the context panic; cancellation is lost.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "staticcheck",
+        "rule_id": "SA1012",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "staticcheck 2026.2.2 (0.8.2)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass context.TODO() or, better, the caller's context.",
+      "references": [
+        "https://staticcheck.dev/docs/checks/#SA1012"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"context\"\n\nfunc work(ctx context.Context) {}\n\nfunc main() {\n\twork(nil)\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"context\"\n\nfunc work(ctx context.Context) {}\n\nfunc main() {\n\twork(context.TODO())\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-GO-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "go",
+      "framework": "none",
+      "title": "Error return value ignored",
+      "description": "A call's error result is discarded without handling.",
+      "rationale": "Failures continue silently and surface later, far from the cause.",
+      "severity": "medium",
+      "confidence": "medium",
+      "detector": {
+        "tool": "golangci-lint",
+        "rule_id": "errcheck",
+        "custom": false,
+        "mapping": {
+          "status": "mapped"
+        }
+      },
+      "remediation": "Handle or explicitly return the error; discard only with a comment explaining why.",
+      "references": [
+        "https://github.com/kisielk/errcheck",
+        "https://golangci-lint.run/usage/linters/#errcheck"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"os\"\n\nfunc main() {\n\tos.Remove(\"/tmp/x\")\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.go",
+            "code": "package main\n\nimport \"os\"\n\nfunc main() {\n\tif err := os.Remove(\"/tmp/x\"); err != nil {\n\t\tpanic(err)\n\t}\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TS-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "none",
+      "title": "Floating promise",
+      "description": "A promise is created and neither awaited, returned, nor handled.",
+      "rationale": "Rejections are lost and ordering assumptions break; the bench's dropped-await defects are this.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "typescript-eslint",
+        "rule_id": "@typescript-eslint/no-floating-promises",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "await it, return it, or attach an explicit .catch with handling.",
+      "references": [
+        "https://typescript-eslint.io/rules/no-floating-promises/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.ts",
+            "code": "async function save(): Promise<void> {}\nexport async function handler(): Promise<void> {\n  save();\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.ts",
+            "code": "async function save(): Promise<void> {}\nexport async function handler(): Promise<void> {\n  await save();\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TS-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "none",
+      "title": "Promise passed where a void callback is expected",
+      "description": "An async function is used as an event handler, array callback, or condition where its promise is ignored.",
+      "rationale": "Errors escape the handler and code runs out of order.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "typescript-eslint",
+        "rule_id": "@typescript-eslint/no-misused-promises",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Wrap the call so the promise is awaited and its rejection handled.",
+      "references": [
+        "https://typescript-eslint.io/rules/no-misused-promises/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.ts",
+            "code": "async function ok(): Promise<boolean> { return true; }\nexport function f(): void {\n  if (ok()) { console.log('always true'); }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.ts",
+            "code": "async function ok(): Promise<boolean> { return true; }\nexport async function f(): Promise<void> {\n  if (await ok()) { console.log('checked'); }\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TS-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "none",
+      "title": "Explicit any",
+      "description": "A value is typed as any.",
+      "rationale": "any switches off the strict type check the playbook requires, and it spreads through inference.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "typescript-eslint",
+        "rule_id": "@typescript-eslint/no-explicit-any",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "typescript-eslint@8.72.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use unknown and narrow it, or a precise type.",
+      "references": [
+        "https://typescript-eslint.io/rules/no-explicit-any/",
+        "AGENTS.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.ts",
+            "code": "export function parse(x: any): string { return x.name; }\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.ts",
+            "code": "export function parse(x: unknown): string {\n  return typeof x === 'object' && x !== null && 'name' in x ? String(x.name) : '';\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-NODE-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "nodejs",
+      "title": "eval or new Function on runtime input",
+      "description": "Code is built from strings at runtime with eval.",
+      "rationale": "Arbitrary code execution when any part of the string is attacker-controlled; no model in the bench caught this reliably.",
+      "severity": "critical",
+      "confidence": "high",
+      "detector": {
+        "tool": "eslint",
+        "rule_id": "no-eval",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint@9.39.5 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Parse data with JSON.parse or a schema validator; never execute strings.",
+      "references": [
+        "https://eslint.org/docs/latest/rules/no-eval"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.ts",
+            "code": "export function calc(expr: string): unknown {\n  return eval(expr);\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.ts",
+            "code": "export function calc(json: string): unknown {\n  return JSON.parse(json);\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-NODE-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "nodejs",
+      "title": "Synchronous filesystem call in a server",
+      "description": "fs.*Sync is called in request-handling code.",
+      "rationale": "A sync call blocks the event loop for every concurrent request.",
+      "severity": "medium",
+      "confidence": "medium",
+      "detector": {
+        "tool": "eslint-plugin-n",
+        "rule_id": "n/no-sync",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-n@18.5.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use the fs/promises API and await it.",
+      "references": [
+        "https://github.com/eslint-community/eslint-plugin-n/blob/master/docs/rules/no-sync.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.ts",
+            "code": "import { readFileSync } from 'node:fs';\nexport function handler(): string {\n  return readFileSync('/etc/app.json', 'utf8');\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.ts",
+            "code": "import { readFile } from 'node:fs/promises';\nexport async function handler(): Promise<string> {\n  return readFile('/etc/app.json', 'utf8');\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-NODE-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "nodejs",
+      "title": "child_process with a non-literal command",
+      "description": "child_process.exec/spawn is called with a command built from variables.",
+      "rationale": "Command injection when the variable carries user input.",
+      "severity": "high",
+      "confidence": "medium",
+      "detector": {
+        "tool": "semgrep",
+        "rule_id": "javascript.lang.security.detect-child-process.detect-child-process",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "1.182.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        },
+        "config": "p/security-audit"
+      },
+      "remediation": "Use execFile/spawn with a fixed command and an argument array; validate inputs.",
+      "references": [
+        "https://semgrep.dev/r/javascript.lang.security.detect-child-process.detect-child-process"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.js",
+            "code": "const { exec } = require('child_process');\nfunction run(req) {\n  exec('ls ' + req.query.dir);\n}\nmodule.exports = { run };\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.js",
+            "code": "const { execFile } = require('child_process');\nfunction run() {\n  execFile('ls', ['-la']);\n}\nmodule.exports = { run };\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-NODE-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "nodejs",
+      "title": "Peer dependency conflict forced through",
+      "description": "Packages with incompatible peer dependencies are installed with --force or --legacy-peer-deps, or npm ls reports invalid peers.",
+      "rationale": "A plugin runs against a host version it was never built for; failures appear at runtime, not install time.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.deps.node_peer_conflict",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Pick versions whose peer ranges agree (npm ls must exit 0); never commit --legacy-peer-deps or --force.",
+      "references": [
+        "https://docs.npmjs.com/cli/commands/npm-ls",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": ".npmrc",
+            "code": "legacy-peer-deps=true\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": ".npmrc",
+            "code": "engine-strict=true\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Hook called conditionally",
+      "description": "A React hook is called inside a condition, loop, or nested function.",
+      "rationale": "React matches hook state by call order; a conditional hook corrupts state between renders.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "eslint-plugin-react-hooks",
+        "rule_id": "react-hooks/rules-of-hooks",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Call hooks unconditionally at the top level of the component; branch inside the hook.",
+      "references": [
+        "https://react.dev/reference/rules/rules-of-hooks"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "import { useState } from 'react';\nexport function C({ on }: { on: boolean }) {\n  if (on) {\n    const [n] = useState(0);\n    return <p>{n}</p>;\n  }\n  return null;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "import { useState } from 'react';\nexport function C({ on }: { on: boolean }) {\n  const [n] = useState(0);\n  return on ? <p>{n}</p> : null;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Effect with missing dependencies",
+      "description": "useEffect/useMemo/useCallback reads values not listed in its dependency array.",
+      "rationale": "The effect runs with stale values and does not re-run when they change.",
+      "severity": "medium",
+      "confidence": "medium",
+      "detector": {
+        "tool": "eslint-plugin-react-hooks",
+        "rule_id": "react-hooks/exhaustive-deps",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-react-hooks@7.1.1 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "List every reactive value the callback reads, or move it inside the effect.",
+      "references": [
+        "https://www.npmjs.com/package/eslint-plugin-react-hooks"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "import { useEffect } from 'react';\nexport function C({ id }: { id: string }) {\n  useEffect(() => { fetch('/api/' + id); }, []);\n  return null;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "import { useEffect } from 'react';\nexport function C({ id }: { id: string }) {\n  useEffect(() => { fetch('/api/' + id); }, [id]);\n  return null;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "Array index used as a key",
+      "description": "A list is rendered with the array index as its key.",
+      "rationale": "Reordering or inserting items reuses the wrong component state.",
+      "severity": "low",
+      "confidence": "medium",
+      "detector": {
+        "tool": "eslint-plugin-react",
+        "rule_id": "react/no-array-index-key",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use a stable ID from the data as the key.",
+      "references": [
+        "https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-array-index-key.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "export function L({ items }: { items: { id: string; name: string }[] }) {\n  return <ul>{items.map((it, i) => <li key={i}>{it.name}</li>)}</ul>;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "export function L({ items }: { items: { id: string; name: string }[] }) {\n  return <ul>{items.map((it) => <li key={it.id}>{it.name}</li>)}</ul>;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-REACT-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "react",
+      "title": "dangerouslySetInnerHTML",
+      "description": "Raw HTML is injected into the DOM.",
+      "rationale": "Cross-site scripting when the HTML is not sanitized.",
+      "severity": "high",
+      "confidence": "medium",
+      "detector": {
+        "tool": "eslint-plugin-react",
+        "rule_id": "react/no-danger",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-react@7.37.5 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Render text as children; if HTML is required, sanitize it with a vetted library first.",
+      "references": [
+        "https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-danger.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.tsx",
+            "code": "export function B({ html }: { html: string }) {\n  return <div dangerouslySetInnerHTML={{ __html: html }} />;\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.tsx",
+            "code": "export function B({ text }: { text: string }) {\n  return <div>{text}</div>;\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-ANGULAR-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "angular",
+      "title": "Lifecycle hook called directly",
+      "description": "Code calls ngOnInit/ngOnDestroy (or another lifecycle method) itself.",
+      "rationale": "Angular calls lifecycle hooks; calling them manually runs setup or teardown twice.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "angular-eslint",
+        "rule_id": "@angular-eslint/no-lifecycle-call",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Move the shared logic into a private method and call that.",
+      "references": [
+        "https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/no-lifecycle-call.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.component.ts",
+            "code": "import { Component, OnInit } from '@angular/core';\n@Component({ selector: 'app-a', template: '' })\nexport class AComponent implements OnInit {\n  ngOnInit(): void {}\n  reload(): void { this.ngOnInit(); }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.component.ts",
+            "code": "import { Component, OnInit } from '@angular/core';\n@Component({ selector: 'app-a', template: '' })\nexport class AComponent implements OnInit {\n  ngOnInit(): void { this.load(); }\n  reload(): void { this.load(); }\n  private load(): void {}\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-ANGULAR-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "angular",
+      "title": "Subscription never unsubscribed",
+      "description": "An Observable's subscribe() result is ignored in a component.",
+      "rationale": "The subscription outlives the component: memory leaks and handlers running on destroyed views.",
+      "severity": "medium",
+      "confidence": "medium",
+      "detector": {
+        "tool": "eslint-plugin-rxjs-x",
+        "rule_id": "rxjs-x/no-ignored-subscription",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "eslint-plugin-rxjs-x@0.9.6 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use the async pipe, takeUntilDestroyed(), or keep and unsubscribe the subscription.",
+      "references": [
+        "https://github.com/JasonWeinzierl/eslint-plugin-rxjs-x/blob/main/docs/rules/no-ignored-subscription.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.component.ts",
+            "code": "import { Component, OnInit } from '@angular/core';\nimport { interval } from 'rxjs';\n@Component({ selector: 'app-a', template: '' })\nexport class AComponent implements OnInit {\n  ngOnInit(): void { interval(1000).subscribe(); }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.component.ts",
+            "code": "import { Component, DestroyRef, inject, OnInit } from '@angular/core';\nimport { takeUntilDestroyed } from '@angular/core/rxjs-interop';\nimport { interval } from 'rxjs';\n@Component({ selector: 'app-a', template: '' })\nexport class AComponent implements OnInit {\n  private destroyRef = inject(DestroyRef);\n  ngOnInit(): void { interval(1000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(); }\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-ANGULAR-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "typescript",
+      "framework": "angular",
+      "title": "Output named like a native DOM event",
+      "description": "An @Output() is named click, change, or another native event name.",
+      "rationale": "Handlers fire for both the native and the custom event.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "angular-eslint",
+        "rule_id": "@angular-eslint/no-output-native",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "@angular-eslint/eslint-plugin@22.6.0 (eslint@9.39.5)",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Give the output a distinct, domain-specific name.",
+      "references": [
+        "https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/docs/rules/no-output-native.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.component.ts",
+            "code": "import { Component, EventEmitter, Output } from '@angular/core';\n@Component({ selector: 'app-a', template: '' })\nexport class AComponent {\n  @Output() click = new EventEmitter<void>();\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.component.ts",
+            "code": "import { Component, EventEmitter, Output } from '@angular/core';\n@Component({ selector: 'app-a', template: '' })\nexport class AComponent {\n  @Output() selected = new EventEmitter<void>();\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-PY-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "Exception swallowed with pass",
+      "description": "except: pass (or except Exception: pass) hides every failure.",
+      "rationale": "Errors vanish; the bench's swallowed-error defects are this pattern.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B110",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Catch the specific exception and handle or log it with context; re-raise otherwise.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b110_try_except_pass.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "def load(path):\n    try:\n        return open(path).read()\n    except Exception:\n        pass\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import logging\n\n\ndef load(path):\n    try:\n        return open(path).read()\n    except FileNotFoundError:\n        logging.warning('missing %s', path)\n        return None\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-PY-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "eval on runtime input",
+      "description": "eval() executes a string.",
+      "rationale": "Arbitrary code execution.",
+      "severity": "critical",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B307",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use ast.literal_eval for literals or a real parser.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "def calc(expr):\n    return eval(expr)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import ast\n\n\ndef calc(expr):\n    return ast.literal_eval(expr)\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-PY-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "HTTP request without a timeout",
+      "description": "requests is called without timeout=.",
+      "rationale": "A slow server holds the caller forever; this is ARCH-017 at the call site.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B113",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Always pass timeout= (connect and read), shorter than the caller's deadline.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b113_request_without_timeout.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import requests\n\n\ndef fetch(url):\n    return requests.get(url)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import requests\n\n\ndef fetch(url):\n    return requests.get(url, timeout=5)\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "ARCH-017"
+      ]
+    },
+    {
+      "id": "AP-PY-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "yaml.load without a safe loader",
+      "description": "yaml.load is called without SafeLoader.",
+      "rationale": "Arbitrary object construction from untrusted YAML.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B506",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use yaml.safe_load.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b506_yaml_load.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import yaml\n\n\ndef read(s):\n    return yaml.load(s)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import yaml\n\n\ndef read(s):\n    return yaml.safe_load(s)\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-PY-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "Mutable default argument",
+      "description": "A function default is a list, dict, or set.",
+      "rationale": "The default is shared between calls, so state leaks from one call to the next.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "ruff",
+        "rule_id": "B006",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ruff 0.17.2",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Default to None and create the value inside the function.",
+      "references": [
+        "https://docs.astral.sh/ruff/rules/mutable-argument-default/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "def add(item, items=[]):\n    items.append(item)\n    return items\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "def add(item, items=None):\n    items = [] if items is None else items\n    items.append(item)\n    return items\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-PY-007",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "Conflicting dependencies in one environment",
+      "description": "Several tools or services with incompatible requirements are installed into one Python environment.",
+      "rationale": "The resolver fails, or worse succeeds with a broken set: one tool works and another silently runs against the wrong version.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.deps.python_conflict",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Give each tool or service its own virtualenv (or image); run pip check after every install.",
+      "references": [
+        "https://pip.pypa.io/en/stable/cli/pip_check/",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "requirements.txt",
+            "code": "semgrep==1.182.1\ncheckov==3.3.29\njsonschema==4.26.0\n",
+            "note": "Several tools with large, independent dependency trees in one environment"
+          }
+        ],
+        "negative": [
+          {
+            "file": "requirements.txt",
+            "code": "jsonschema==4.26.0\n",
+            "note": "One purpose per environment; other tools in their own virtualenvs"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DJANGO-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "django",
+      "title": "Raw SQL through RawSQL or extra",
+      "description": "Query fragments are passed to RawSQL/extra, typically built with string formatting.",
+      "rationale": "SQL injection, and it bypasses the ORM's parameterization.",
+      "severity": "high",
+      "confidence": "medium",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B611",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use ORM expressions, or parameterized raw queries with params=.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b611_django_rawsql_used.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "views.py",
+            "code": "from django.db.models.expressions import RawSQL\n\n\ndef q(model, name):\n    return model.objects.annotate(v=RawSQL(\"select '%s'\" % name, []))\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "views.py",
+            "code": "def q(model, name):\n    return model.objects.filter(name=name)\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DJANGO-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "django",
+      "title": "mark_safe on dynamic content",
+      "description": "mark_safe() disables auto-escaping for a value.",
+      "rationale": "Cross-site scripting when the value contains user input.",
+      "severity": "high",
+      "confidence": "medium",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B308",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use format_html with arguments, which escapes them.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "views.py",
+            "code": "from django.utils.safestring import mark_safe\n\n\ndef greet(name):\n    return mark_safe('<b>' + name + '</b>')\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "views.py",
+            "code": "from django.utils.html import format_html\n\n\ndef greet(name):\n    return format_html('<b>{}</b>', name)\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DJANGO-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "django",
+      "title": "Nullable string field",
+      "description": "A CharField/TextField uses null=True.",
+      "rationale": "Two empty values (None and '') for one meaning; queries and code diverge.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "ruff",
+        "rule_id": "DJ001",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ruff 0.17.2",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use blank=True with default ''; reserve null for non-string fields.",
+      "references": [
+        "https://docs.astral.sh/ruff/rules/django-nullable-model-string-field/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "models.py",
+            "code": "from django.db import models\n\n\nclass P(models.Model):\n    nick = models.CharField(max_length=20, null=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "models.py",
+            "code": "from django.db import models\n\n\nclass P(models.Model):\n    nick = models.CharField(max_length=20, blank=True, default='')\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DJANGO-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "django",
+      "title": "N+1 queries over a relation",
+      "description": "A loop over a queryset reads a related object per row without select_related/prefetch_related.",
+      "rationale": "One query per row; latency grows with data size. Seen in traces as repeated identical db spans under one request.",
+      "severity": "medium",
+      "confidence": "medium",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.django.n_plus_one",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Add select_related (foreign keys) or prefetch_related (many-to-many, reverse) to the queryset.",
+      "references": [
+        "https://docs.djangoproject.com/en/stable/ref/models/querysets/#select-related"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "views.py",
+            "code": "def names(Book):\n    return [b.author.name for b in Book.objects.all()]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "views.py",
+            "code": "def names(Book):\n    return [b.author.name for b in Book.objects.select_related('author')]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-FASTAPI-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "fastapi",
+      "title": "Blocking HTTP call inside async def",
+      "description": "An async endpoint calls a blocking client such as requests.",
+      "rationale": "It blocks the event loop, so one slow call stalls every request on the worker.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "ruff",
+        "rule_id": "ASYNC210",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ruff 0.17.2",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use an async client (httpx.AsyncClient) or run the call in a thread pool.",
+      "references": [
+        "https://docs.astral.sh/ruff/rules/blocking-http-call-in-async-function/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.py",
+            "code": "import requests\n\n\nasync def proxy(url: str):\n    return requests.get(url, timeout=5).json()\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.py",
+            "code": "import httpx\n\n\nasync def proxy(url: str):\n    async with httpx.AsyncClient(timeout=5) as client:\n        return (await client.get(url)).json()\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-FASTAPI-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "fastapi",
+      "title": "time.sleep inside async def",
+      "description": "An async function calls time.sleep.",
+      "rationale": "Blocks the event loop for the whole sleep.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "ruff",
+        "rule_id": "ASYNC251",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ruff 0.17.2",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use await asyncio.sleep().",
+      "references": [
+        "https://docs.astral.sh/ruff/rules/blocking-sleep-in-async-function/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.py",
+            "code": "import time\n\n\nasync def wait():\n    time.sleep(1)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.py",
+            "code": "import asyncio\n\n\nasync def wait():\n    await asyncio.sleep(1)\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-FASTAPI-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "fastapi",
+      "title": "Dependency declared without Annotated",
+      "description": "A route parameter uses = Depends(...) as a default instead of Annotated.",
+      "rationale": "The dependency is tied to the default value, cannot be reused as a type, and breaks plain calls.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "ruff",
+        "rule_id": "FAST002",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "ruff 0.17.2",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Declare Annotated[T, Depends(dep)].",
+      "references": [
+        "https://docs.astral.sh/ruff/rules/fast-api-non-annotated-dependency/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.py",
+            "code": "from fastapi import Depends, FastAPI\n\napp = FastAPI()\n\n\ndef db():\n    return None\n\n\n@app.get('/')\ndef root(conn: object = Depends(db)):\n    return {}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.py",
+            "code": "from typing import Annotated\n\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\n\ndef db():\n    return None\n\n\n@app.get('/')\ndef root(conn: Annotated[object, Depends(db)]):\n    return {}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TF-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "SSH open to the internet",
+      "description": "A firewall rule allows 0.0.0.0/0 to port 22.",
+      "rationale": "Direct exposure of management ports; the playbook's SEC-011 and GOV-014.",
+      "severity": "critical",
+      "confidence": "high",
+      "detector": {
+        "tool": "checkov",
+        "rule_id": "CKV_GCP_2",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "3.3.29",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Restrict the source to the IAP range or a bastion; prefer OS Login through IAP.",
+      "references": [
+        "https://www.checkov.io/5.Policy%20Index/terraform.html",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_compute_firewall\" \"ssh\" {\n  name    = \"allow-ssh\"\n  network = \"default\"\n  allow {\n    protocol = \"tcp\"\n    ports    = [\"22\"]\n  }\n  source_ranges = [\"0.0.0.0/0\"]\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_compute_firewall\" \"ssh\" {\n  name    = \"allow-ssh\"\n  network = \"default\"\n  allow {\n    protocol = \"tcp\"\n    ports    = [\"22\"]\n  }\n  source_ranges = [\"35.235.240.0/20\"]\n}\n",
+            "note": "IAP TCP forwarding range only"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-011",
+        "GOV-014"
+      ]
+    },
+    {
+      "id": "AP-TF-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Basic role granted at project level",
+      "description": "roles/owner, roles/editor, or roles/viewer is granted on a project.",
+      "rationale": "Basic roles are far broader than any workload needs; the playbook's SEC-005.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "checkov",
+        "rule_id": "CKV_GCP_117",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "3.3.29",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Grant predefined or custom roles scoped to the task.",
+      "references": [
+        "https://www.checkov.io/5.Policy%20Index/terraform.html",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_project_iam_member\" \"m\" {\n  project = \"p\"\n  role    = \"roles/editor\"\n  member  = \"serviceAccount:svc@p.iam.gserviceaccount.com\"\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_project_iam_member\" \"m\" {\n  project = \"p\"\n  role    = \"roles/storage.objectViewer\"\n  member  = \"serviceAccount:svc@p.iam.gserviceaccount.com\"\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-005"
+      ]
+    },
+    {
+      "id": "AP-TF-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Publicly readable storage bucket",
+      "description": "allUsers or allAuthenticatedUsers is granted on a bucket.",
+      "rationale": "Anyone can read the data; the playbook's SEC-002.",
+      "severity": "critical",
+      "confidence": "high",
+      "detector": {
+        "tool": "checkov",
+        "rule_id": "CKV_GCP_28",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "3.3.29",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Remove public members; serve public content through a CDN or signed URLs.",
+      "references": [
+        "https://www.checkov.io/5.Policy%20Index/terraform.html",
+        "00_UniversalStandards/07_Security_In_Depth.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_storage_bucket_iam_member\" \"m\" {\n  bucket = \"b\"\n  role   = \"roles/storage.objectViewer\"\n  member = \"allUsers\"\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_storage_bucket_iam_member\" \"m\" {\n  bucket = \"b\"\n  role   = \"roles/storage.objectViewer\"\n  member = \"serviceAccount:svc@p.iam.gserviceaccount.com\"\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-002"
+      ]
+    },
+    {
+      "id": "AP-TF-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Module source not pinned to a commit",
+      "description": "A git module source has no ref, or a branch/tag instead of a commit hash.",
+      "rationale": "The module can change under the same configuration: a supply-chain and reproducibility risk.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "checkov",
+        "rule_id": "CKV_TF_1",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "3.3.29",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pin git sources to a full commit SHA (ref=<sha>).",
+      "references": [
+        "https://www.checkov.io/5.Policy%20Index/terraform.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "module \"net\" {\n  source = \"git::https://github.com/example/net.git\"\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "module \"net\" {\n  source = \"git::https://github.com/example/net.git?ref=3a7b9c1e0f2d4a6b8c0e1f3a5b7d9e1f2a4c6e8b\"\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TF-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Unrestricted egress",
+      "description": "A firewall rule allows egress to 0.0.0.0/0 on any port.",
+      "rationale": "Data exfiltration and command-and-control paths are open by default.",
+      "severity": "medium",
+      "confidence": "medium",
+      "detector": {
+        "tool": "trivy",
+        "rule_id": "GCP-0035",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Version: 0.71.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Restrict egress destinations and ports to what the workload needs; record exceptions with an owner and expiry.",
+      "references": [
+        "https://avd.aquasec.com/misconfig/google/compute/avd-gcp-0035/"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_compute_firewall\" \"egress\" {\n  name      = \"egress-all\"\n  network   = \"default\"\n  direction = \"EGRESS\"\n  allow {\n    protocol = \"all\"\n  }\n  destination_ranges = [\"0.0.0.0/0\"]\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_compute_firewall\" \"egress\" {\n  name      = \"egress-https\"\n  network   = \"default\"\n  direction = \"EGRESS\"\n  allow {\n    protocol = \"tcp\"\n    ports    = [\"443\"]\n  }\n  destination_ranges = [\"10.0.0.0/8\"]\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TF-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Provider without a version constraint",
+      "description": "A required provider has no version constraint.",
+      "rationale": "A provider upgrade can change behavior on the next init without any change in the code.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "tflint",
+        "rule_id": "terraform_required_providers",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "TFLint version 0.65.0",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Declare every provider in required_providers with a version constraint.",
+      "references": [
+        "https://github.com/terraform-linters/tflint-ruleset-terraform/blob/main/docs/rules/terraform_required_providers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "terraform {\n  required_providers {\n    google = {\n      source = \"hashicorp/google\"\n    }\n  }\n}\n\nprovider \"google\" {}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "terraform {\n  required_providers {\n    google = {\n      source  = \"hashicorp/google\"\n      version = \"~> 6.0\"\n    }\n  }\n}\n\nprovider \"google\" {}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TG-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terragrunt",
+      "title": "Bare terraform invoked instead of Terragrunt",
+      "description": "A script or CI step runs terraform plan/apply directly in a Terragrunt repository.",
+      "rationale": "It bypasses the root configuration (backend, provider, inputs) and the playbook's IaC rules.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.terragrunt.bare_terraform",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Run terragrunt (or terragrunt run --all); call terraform only through it.",
+      "references": [
+        "AGENTS.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/sh\nterraform apply -auto-approve\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "deploy.sh",
+            "code": "#!/bin/sh\nterragrunt apply\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TG-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terragrunt",
+      "title": "Child unit defines its own remote_state",
+      "description": "A child terragrunt.hcl declares remote_state instead of including root.hcl.",
+      "rationale": "Backend configuration is repeated and drifts between units.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.terragrunt.remote_state_in_child",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Define remote_state once in root.hcl; include it from every child.",
+      "references": [
+        "https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#remote_state",
+        "AGENTS.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "live/dev/app/terragrunt.hcl",
+            "code": "remote_state {\n  backend = \"gcs\"\n  config = {\n    bucket = \"state\"\n  }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "live/dev/app/terragrunt.hcl",
+            "code": "include \"root\" {\n  path = find_in_parent_folders(\"root.hcl\")\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TG-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terragrunt",
+      "title": "Mock outputs usable outside plan and validate",
+      "description": "A dependency block sets mock_outputs without restricting them to validate/plan.",
+      "rationale": "An apply can run against fake values when the dependency has no state yet.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.terragrunt.mock_outputs_unrestricted",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Set mock_outputs_allowed_terraform_commands = [\"validate\", \"plan\"].",
+      "references": [
+        "https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#dependency"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "terragrunt.hcl",
+            "code": "dependency \"net\" {\n  config_path = \"../net\"\n  mock_outputs = {\n    vpc_id = \"mock\"\n  }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "terragrunt.hcl",
+            "code": "dependency \"net\" {\n  config_path = \"../net\"\n  mock_outputs = {\n    vpc_id = \"mock\"\n  }\n  mock_outputs_allowed_terraform_commands = [\"validate\", \"plan\"]\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TG-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terragrunt",
+      "title": "Deployment unit without a class",
+      "description": "A unit does not declare persistent or ephemeral, or an ephemeral unit has no TTL label.",
+      "rationale": "Ephemeral resources without a TTL are never swept; the playbook requires a class on every unit.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.terragrunt.missing_unit_class",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Declare the class in the unit's inputs/labels; give ephemeral units a TTL label.",
+      "references": [
+        "AGENTS.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "terragrunt.hcl",
+            "code": "include \"root\" {\n  path = find_in_parent_folders(\"root.hcl\")\n}\ninputs = {\n  name = \"bench\"\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "terragrunt.hcl",
+            "code": "include \"root\" {\n  path = find_in_parent_folders(\"root.hcl\")\n}\ninputs = {\n  name   = \"bench\"\n  labels = { unit_class = \"ephemeral\", ttl = \"2026-11-01\" }\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-TG-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terragrunt",
+      "title": "Reading another unit's state directly",
+      "description": "A module uses a terraform_remote_state data source (or reads another unit's state file) instead of a Terragrunt dependency.",
+      "rationale": "Hidden coupling between units that dependency ordering and plans cannot see; the playbook requires dependency blocks.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.terragrunt.remote_state_data_source",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Pass values through a dependency block and the other unit's outputs.",
+      "references": [
+        "https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#dependency",
+        "AGENTS.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "data \"terraform_remote_state\" \"net\" {\n  backend = \"gcs\"\n  config = {\n    bucket = \"state\"\n    prefix = \"net\"\n  }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "terragrunt.hcl",
+            "code": "dependency \"net\" {\n  config_path = \"../net\"\n}\ninputs = {\n  vpc_id = dependency.net.outputs.vpc_id\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DOCKER-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "Base image tagged latest",
+      "description": "FROM uses the latest tag.",
+      "rationale": "The image changes under the same Dockerfile; builds are not reproducible and a bad upstream push ships silently.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "hadolint",
+        "rule_id": "DL3007",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Haskell Dockerfile Linter 2.15.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pin the base image to a version tag and its digest.",
+      "references": [
+        "https://github.com/hadolint/hadolint/wiki/DL3007",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:latest\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-012"
+      ]
+    },
+    {
+      "id": "AP-DOCKER-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "Container switches back to root",
+      "description": "The last USER instruction is root.",
+      "rationale": "A compromised process has root inside the container, one step from the host.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "hadolint",
+        "rule_id": "DL3002",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Haskell Dockerfile Linter 2.15.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "End with a non-root USER (a numeric UID); do privileged setup in an earlier stage.",
+      "references": [
+        "https://github.com/hadolint/hadolint/wiki/DL3002",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nRUN python -V\nUSER root\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER root\nRUN python -V\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-012"
+      ]
+    },
+    {
+      "id": "AP-DOCKER-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "No non-root user declared",
+      "description": "The Dockerfile never sets USER, so the container runs as root by default.",
+      "rationale": "Same risk as switching back to root, and the more common form of it.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "checkov",
+        "rule_id": "CKV_DOCKER_3",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "3.3.29",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Create a user and set USER to its UID before CMD.",
+      "references": [
+        "https://www.checkov.io/5.Policy%20Index/dockerfile.html",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nRUN useradd --uid 10001 app\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-012"
+      ]
+    },
+    {
+      "id": "AP-DOCKER-004",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "ADD used for local files",
+      "description": "ADD copies local files.",
+      "rationale": "ADD also fetches URLs and unpacks archives, so it does more than it says; COPY is explicit.",
+      "severity": "low",
+      "confidence": "high",
+      "detector": {
+        "tool": "hadolint",
+        "rule_id": "DL3020",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Haskell Dockerfile Linter 2.15.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use COPY for files and directories.",
+      "references": [
+        "https://github.com/hadolint/hadolint/wiki/DL3020"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nADD app.py /app/app.py\nUSER 10001\nCMD [\"python\", \"/app/app.py\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nCOPY app.py /app/app.py\nUSER 10001\nCMD [\"python\", \"/app/app.py\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DOCKER-005",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "Unpinned apt packages",
+      "description": "apt-get install runs without package versions.",
+      "rationale": "Each build can install different versions, so the image is not reproducible.",
+      "severity": "low",
+      "confidence": "medium",
+      "detector": {
+        "tool": "hadolint",
+        "rule_id": "DL3008",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Haskell Dockerfile Linter 2.15.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pin package versions, or install from a pinned base image and rebuild deliberately.",
+      "references": [
+        "https://github.com/hadolint/hadolint/wiki/DL3008"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nRUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nRUN apt-get update && apt-get install -y --no-install-recommends curl=7.88.1-10+deb12u12 && rm -rf /var/lib/apt/lists/*\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DOCKER-006",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "Pipe in RUN without pipefail",
+      "description": "A RUN instruction pipes commands without set -o pipefail.",
+      "rationale": "A failed download piped into another command still succeeds, so the build passes with a broken step.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "hadolint",
+        "rule_id": "DL4006",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Haskell Dockerfile Linter 2.15.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Set SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"] before piped RUN instructions.",
+      "references": [
+        "https://github.com/hadolint/hadolint/wiki/DL4006"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nRUN python -V | tee /tmp/v\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nSHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"]\nRUN python -V | tee /tmp/v\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DOCKER-007",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "Shell-form CMD or ENTRYPOINT",
+      "description": "CMD/ENTRYPOINT uses the shell form.",
+      "rationale": "The process runs under /bin/sh -c and does not receive SIGTERM, so graceful shutdown fails and the container is killed.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "hadolint",
+        "rule_id": "DL3025",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Haskell Dockerfile Linter 2.15.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use the JSON (exec) form: CMD [\"python\", \"app.py\"].",
+      "references": [
+        "https://github.com/hadolint/hadolint/wiki/DL3025",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nCMD python -V\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DOCKER-008",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "No HEALTHCHECK",
+      "description": "The image declares no HEALTHCHECK.",
+      "rationale": "Runtimes without their own probes cannot tell a hung process from a healthy one.",
+      "severity": "low",
+      "confidence": "medium",
+      "detector": {
+        "tool": "checkov",
+        "rule_id": "CKV_DOCKER_2",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "3.3.29",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Declare a HEALTHCHECK, or HEALTHCHECK NONE when the orchestrator probes the service itself.",
+      "references": [
+        "https://www.checkov.io/5.Policy%20Index/dockerfile.html",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nCMD [\"python\", \"-m\", \"http.server\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nUSER 10001\nHEALTHCHECK CMD [\"python\", \"-c\", \"import urllib.request; urllib.request.urlopen('http://localhost:8000')\"]\nCMD [\"python\", \"-m\", \"http.server\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-DOCKER-009",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "docker",
+      "framework": "dockerfile",
+      "title": "Secret in ENV or ARG",
+      "description": "A credential is set through ENV or ARG.",
+      "rationale": "ENV values persist in the image and ARG values in its history; anyone who can pull the image can read them.",
+      "severity": "critical",
+      "confidence": "medium",
+      "detector": {
+        "tool": "trivy",
+        "rule_id": "DS-0031",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "Version: 0.71.1",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Use build secrets (RUN --mount=type=secret) at build time and a secret manager at run time.",
+      "references": [
+        "https://avd.aquasec.com/misconfig/dockerfile/general/avd-ds-0031/",
+        "00_UniversalStandards/12_Containers.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nENV AWS_SECRET_ACCESS_KEY=abc123\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "Dockerfile",
+            "code": "FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70\nENV APP_PORT=8000\nUSER 10001\nCMD [\"python\", \"-V\"]\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "SEC-010",
+        "SEC-012"
+      ]
+    }
+  ]
+}
