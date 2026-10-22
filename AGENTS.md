@@ -123,6 +123,26 @@ the reuse map is rig's `schemas/symbol_index.v1.json`).
 - **DRY findings are fixed in the same PR** when deterministic (a clone, or a hash or signature
   match against the reuse map); the fix stays inside the PR's files.
 
+## Autonomy Rules
+
+A person leaves a process step only when the evidence shows the step is stable, capable, and better
+without them (rationale in `00_UniversalStandards/10_Autonomy_by_Evidence.md`; policy in
+`schemas/autonomy_policy.v1.json`). The long-term target is Six Sigma (3.4 defects per million);
+current volume cannot demonstrate it, so promotion uses explicit interim targets that tighten as
+volume grows.
+
+- Autonomy is granted per process class, one level at a time (L0 manual to L4 unattended), through
+  a reviewed change to the policy. It is never granted globally or by assumption.
+- **Never automate a broken process:** a class must be in statistical control, meet its interim
+  defect-rate target at 95% confidence, and (L3 and above) pass self-stop drills before promotion.
+- **Measure the human before removing the human:** promotion past a human step needs evidence that
+  the step is an unreliable gauge, adds no detection, is the bottleneck, or introduces defects. A
+  human step that catches what machines miss stays.
+- **Protected classes never exceed L2:** security, ethics, irreversible changes, and merges to
+  staging and production. Membership is decided deterministically and fails closed.
+- **Demotion is automatic:** an out-of-control signal, an incident traced to the class, or a failed
+  self-stop drill drops the class one level, with an incident record.
+
 ## Security Rules
 
 Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`
@@ -185,7 +205,8 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
 - **Gates before PRs.** The Builder opens a PR only after the no-op, scope, duplicate, and
   rig-scan gates pass (plus self-review when enabled).
 - **AI review advises; humans approve.** Merges to staging and prod require human approval.
-  Auto-merge is limited to explicitly allow-listed low-risk paths.
+  Auto-merge is limited to process classes promoted to L3 or above under Autonomy Rules, never to
+  a protected class.
 - **Third-party coding agents are allowed only behind the same invariant.** A platform-external
   agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
   passes the same deterministic gates and the same human-approved merge, and never bypasses them.

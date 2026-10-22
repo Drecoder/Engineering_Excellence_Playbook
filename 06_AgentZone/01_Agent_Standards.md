@@ -269,7 +269,9 @@ exhausting either ends the task as `gave_up` and escalates.
 ## 8️⃣ Human in the Loop
 
 - **Humans approve merges to staging and prod.** Auto-merge is allowed only on narrow, low-risk
-  paths (e.g. dev, docs-only) and widened only when metrics justify it.
+  paths (e.g. dev, docs-only) and widened only when metrics justify it. "Metrics justify it" is
+  defined in `00_UniversalStandards/10_Autonomy_by_Evidence.md`: per-class promotion on statistical
+  control and demonstrated defect rates, with protected classes held at L2.
 - **Agents never message people.** They set a PR label (`ready-for-human`, `needs-decision`);
   one notification service fans out:
 
