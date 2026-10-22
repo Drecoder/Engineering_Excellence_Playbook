@@ -170,6 +170,7 @@ and PR — no model, no tokens, no reliance on memory. Policy ids appear in find
 | `SEC-008` | Every Deployment Unit configures an authenticated telemetry collector |
 | `SEC-009` | Audit logging is enabled in every account and project |
 | `SEC-010` | No secrets in code or config (secret scanning) |
+| `SEC-011` | No firewall or security-group rule allows `0.0.0.0/0` or `::/0` to management ports (SSH 22, RDP 3389) |
 
 A failing `SEC-*` policy blocks the change. Exceptions are granted per unit in a reviewed policy
 file, with an owner and an expiry date.
