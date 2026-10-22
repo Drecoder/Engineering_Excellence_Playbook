@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evaluation_unit.v1",
+  "title": "Evaluation Unit",
+  "description": "Bronze-tier artifact produced by rig's deterministic shift-left lift. One unit per code chunk: the code plus its MCP context and the analysis intent, as typed data. It is NOT a rendered prompt and contains no model output. Silver (Jev) scores it; Gold (the Reviewer) composes a model-specific prompt from it and runs reasoning.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "unit_id", "repo", "file", "lens", "playbook", "code", "mcp", "produced_by"],
+  "properties": {
+    "schema_version": { "const": "evaluation_unit.v1" },
+    "unit_id": {
+      "type": "string",
+      "description": "Stable id for this unit, e.g. <file_hash>:<chunk_id>."
+    },
+    "repo": {
+      "type": "string",
+      "description": "Repository root path or identifier the unit came from."
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "language", "hash"],
+      "properties": {
+        "path": { "type": "string", "description": "Repo-relative file path." },
+        "language": { "type": "string", "description": "Detected language, or 'text'." },
+        "hash": { "type": "string", "description": "Content hash of the whole file." }
+      }
+    },
+    "lens": {
+      "type": "string",
+      "enum": ["blast", "simple", "chaos", "benchmark", "doc"],
+      "description": "Deterministic lens classification from the detector (LensDetector.get_lens_name)."
+    },
+    "playbook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "intent"],
+      "description": "The analysis INTENT, not a prompt. Gold renders the model-specific prompt.",
+      "properties": {
+        "id": { "type": "string", "description": "Playbook key, e.g. playbook_1_blast_radius." },
+        "intent": { "type": "string", "description": "Short statement of what to look for (role/goal), not a rendered prompt." }
+      }
+    },
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chunk_id", "start_line", "end_line", "content"],
+      "properties": {
+        "chunk_id": { "type": "integer", "minimum": 1 },
+        "start_line": { "type": "integer", "minimum": 1 },
+        "end_line": { "type": "integer", "minimum": 1 },
+        "line_count": { "type": "integer", "minimum": 0 },
+        "total_chunks": { "type": "integer", "minimum": 1 },
+        "content": { "type": "string", "description": "The raw code chunk." }
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "description": "Local-only MCP context for the file (no network, no cross-repo).",
+      "additionalProperties": false,
+      "required": ["file_position", "complexity"],
+      "properties": {
+        "file_position": { "type": "string" },
+        "line_count": { "type": "integer", "minimum": 0 },
+        "function_count": { "type": "integer", "minimum": 0 },
+        "import_count": { "type": "integer", "minimum": 0 },
+        "complexity": { "type": "string", "enum": ["low", "medium", "high"] },
+        "imports": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "produced_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "stage"],
+      "properties": {
+        "tool": { "const": "rig" },
+        "stage": { "const": "bronze" },
+        "version": { "type": "string" }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}
