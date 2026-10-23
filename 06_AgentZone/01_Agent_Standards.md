@@ -118,15 +118,33 @@ code; analysis tools and reviewers return findings, never patches.
   trim or fail loudly — never let the runtime silently truncate the instructions.
 - **Few-shot from known-good outputs.** Use one short example per task where it helps; keep
   golden expected outputs as the eval set.
+- **Checked by rig.** The violations of these rules are catalogued as `AP-AI-*` in
+  `schemas/antipatterns.v1.json`: a prompt written at the call site, a model call without a context
+  window, output cap, or timeout, undelimited untrusted input, unvalidated model output, and a model
+  hard-coded at the call site. No existing linter knows these rules, so they are custom rig checks,
+  planned until rig implements them.
 
 ---
 
 ## 6️⃣ Risk Routing
 
-**Rules before routers.** Deterministic rules decide first; a decision model (e.g. TypeSafe's
-Jev, which returns typed values with calibrated probabilities instead of text) only handles what
-the rules leave, and only once metrics show the rules route badly. Its confidence feeds the
-fail-closed threshold below, and its output is still schema-validated at the boundary.
+**Rules before routers.** Deterministic rules decide first; a **complexity assessor** handles only
+what the rules leave. It reads rig's deterministic feature record (`schemas/features.v1.json`),
+never raw code, and answers questions about **the change's complexity only**: conceptual
+difficulty, hidden coupling, intent clarity, specialized knowledge, implicit state, and for build
+failures, error interpretability and fix locality. It never answers routing questions (which rung,
+which lens, whether to fetch evidence); the platform's **policy code** maps complexity to those, so
+the mapping stays readable, versioned, and calibrated against outcomes.
+
+- **Today:** a deterministic assessor. Conceptual difficulty is per-function **cognitive
+  complexity** computed by rig with Sonar's published rules (validated by matching Sonar's file
+  totals; Sonar stays the gate), combined with fan-in, scope, tags, and implicit-state constructs.
+  Weights start hand-set and are later fitted to outcomes.
+- **Later:** a decision model (e.g. TypeSafe's Jev, which returns typed values with calibrated
+  probabilities) can sit behind the same interface, with the deterministic assessor as its
+  fallback, once access exists and the benchmark shows it routes better.
+- Its confidence feeds the fail-closed threshold below, and a non-empty `missing` list in the
+  feature record fails closed.
 
 Routing has **two axes**, kept separate: a coarse **scrutiny tier** (safety, rule-driven) and a
 continuous **model weight** (cost, score-driven). Conflating them wastes money — a two-rung switch
@@ -147,8 +165,8 @@ throws away most of the router's signal.
 
 ### Model weight — a ladder, not a tier
 
-Within the judgment path, the router emits a **continuous score** (rules first, then Jev for what
-rules leave). The score selects the **cheapest model on an ordered ladder** that fits the
+Within the judgment path, the router emits a **continuous score** (rules first, then the complexity
+assessor for what rules leave, mapped to a score by policy code). The score selects the **cheapest model on an ordered ladder** that fits the
 difficulty; easy, high-confidence units take a small local SLM, and only hard units climb. The
 fail-closed ceiling (TIER_2) forces the top rung. This is where cost is controlled — **compute
 proportional to difficulty, not a frontier model for everything.**
@@ -196,14 +214,62 @@ The Builder opens a PR only after its change passes, in order:
 Self-review returns `{verdict: pass | revise, reasons[]}`; `revise` reasons go back to the Builder
 as tool feedback. It can only send work back — a `pass` never skips a later gate or the human.
 
+### Build failures: classify before fixing
+
+A failed build reaches the Builder only when it is the change's fault. rig parses the failure into
+`schemas/build_failure.v1.json` and classifies it; the class decides routing before any model sees
+it:
+
+| Class | Route |
+| :--- | :--- |
+| `code`, `config` | Builder fix task (ladder rung from the assessor's complexity answers) |
+| `mechanical` (formatting, lockfiles) | Deterministic auto-fix (`terragrunt hcl fmt`, `gofmt`); no model |
+| `flaky` (a known transient pattern) | One automatic rerun, never more |
+| `infra` (runner, permissions, provider, network) | A human, with an incident record; never the Builder |
+| `unknown` | A human (fail closed) |
+
+A recurring failure fingerprint marks a stalled fix; the next fix task reverts to the edge model.
+
+### Review lenses and evidence
+
+- The Reviewer reviews each unit through **lenses** (`blast`, `simple`, `chaos`, `benchmark`,
+  `doc`, and the `reuse`, `security`, and `architecture` lenses); policy code picks which lenses
+  apply from the complexity answers. Lenses are views of one Reviewer, not separate agents.
+- **Security:** deterministic tools (secret scanning, `SEC-*`, injection rules, IAM from the plan
+  JSON) **block**. The `security` lens **escalates**: a high-confidence finding sets a label that
+  requires human approval, and never blocks by itself.
+- **Reuse:** see `00_UniversalStandards/09_Reuse_and_DRY.md`. Deterministic DRY findings (a clone,
+  or a hash or signature match against the reuse map) are fixed in the same PR; the lens's
+  "looks similar" findings stay advisory.
+- **Architecture:** the lens rubric is generated from `schemas/architecture_rules.v1.json`, only
+  for the `ARCH-*` rules whose `applies_when` matches the unit's `features.v1` `structure.touches`;
+  rig's static and trace hits for those rules go in as known findings. Deterministic hits on
+  blocking rules block; the lens's findings are advisory, except a protected class (`ARCH-009`
+  irreversible, `ARCH-022` security), which escalates
+  (`02_BackendZone/05_Application_Architecture.md` §10).
+- **Evidence, declaratively.** The model never calls tools. It emits `evidence_request.v1`
+  (`symbol_context`, or `run_tests` on symbols, never commands); the orchestrator validates and
+  fulfils it and appends `evidence_response.v1` (with provenance, limits, and uncertainty) to the
+  unit's `review_context.v1`. At most **2 model calls and 1 evidence round per unit**. Runtime
+  evidence is targeted test results; raw traces and state snapshots are added to the model's context
+  only when the benchmark shows they pay for themselves. rig's deterministic trace checks are
+  separate: they read the test run's traces in code and cost no tokens.
+
 ### PR review rounds
 
 1. Each round, the Reviewer re-runs rig-scan independently, rig-reason checks intent, and TIER_2
    joins only for IAM or state. They post **one combined `review.findings.v1` comment** per round.
 2. The Builder answers by pushing to the **same PR**.
-3. **Only blocking findings start another round.** Advisory comments go to the human.
-4. The loop ends when there are **no blocking findings**, after **round 3**, or when a round is
-   **stalled** — it resolved none of the previous round's finding fingerprints.
+3. **Only blocking findings and deterministic DRY findings start another round.** Other advisory
+   comments go to the human. A DRY fix may only touch files already in the PR.
+4. The loop ends when there are **no blocking findings**, after **round 4**, or when a round is
+   **stalled** (it resolved none of the previous round's finding fingerprints) or **oscillating**
+   (it reintroduced a fingerprint resolved in an earlier round). Stalls and oscillations escalate
+   immediately, before round 4.
+5. **Round 4 is headroom, not the plan:** the expected outcome is 3 rounds or fewer
+   (`review_loop_rounds` p90 ≤ 3). A growing share of changes reaching round 4 points upstream:
+   lens precision, the Builder's rung, or DRY churn. It is investigated, never answered by raising
+   the cap.
 
 ### Budgets
 
@@ -215,14 +281,16 @@ exhausting either ends the task as `gave_up` and escalates.
 ## 8️⃣ Human in the Loop
 
 - **Humans approve merges to staging and prod.** Auto-merge is allowed only on narrow, low-risk
-  paths (e.g. dev, docs-only) and widened only when metrics justify it.
+  paths (e.g. dev, docs-only) and widened only when metrics justify it. "Metrics justify it" is
+  defined in `00_UniversalStandards/10_Autonomy_by_Evidence.md`: per-class promotion on statistical
+  control and demonstrated defect rates, with protected classes held at L2.
 - **Agents never message people.** They set a PR label (`ready-for-human`, `needs-decision`);
   one notification service fans out:
 
 | Situation | Channel |
 | :--- | :--- |
 | Clean and ready for approval | Pinned review-channel message + email (ticket level, no page) |
-| Round 3 reached or stalled with findings left | Same, marked **needs decision**, findings listed |
+| Round 4 reached, stalled, or oscillating with findings left | Same, marked **needs decision**, findings listed |
 | Prod, IAM, or state change; loop broken; budget exceeded | Also an **alert** |
 | Approved or closed | Unpin; record the outcome in the thread |
 

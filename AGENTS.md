@@ -45,6 +45,83 @@ subset (IaC and Node/TypeScript). They narrow the general philosophy in
   never change their shape without updating all consumers in the same change, and never
   silently widen/narrow an exported type.
 
+## Application Architecture Rules
+
+How services are shaped (rationale in `02_BackendZone/05_Application_Architecture.md`).
+
+- **Start as a modular monolith.** Split a module into its own service only for a measured reason
+  (independent scaling, failure isolation, ownership, a different runtime or security boundary),
+  recorded in the change that splits it.
+- **Each service owns its data.** No other service reads or writes its store; data crosses
+  boundaries only through versioned APIs or events.
+- **No network call inside a database transaction.** Connection pools are sized with Little's Law
+  and bounded like any Governor.
+- **Schemas change by expand, then contract**, one reversible step per change; dropping the old
+  shape is irreversible and always human-approved.
+- **Events are published through a transactional outbox**; consumers record processed event IDs
+  (inbox) and are safe to replay. Multi-service workflows are sagas with compensating actions, never
+  distributed transactions.
+- **Every queue states its ordering and DLQ policy**, and carries trace context in message headers.
+- **Every remote call has a timeout**; retries only for idempotent operations, with backoff, jitter,
+  and idempotency keys for writes.
+- **Never cache an authorization decision** longer than the credential it rests on.
+- **The rules are checked from one file.** Each rule has an `ARCH-*` ID in
+  `schemas/architecture_rules.v1.json`. rig runs its static checks on the diff and its trace checks
+  on the targeted test run's traces; the Reviewer's `architecture` lens rubric is generated from the
+  same file, only for the rules matching what the unit touches. A span missing an attribute a check
+  needs is unverifiable, never compliant.
+
+## Container Rules
+
+How work runs and how images are built (rationale in `00_UniversalStandards/12_Containers.md`).
+
+- **Everything runs in a pinned container.** Builds, tests, linters, scanners, benchmarks, and
+  verification run in a container image pinned by digest, the same image locally and in CI. A
+  result names the image it ran in; a result from host-installed tools is provisional.
+- **Pin completely:** base images by digest, packages by exact version with a lockfile, downloaded
+  binaries by checksum. Tools with conflicting dependencies get separate environments.
+- **Images are multi-stage, minimal, stateless, and non-root**, run one process in exec form, take
+  configuration from the environment, and are built once and promoted by digest.
+- **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
+
+## Supply Chain Rules
+
+Know what goes into every artifact and prove where it came from (rationale in
+`00_UniversalStandards/13_Supply_Chain.md`).
+
+- **Pin every input:** packages by exact version in a committed lockfile, base images by digest,
+  downloads by checksum or signature, actions by commit SHA. Update pins through gated pull
+  requests, never through floating ranges.
+- **Every released artifact has an SBOM** and a keyless signature from the pipeline's identity,
+  with provenance; deploys admit only artifacts whose signature verifies.
+- **Licenses are checked against a reviewed policy;** a denied license blocks.
+
+## Test Quality Rules
+
+A passing suite counts only if its tests could fail (rationale in
+`00_UniversalStandards/14_Test_Quality.md`).
+
+- **No committed `.only` or `.skip`, and every test asserts**; expected failures are asserted
+  precisely.
+- **Changed-line coverage is reported** on every pull request and each repository holds its
+  coverage floor; **mutation score** is tracked with a floor.
+- **A flaky test is a defect:** rerun once at most, then fixed or quarantined with an owner.
+
+## Anti-Pattern Rules
+
+One catalog, two consumers (rationale in `00_UniversalStandards/11_Anti_Pattern_Catalog.md`;
+catalog in `schemas/antipatterns.v1.json`).
+
+- **rig and the Reviewer read the same catalog** and normalize detector hits to
+  `antipattern_finding.v1` identically, proven by the shared conformance vectors.
+- **Map existing tools before writing checks.** A custom rig check exists only where no tool covers
+  the pattern, and is marked `custom`.
+- **Anti-pattern findings are advisory and never block** in v1. The CI gate's own thresholds are
+  unchanged by the catalog.
+- **Verified means run:** a mapping is `verified` only when the tool ran on the rule's positive and
+  negative cases in the pinned toolchain image. Promotion needs measured precision, never an
+  assumption.
+
 ## Observability Rules
 
 Telemetry ships with the first line of code, not after the feature works (see
@@ -103,6 +180,46 @@ cloud, and services are built inside them (rationale in
 - Only Genesis's apply identity can change guardrails; Genesis merges need human approval.
 - New services are vended by Genesis into the hierarchy, not hand-built.
 
+## Reuse Rules
+
+Say each thing once, in the right place (rationale in `00_UniversalStandards/09_Reuse_and_DRY.md`;
+the reuse map is rig's `schemas/symbol_index.v1.json`).
+
+- **Extract on the third copy, or the second for security code and contracts.** Prefer duplication
+  over an abstraction that needs flags and special cases to fit its callers.
+- **Two scopes.** `internal` = inside one declared boundary (TS package, Go module, Python package,
+  Terraform module); `shared` = exported symbols in `packages/` or `schemas/`, or marked `@shared`.
+  Undeclared or ambiguous is `internal`. Exported is not shared.
+- **Never import another boundary's `internal` symbol.** Promotion to `shared` is its own reviewed
+  change.
+- **The reuse map is generated, never hand-written,** by rig on every merge. Agents get a slice of
+  it, never the whole index, and never see another boundary's internals.
+- **Contracts have one home:** the playbook's `schemas/`, vendored as `.playbook/schemas/`. A copy
+  of a contract or an exact reuse of a string contract (metric, span, env var, label name) blocks.
+- **Across languages, share the spec and test vectors, not code.**
+- **DRY findings are fixed in the same PR** when deterministic (a clone, or a hash or signature
+  match against the reuse map); the fix stays inside the PR's files.
+
+## Autonomy Rules
+
+A person leaves a process step only when the evidence shows the step is stable, capable, and better
+without them (rationale in `00_UniversalStandards/10_Autonomy_by_Evidence.md`; policy in
+`schemas/autonomy_policy.v1.json`). The long-term target is Six Sigma (3.4 defects per million);
+current volume cannot demonstrate it, so promotion uses explicit interim targets that tighten as
+volume grows.
+
+- Autonomy is granted per process class, one level at a time (L0 manual to L4 unattended), through
+  a reviewed change to the policy. It is never granted globally or by assumption.
+- **Never automate a broken process:** a class must be in statistical control, meet its interim
+  defect-rate target at 95% confidence, and (L3 and above) pass self-stop drills before promotion.
+- **Measure the human before removing the human:** promotion past a human step needs evidence that
+  the step is an unreliable gauge, adds no detection, is the bottleneck, or introduces defects. A
+  human step that catches what machines miss stays.
+- **Protected classes never exceed L2:** security, ethics, irreversible changes, and merges to
+  staging and production. Membership is decided deterministically and fails closed.
+- **Demotion is automatic:** an out-of-control signal, an incident traced to the class, or a failed
+  self-stop drill drops the class one level, with an incident record.
+
 ## Security Rules
 
 Security in depth: every layer assumes the one before it can fail (rationale and the `SEC-*`
@@ -150,19 +267,34 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   never free-form.
 - **Bounded loops.** Every agent loop is a Governor: a configurable max attempt count, a **token
   budget per change**, a timeout / `AbortSignal` per tool and model call, and a terminal `gave_up`
-  status. PR review rounds end at no blocking findings, **round 3**, or a **stalled** round (no
-  finding fingerprints resolved), then escalate to a human. Only blocking findings start a round.
+  status. PR review rounds end at no blocking findings, **round 4**, or a **stalled** round (no
+  finding fingerprints resolved) or **oscillating** round (a resolved fingerprint reintroduced),
+  then escalate to a human. Only blocking findings and deterministic DRY findings start a round.
+  Round 4 is headroom: the expected outcome is 3 rounds or fewer (`review_loop_rounds` p90 ≤ 3).
+- **Classify build failures before fixing.** rig classifies each failure
+  (`build_failure.v1`); only `code` and `config` failures reach the Builder. `infra` and `unknown`
+  go to a human, `flaky` gets one rerun, `mechanical` gets a deterministic auto-fix.
+- **Evidence is requested, never fetched by the model.** Models emit declarative
+  `evidence_request.v1` (`symbol_context`, or `run_tests` on symbols, never commands); code
+  validates and fulfils them. At most 2 model calls and 1 evidence round per review unit.
+- **Lenses, not extra agents.** Reuse, security, and architecture are Reviewer lenses. Deterministic security
+  tools block; the security lens escalates to required human approval and never blocks by itself.
 - **Gates before PRs.** The Builder opens a PR only after the no-op, scope, duplicate, and
   rig-scan gates pass (plus self-review when enabled).
 - **AI review advises; humans approve.** Merges to staging and prod require human approval.
-  Auto-merge is limited to explicitly allow-listed low-risk paths.
+  Auto-merge is limited to process classes promoted to L3 or above under Autonomy Rules, never to
+  a protected class.
 - **Third-party coding agents are allowed only behind the same invariant.** A platform-external
   agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
   passes the same deterministic gates and the same human-approved merge, and never bypasses them.
   Branch protection is what enforces this for every agent, ours and theirs alike.
-- **Model weight is a ladder, not a tier.** Rules/Jev emit a continuous difficulty score that
-  selects the cheapest model that fits (config-driven rungs); the fail-closed ceiling forces the
-  top rung. Spend compute proportional to difficulty (`06_AgentZone/01_Agent_Standards.md` §6).
+- **Model weight is a ladder, not a tier.** Rules, then a complexity assessor, produce a continuous
+  difficulty score that selects the cheapest model that fits (config-driven rungs); the fail-closed
+  ceiling forces the top rung. Spend compute proportional to difficulty
+  (`06_AgentZone/01_Agent_Standards.md` §6).
+- **The complexity assessor answers complexity, never routing.** It reads rig's `features.v1` (never
+  raw code) and judges the change; policy code maps its answers to the rung, the lenses, and whether
+  evidence may be fetched.
 - **Spend tokens only where code cannot decide.** Rules run before any router or model; a model
   step stays only if its metrics show it improves outcomes.
 - **Models are injected.** Agents depend on a provider-agnostic model interface; the provider and
