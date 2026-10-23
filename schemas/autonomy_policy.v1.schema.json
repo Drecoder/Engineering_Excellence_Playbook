@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "autonomy_policy.v1.schema.json",
+  "title": "autonomy_policy.v1",
+  "description": "Validates schemas/autonomy_policy.v1.json. Enforces the standard's hard limits in the structure itself: protected classes cannot exceed L2, current_level cannot exceed max_level, and the long-term target stays Six Sigma.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "description", "objective", "levels", "interim_targets", "control", "default_defects", "process_classes"],
+  "properties": {
+    "schema_version": { "const": "autonomy_policy.v1" },
+    "description": { "type": "string" },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["long_term_target_dpmo", "statement"],
+      "properties": {
+        "long_term_target_dpmo": { "const": 3.4 },
+        "statement": { "type": "string", "minLength": 1 }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "name", "summary"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 0, "maximum": 4 },
+          "name": { "type": "string" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "interim_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "max_defect_rate", "confidence", "min_defect_free_events"],
+        "properties": {
+          "level": { "enum": [3, 4] },
+          "max_defect_rate": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.05 },
+          "confidence": { "type": "number", "minimum": 0.9, "maximum": 0.999 },
+          "min_defect_free_events": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["charts", "out_of_control_rules", "in_control_periods_for_promotion", "period", "min_cpk"],
+      "properties": {
+        "charts": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "out_of_control_rules": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "in_control_periods_for_promotion": { "type": "integer", "minimum": 1 },
+        "period": { "enum": ["day", "week", "month"] },
+        "min_cpk": { "type": "number", "minimum": 1 }
+      }
+    },
+    "default_defects": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "process_classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "protected", "current_level", "max_level"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "description": { "type": "string", "minLength": 1 },
+          "protected": { "type": "boolean" },
+          "protected_reason": { "enum": ["security", "ethics", "irreversible", "environment"] },
+          "current_level": { "type": "integer", "minimum": 0, "maximum": 4 },
+          "max_level": { "type": "integer", "minimum": 0, "maximum": 4 },
+          "defects": { "type": "array", "items": { "type": "string" } }
+        },
+        "if": { "properties": { "protected": { "const": true } } },
+        "then": {
+          "required": ["protected_reason"],
+          "properties": {
+            "protected_reason": { "enum": ["security", "ethics", "irreversible", "environment"] },
+            "max_level": { "type": "integer", "maximum": 2 },
+            "current_level": { "type": "integer", "maximum": 2 }
+          }
+        }
+      }
+    }
+  }
+}

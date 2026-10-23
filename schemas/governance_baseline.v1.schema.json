@@ -99,13 +99,13 @@
       "additionalProperties": false,
       "required": ["status"],
       "properties": {
-        "status": { "enum": ["org_policy", "org_config", "iam", "vending", "not_applicable"] },
+        "status": { "enum": ["org_policy", "org_config", "iam", "hierarchical_firewall", "detective", "vending", "not_applicable"] },
         "note": { "type": "string" },
         "constraints": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/gcpConstraint" } }
       },
       "if": { "properties": { "status": { "const": "org_policy" } } },
-      "then": { "required": ["constraints"] },
-      "else": { "not": { "required": ["constraints"] }, "required": ["note"] }
+      "then": { "required": ["constraints"], "properties": { "constraints": { "type": "array" } } },
+      "else": { "not": { "required": ["constraints"], "properties": { "constraints": { "type": "array" } } }, "required": ["note"], "properties": { "note": { "type": "string" } } }
     },
     "gcpConstraint": {
       "type": "object",
@@ -129,13 +129,13 @@
       "additionalProperties": false,
       "required": ["status"],
       "properties": {
-        "status": { "enum": ["scp", "vending", "not_applicable"] },
+        "status": { "enum": ["scp", "network_policy", "detective", "vending", "not_applicable"] },
         "note": { "type": "string" },
         "statements": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scpStatement" } }
       },
       "if": { "properties": { "status": { "const": "scp" } } },
-      "then": { "required": ["statements"] },
-      "else": { "not": { "required": ["statements"] }, "required": ["note"] }
+      "then": { "required": ["statements"], "properties": { "statements": { "type": "array" } } },
+      "else": { "not": { "required": ["statements"], "properties": { "statements": { "type": "array" } } }, "required": ["note"], "properties": { "note": { "type": "string" } } }
     },
     "scpStatement": {
       "type": "object",

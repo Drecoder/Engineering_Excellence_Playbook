@@ -118,6 +118,11 @@ code; analysis tools and reviewers return findings, never patches.
   trim or fail loudly — never let the runtime silently truncate the instructions.
 - **Few-shot from known-good outputs.** Use one short example per task where it helps; keep
   golden expected outputs as the eval set.
+- **Checked by rig.** The violations of these rules are catalogued as `AP-AI-*` in
+  `schemas/antipatterns.v1.json`: a prompt written at the call site, a model call without a context
+  window, output cap, or timeout, undelimited untrusted input, unvalidated model output, and a model
+  hard-coded at the call site. No existing linter knows these rules, so they are custom rig checks,
+  planned until rig implements them.
 
 ---
 
@@ -228,20 +233,27 @@ A recurring failure fingerprint marks a stalled fix; the next fix task reverts t
 ### Review lenses and evidence
 
 - The Reviewer reviews each unit through **lenses** (`blast`, `simple`, `chaos`, `benchmark`,
-  `doc`, and the `reuse` and `security` lenses); policy code picks which lenses apply from the
-  complexity answers. Lenses are views of one Reviewer, not separate agents.
+  `doc`, and the `reuse`, `security`, and `architecture` lenses); policy code picks which lenses
+  apply from the complexity answers. Lenses are views of one Reviewer, not separate agents.
 - **Security:** deterministic tools (secret scanning, `SEC-*`, injection rules, IAM from the plan
   JSON) **block**. The `security` lens **escalates**: a high-confidence finding sets a label that
   requires human approval, and never blocks by itself.
 - **Reuse:** see `00_UniversalStandards/09_Reuse_and_DRY.md`. Deterministic DRY findings (a clone,
   or a hash or signature match against the reuse map) are fixed in the same PR; the lens's
   "looks similar" findings stay advisory.
+- **Architecture:** the lens rubric is generated from `schemas/architecture_rules.v1.json`, only
+  for the `ARCH-*` rules whose `applies_when` matches the unit's `features.v1` `structure.touches`;
+  rig's static and trace hits for those rules go in as known findings. Deterministic hits on
+  blocking rules block; the lens's findings are advisory, except a protected class (`ARCH-009`
+  irreversible, `ARCH-022` security), which escalates
+  (`02_BackendZone/05_Application_Architecture.md` §10).
 - **Evidence, declaratively.** The model never calls tools. It emits `evidence_request.v1`
   (`symbol_context`, or `run_tests` on symbols, never commands); the orchestrator validates and
   fulfils it and appends `evidence_response.v1` (with provenance, limits, and uncertainty) to the
   unit's `review_context.v1`. At most **2 model calls and 1 evidence round per unit**. Runtime
-  evidence is targeted test results; traces and state snapshots are added only when the benchmark
-  shows they pay for themselves.
+  evidence is targeted test results; raw traces and state snapshots are added to the model's context
+  only when the benchmark shows they pay for themselves. rig's deterministic trace checks are
+  separate: they read the test run's traces in code and cost no tokens.
 
 ### PR review rounds
 
@@ -269,7 +281,9 @@ exhausting either ends the task as `gave_up` and escalates.
 ## 8️⃣ Human in the Loop
 
 - **Humans approve merges to staging and prod.** Auto-merge is allowed only on narrow, low-risk
-  paths (e.g. dev, docs-only) and widened only when metrics justify it.
+  paths (e.g. dev, docs-only) and widened only when metrics justify it. "Metrics justify it" is
+  defined in `00_UniversalStandards/10_Autonomy_by_Evidence.md`: per-class promotion on statistical
+  control and demonstrated defect rates, with protected classes held at L2.
 - **Agents never message people.** They set a PR label (`ready-for-human`, `needs-decision`);
   one notification service fans out:
 

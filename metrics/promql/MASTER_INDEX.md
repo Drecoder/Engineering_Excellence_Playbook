@@ -63,3 +63,18 @@ See `00_UniversalStandards/09_Reuse_and_DRY.md` and `06_AgentZone/01_Agent_Stand
 | **Fix Success by Rung** | `sum by (rung, error_class) (increase(fix_attempts_total{outcome="success"}[7d])) / sum by (rung, error_class) (increase(fix_attempts_total[7d]))` |
 | **Findings Dropped (failed evidence check)** | `sum by (lens, reason) (increase(review_findings_dropped_total[7d]))` |
 | **Complexity Conformance vs Sonar** | `sum by (language) (increase(complexity_conformance_mismatch_total[1d]))` (must be 0) |
+
+## 7. Autonomy by Evidence
+
+See `00_UniversalStandards/10_Autonomy_by_Evidence.md`. Long-term target: 3.4 DPMO (Six Sigma).
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Autonomy Level per Class** | `max by (process_class) (autonomy_level)` |
+| **Defect Proportion per Class (p-chart input)** | `sum by (process_class) (increase(process_events_total{outcome="defect"}[1w])) / sum by (process_class) (increase(process_events_total[1w]))` |
+| **Demonstrated Defect-Rate Bound** | `max by (process_class) (process_defect_rate_upper_bound)` |
+| **DPMO Toward Six Sigma** | `max by (process_class) (process_dpmo_estimate)` (target 3.4) |
+| **Out-of-Control Signals** | `sum by (process_class, rule) (increase(process_out_of_control_total[1w]))` |
+| **Demotions** | `sum by (process_class, reason) (increase(autonomy_demotions_total[30d]))` |
+| **Human Wait Share of Lead Time** | `sum by (process_class) (rate(human_wait_seconds_sum[1w])) / sum by (process_class) (rate(change_lead_time_seconds_sum[1w]))` |
+| **Reviewer Agreement (Gage R&R analogue)** | `avg by (process_class) (reviewer_agreement_ratio)` |

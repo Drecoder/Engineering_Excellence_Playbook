@@ -1,0 +1,38 @@
+{
+  "schema_version": "autonomy_policy.v1",
+  "description": "How much of each change-process class runs without a person, and the evidence that level requires. Defined in 00_UniversalStandards/10_Autonomy_by_Evidence.md; validated by autonomy_policy.v1.schema.json. current_level is a reviewed decision recorded here; the evidence behind it (events, defects, control signals) is live telemetry, never claimed in this file. Promotion is one level at a time, through a reviewed change to this file. Demotion is automatic.",
+  "objective": {
+    "long_term_target_dpmo": 3.4,
+    "statement": "The long-term objective is Six Sigma quality (3.4 defects per million opportunities) for every process class. The hypothesis is that, in a stable and instrumented process, the human step is the largest remaining source of variation. Current demand cannot statistically demonstrate Six Sigma (about 900,000 consecutive defect-free events at 95% confidence), so the interim targets below are what today's volume can actually show, and they tighten through reviewed changes as volume grows."
+  },
+  "levels": [
+    { "level": 0, "name": "manual", "summary": "People write, review, merge, and apply." },
+    { "level": 1, "name": "human_and_machine", "summary": "Agents propose; a person reviews and merges every change." },
+    { "level": 2, "name": "machine_detects_and_stops", "summary": "Deterministic gates block and agents fix what they block; a person approves every merge." },
+    { "level": 3, "name": "human_on_exception", "summary": "Merge without a person when every gate is green and the class is in control; people answer the andon." },
+    { "level": 4, "name": "unattended", "summary": "Merge, apply, and automatic rollback without a person; people review control charts and incident records." }
+  ],
+  "interim_targets": [
+    { "level": 3, "max_defect_rate": 0.01, "confidence": 0.95, "min_defect_free_events": 300 },
+    { "level": 4, "max_defect_rate": 0.001, "confidence": 0.95, "min_defect_free_events": 3000 }
+  ],
+  "control": {
+    "charts": ["p_chart_defect_proportion", "individuals_moving_range_lead_time", "individuals_moving_range_review_rounds"],
+    "out_of_control_rules": ["point_beyond_3_sigma", "two_of_three_beyond_2_sigma", "four_of_five_beyond_1_sigma", "eight_on_one_side_of_center"],
+    "in_control_periods_for_promotion": 8,
+    "period": "week",
+    "min_cpk": 1.33
+  },
+  "default_defects": ["reverted_or_rolled_back_after_merge", "post_merge_apply_failed_or_partial", "incident_traced_to_change", "escaped_defect_found_later", "gate_bypassed_or_overridden"],
+  "process_classes": [
+    { "id": "docs_only", "description": "Changes to documentation only.", "protected": false, "current_level": 1, "max_level": 4 },
+    { "id": "dependency_patch", "description": "Patch-level dependency bumps proposed by Dependabot, with all gates green.", "protected": false, "current_level": 1, "max_level": 4 },
+    { "id": "dev_app_code", "description": "Application code merged to a dev environment, outside protected paths.", "protected": false, "current_level": 1, "max_level": 4 },
+    { "id": "dev_iac_unprotected", "description": "Infrastructure changes in dev that add or update resources and touch no IAM, network exposure, governance, or state.", "protected": false, "current_level": 1, "max_level": 4 },
+    { "id": "security", "description": "IAM and identity, governance guardrails and exceptions, secrets, network exposure, CI permissions.", "protected": true, "protected_reason": "security", "current_level": 1, "max_level": 2 },
+    { "id": "ethics", "description": "Changes to how user data is collected, used, retained, or shared; decisions that affect people rather than systems.", "protected": true, "protected_reason": "ethics", "current_level": 1, "max_level": 2 },
+    { "id": "irreversible", "description": "Deletes, state moves and replacements, data destruction or migration, anything a rollback cannot undo.", "protected": true, "protected_reason": "irreversible", "current_level": 1, "max_level": 2 },
+    { "id": "staging_merge", "description": "Merges to staging.", "protected": true, "protected_reason": "environment", "current_level": 1, "max_level": 2 },
+    { "id": "prod_merge", "description": "Merges to production.", "protected": true, "protected_reason": "environment", "current_level": 1, "max_level": 2 }
+  ]
+}
