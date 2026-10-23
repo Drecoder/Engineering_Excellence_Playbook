@@ -104,6 +104,10 @@ interrupts work.
   its home repo's identities.
 - Callers pin shared workflows to a release tag or commit SHA. Tracking a branch (`@main`) is
   tolerated only until the central repo tags releases.
+- **Workflow files are code and are checked like code.** actionlint and zizmor find the workflow
+  anti-patterns (`AP-GHA-*` in `schemas/antipatterns.v1.json`): untrusted input expanded into a
+  script, actions not pinned to a commit SHA, broad job permissions, `pull_request_target`,
+  persisted checkout credentials, and `secrets: inherit`.
 
 ---
 
@@ -171,6 +175,8 @@ and PR — no model, no tokens, no reliance on memory. Policy ids appear in find
 | `SEC-009` | Audit logging is enabled in every account and project |
 | `SEC-010` | No secrets in code or config (secret scanning) |
 | `SEC-011` | No firewall or security-group rule allows `0.0.0.0/0` or `::/0` to management ports (SSH 22, RDP 3389) |
+| `SEC-012` | Container images run as a non-root user, pin their base image by digest, carry no secrets in layers or build arguments, and pass the image scan (`00_UniversalStandards/12_Containers.md`) |
+| `SEC-013` | Every released artifact has an SBOM and a pipeline signature with provenance, and deploys admit only artifacts whose signature verifies (`00_UniversalStandards/13_Supply_Chain.md`) |
 
 A failing `SEC-*` policy blocks the change. Exceptions are granted per unit in a reviewed policy
 file, with an owner and an expiry date.
@@ -185,7 +191,11 @@ it is critical. No noise below that line.
 | Format, lint errors, type check, compile (`terragrunt hcl fmt`, `tflint`, `tsc --noEmit`, `go vet`, Python compile) | Any failure (pass/fail, no severity) | The failure |
 | Dependency and image scanners (`npm audit`, `pip-audit`, `trivy`) | **CRITICAL** severity, or any vulnerability on the **CISA KEV** list regardless of severity | Only the blocking findings |
 | `govulncheck` | Any finding (it reports only vulnerabilities the code actually calls) | Only the blocking findings |
+| IaC and dependency scanners (`trivy fs`: vulnerabilities and misconfigurations) | **CRITICAL** severity, or a CISA KEV entry | Only the blocking findings |
 | IaC scanners (`checkov`) | The `SEC-*` check list (hard-fail); all other checks soft-fail | Only the blocking findings |
+| Static analysis (`semgrep`: language, secrets, and security-audit rulesets) | `ERROR` severity, Semgrep's top level | Only the blocking findings |
+| Python static analysis (`bandit`) | **HIGH** severity with **HIGH** confidence | Only the blocking findings |
+| Secret scanning (`gitleaks`, `SEC-010`) | Any finding | The finding, redacted |
 | `SEC-*` policies | Always, whatever the severity | The failing policy |
 
 - **KEV overrides severity.** A vulnerability that is being exploited in the wild blocks even when
@@ -197,6 +207,10 @@ it is critical. No noise below that line.
 - Tools without a severity filter (`pip-audit`) run through a thin wrapper that maps findings to
   severity (OSV data) and applies this table. Open-source `checkov` has no severities, so it
   gates on check IDs instead.
+- **Every pipeline runs every scanner that fits its stack.** The shared gate workflow runs them all;
+  a scanner that exists only in a local benchmark or on one engineer's machine is a gap, not a
+  control. Each `SEC-*` policy maps to the scanner check IDs that enforce it, kept next to the
+  gate's check list.
 - Exceptions follow the same reviewed policy file (owner and expiry); a KEV finding cannot be
   excepted past its CISA due date.
 

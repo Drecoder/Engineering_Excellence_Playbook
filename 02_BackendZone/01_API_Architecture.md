@@ -69,6 +69,9 @@ All backend changes follow:
 - Unit and integration tests are mandatory  
 - Contract tests ensure frontend and backend alignment  
 - CI pipeline validates schema, tests, and monitoring hooks  
+- Contracts are checked deterministically (`AP-API-*` in `schemas/antipatterns.v1.json`): Spectral
+  lints OpenAPI and AsyncAPI documents, oasdiff compares each OpenAPI change with the previous
+  version for breaking changes, and buf lints Protobuf and checks it for breaking changes  
 
 ---
 

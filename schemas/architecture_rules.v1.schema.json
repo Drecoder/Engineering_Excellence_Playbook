@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "architecture_rules.v1.schema.json",
+  "title": "architecture_rules.v1",
+  "description": "Validates schemas/architecture_rules.v1.json, the machine-readable form of 02_BackendZone/05_Application_Architecture.md. rig reads it for its deterministic static and trace checks; the Reviewer generates its architecture lens rubric from it. Both reject an invalid file instead of repairing it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "description", "source", "parameters", "conventions", "touches", "rules"],
+  "properties": {
+    "schema_version": { "const": "architecture_rules.v1" },
+    "description": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "description": "The standard these rules implement." },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ownership_registry", "max_sync_call_depth", "max_authz_cache_ttl_seconds", "review_sampling_ratio"],
+      "properties": {
+        "ownership_registry": { "type": "string", "description": "Where the data-store owner map (store -> owning service) is read from." },
+        "max_sync_call_depth": { "type": "integer", "minimum": 1 },
+        "max_authz_cache_ttl_seconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+        "review_sampling_ratio": { "const": 1, "description": "Review-time test runs record every span; sampled traces can only show 'not observed'." }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "description": "Span names and attributes the traced() wrapper must emit for trace checks to work. Each is a telemetry contract: renaming one updates these rules in the same change.",
+      "additionalProperties": false,
+      "required": ["semconv", "platform_spans", "platform_attributes"],
+      "properties": {
+        "semconv": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "platform_spans": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "minLength": 1 },
+          "minProperties": 1
+        },
+        "platform_attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "minLength": 1 },
+          "minProperties": 1
+        }
+      }
+    },
+    "touches": {
+      "type": "array",
+      "description": "The closed vocabulary rig uses in features.v1 structure.touches; a rule's applies_when draws from it.",
+      "items": { "type": "string", "pattern": "^[a-z_]+$" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "stage": {
+      "type": "string",
+      "enum": ["specified", "implemented", "golden_tested"],
+      "description": "specified: written here only. implemented: rig runs it. golden_tested: it passes fixtures that must pass and fixtures designed to fail."
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "detects"],
+      "properties": {
+        "stage": { "$ref": "#/$defs/stage" },
+        "detects": { "type": "string", "minLength": 1, "description": "The violation, stated as what rig matches." },
+        "requires": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Span attributes or conventions the check needs. A span missing one is reported as unverifiable, never as compliant."
+        }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "section", "title", "intent", "blocking", "applies_when", "lens"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^ARCH-[0-9]{3}$" },
+        "section": { "type": "string", "pattern": "^§[0-9]+$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "intent": { "type": "string", "minLength": 1 },
+        "blocking": { "type": "boolean", "description": "Whether a deterministic hit blocks the PR. Lens findings never block; they are advisory or escalate." },
+        "protected_class": { "type": "string", "enum": ["irreversible", "security"], "description": "A hit routes the change to required human approval at every autonomy level." },
+        "applies_when": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z_]+$" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "static_check": { "$ref": "#/$defs/check" },
+        "trace_check": { "$ref": "#/$defs/check" },
+        "lens": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ask"],
+          "properties": {
+            "ask": { "type": "string", "minLength": 1, "description": "The question the architecture lens answers for what the checks cannot decide. Rubric text is generated from this; it is never hand-written in the prompt." }
+          }
+        }
+      }
+    }
+  }
+}

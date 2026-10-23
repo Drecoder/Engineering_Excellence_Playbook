@@ -109,6 +109,10 @@ cloud owns:
 - Unit tests use an in-memory exporter to assert expected spans and attributes exist.
 - Dashboards are committed as JSON (`dashboards/<service>.json`) and change in the same PR as
   the metrics they display.
+- **Alerting and recording rules are linted** with pint against the playbook's policy
+  (`metrics/promql/pint.hcl`; `AP-OBS-*` in `schemas/antipatterns.v1.json`): every alert has a
+  `severity` (page or ticket), a `summary`, and a `runbook_url`, waits at least one minute (`for:`)
+  before firing, and references only labels its query keeps; recording rules keep `job`.
 
 ---
 

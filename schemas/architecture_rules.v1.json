@@ -1,0 +1,396 @@
+{
+  "schema_version": "architecture_rules.v1",
+  "description": "The Application Architecture standard as checkable rules. rig runs the static and trace checks deterministically; the Reviewer's architecture lens is generated from the lens asks of the rules whose applies_when matches the unit's features.v1 structure.touches. A check at stage 'specified' is not yet run by rig; its rule still feeds the lens.",
+  "source": "02_BackendZone/05_Application_Architecture.md",
+  "parameters": {
+    "ownership_registry": "Each service's data_stores list in its Genesis vending record; rig reads the vendored copy.",
+    "max_sync_call_depth": 3,
+    "max_authz_cache_ttl_seconds": 3600,
+    "review_sampling_ratio": 1
+  },
+  "conventions": {
+    "semconv": [
+      "service.name",
+      "db.system.name",
+      "db.namespace",
+      "db.operation.name",
+      "messaging.system",
+      "messaging.operation.type",
+      "messaging.destination.name",
+      "http.request.method",
+      "url.template",
+      "server.address"
+    ],
+    "platform_spans": {
+      "db.transaction": "Wraps one database transaction, from begin to commit or rollback. Every db, client, and producer span inside it is its descendant.",
+      "outbox.relay": "Root of the relay's trace: reads outbox rows and publishes them.",
+      "inbox.check": "The consumer's lookup and insert of the event ID in its inbox table."
+    },
+    "platform_attributes": {
+      "app.timeout_ms": "On every CLIENT span: the timeout configured for the call, in milliseconds; 0 when none is set. On a SERVER span: the request's deadline.",
+      "app.retry.attempt": "On every CLIENT span: 0 for the first attempt, then 1, 2, ...",
+      "app.idempotency_key.present": "On every non-idempotent CLIENT span: true when the request carries an idempotency key.",
+      "app.db.isolation_level": "On db.transaction: the isolation level the code chose.",
+      "app.governor.limit": "On spans run under a Governor: its configured concurrency limit."
+    }
+  },
+  "touches": [
+    "module_import",
+    "new_deployable",
+    "db_access",
+    "db_transaction",
+    "migration",
+    "contract",
+    "queue_definition",
+    "queue_publish",
+    "queue_consume",
+    "http_client",
+    "list_endpoint",
+    "cache"
+  ],
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "section": "§1",
+      "title": "Modules import only each other's public interface",
+      "intent": "Module boundaries inside the monolith hold like repository boundaries, so a module can later become a service.",
+      "blocking": true,
+      "applies_when": ["module_import"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "An import of a path inside another module that is not in that module's declared public interface (rig rule illegal_boundary_import)."
+      },
+      "lens": { "ask": "Does the change couple to another module's internal behavior through a side channel the import check cannot see (shared globals, reflection, string-keyed lookups)?" }
+    },
+    {
+      "id": "ARCH-002",
+      "section": "§1",
+      "title": "A module becomes a service only for a recorded, measured reason",
+      "intent": "Each service adds a network hop, a failure mode, a pipeline, and an identity; it must pay for itself.",
+      "blocking": true,
+      "applies_when": ["new_deployable"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A change adds a deployable unit without a split record naming the reason (scaling, failure isolation, ownership, runtime or security boundary) and its evidence."
+      },
+      "lens": { "ask": "Does the recorded evidence (RED/USE metrics, an incident record, an ownership conflict) actually support the split, or is the reason speculative?" }
+    },
+    {
+      "id": "ARCH-003",
+      "section": "§2",
+      "title": "One owner per data store",
+      "intent": "Only the owning service reads or writes its store, so the owner can change its schema safely.",
+      "blocking": true,
+      "applies_when": ["db_access"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "IaC that grants a non-owner identity access to a store, or code and configuration in one service that connect to a store the ownership registry assigns to another."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A db span whose service.name is not the registered owner of its db.namespace.",
+        "requires": ["service.name", "db.namespace"]
+      },
+      "lens": { "ask": "Does the change read another service's data indirectly, for example through a shared reporting replica or an export file, instead of its API or events?" }
+    },
+    {
+      "id": "ARCH-004",
+      "section": "§2",
+      "title": "Data crosses boundaries only through versioned contracts",
+      "intent": "APIs and events are the only interfaces between owners; contracts shared across repositories live once in schemas/.",
+      "blocking": true,
+      "applies_when": ["contract"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A cross-boundary payload type without a version, or a local copy of a contract that exists in the vendored schemas (rig rule contract_copy)."
+      },
+      "lens": { "ask": "Does the change pass data between services through a channel that is not a versioned API or event?" }
+    },
+    {
+      "id": "ARCH-005",
+      "section": "§3",
+      "title": "No network call inside a database transaction",
+      "intent": "A slow remote call holding a transaction open exhausts connection pools and locks.",
+      "blocking": true,
+      "applies_when": ["db_transaction"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "An HTTP, gRPC, or queue client call lexically inside a transaction callback or between begin and commit."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A span of kind CLIENT or PRODUCER that is a descendant of a db.transaction span, other than the transaction's own db spans.",
+        "requires": ["db.transaction", "db.system.name"]
+      },
+      "lens": { "ask": "Can any call inside the transaction block on something remote through indirection the checks did not exercise (a callback, an injected dependency, a lazy-loaded client)?" }
+    },
+    {
+      "id": "ARCH-006",
+      "section": "§3",
+      "title": "Isolation level is chosen and recorded",
+      "intent": "The database default is a decision too; read-then-write workflows state theirs.",
+      "blocking": false,
+      "applies_when": ["db_transaction"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A transaction that reads and then writes without an explicit isolation level."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A db.transaction span containing both read and write db operations with no app.db.isolation_level.",
+        "requires": ["db.transaction", "app.db.isolation_level", "db.operation.name"]
+      },
+      "lens": { "ask": "Is the chosen isolation level sufficient for this read-then-write workflow, or can a concurrent writer cause a lost update or a write skew?" }
+    },
+    {
+      "id": "ARCH-007",
+      "section": "§3",
+      "title": "Connection pools are bounded Governors",
+      "intent": "A pool has a maximum size from Little's Law, a wait timeout, and metrics.",
+      "blocking": true,
+      "applies_when": ["db_access"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A connection pool configured without a maximum size or an acquire timeout."
+      },
+      "lens": { "ask": "Is the pool size consistent with the expected arrival rate times P99 query duration, and with the database's connection limit across all replicas?" }
+    },
+    {
+      "id": "ARCH-008",
+      "section": "§4",
+      "title": "One expand-or-contract step per change",
+      "intent": "Never break readers and writers in one step; each schema step deploys and reverts on its own.",
+      "blocking": true,
+      "applies_when": ["migration"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A migration that both adds and removes schema objects, renames a column or table in place, changes a column's type in place, or adds a NOT NULL column without a default."
+      },
+      "lens": { "ask": "Does the code in this change still work against both the previous and the next schema step?" }
+    },
+    {
+      "id": "ARCH-009",
+      "section": "§4",
+      "title": "The contract step is irreversible and human-approved",
+      "intent": "Dropping the old shape cannot be undone; a person approves it after confirming a backup exists.",
+      "blocking": false,
+      "protected_class": "irreversible",
+      "applies_when": ["migration"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A migration that drops a column, table, or index, or narrows a type. The hit routes the change to required human approval; it does not block by itself."
+      },
+      "lens": { "ask": "Has the switch-reads step run cleanly in production, and is anything still reading or writing the old shape?" }
+    },
+    {
+      "id": "ARCH-010",
+      "section": "§4",
+      "title": "Backfills run in bounded, resumable batches",
+      "intent": "A backfill respects the Governor and can resume after a failure.",
+      "blocking": false,
+      "applies_when": ["migration"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A data migration that updates rows without a batch bound or a resume key."
+      },
+      "lens": { "ask": "Can the backfill be stopped and resumed without redoing or skipping rows, and does its rate stay under the database's headroom?" }
+    },
+    {
+      "id": "ARCH-011",
+      "section": "§5",
+      "title": "Events are published through a transactional outbox",
+      "intent": "The business change and its event commit together; a relay publishes the event.",
+      "blocking": true,
+      "applies_when": ["queue_publish"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A queue publish call in the same code path as a database commit, outside the outbox relay."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A PRODUCER span (messaging.operation.type publish or send) with no outbox.relay span among its ancestors. A broken ancestor chain is unverifiable.",
+        "requires": ["messaging.operation.type", "outbox.relay"]
+      },
+      "lens": { "ask": "Is every event this change emits written in the same transaction as the state change it announces?" }
+    },
+    {
+      "id": "ARCH-012",
+      "section": "§5",
+      "title": "Consumers deduplicate through an inbox",
+      "intent": "A redelivered event changes nothing; consumers are safe to replay.",
+      "blocking": true,
+      "applies_when": ["queue_consume"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A message handler that writes to the database without recording the event ID in an inbox table."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A CONSUMER process span with db write spans but no inbox.check span inside the same db.transaction.",
+        "requires": ["messaging.operation.type", "inbox.check", "db.transaction"]
+      },
+      "lens": { "ask": "Does the handler have side effects outside its database (emails, payments, third-party calls) that the inbox cannot make idempotent?" }
+    },
+    {
+      "id": "ARCH-013",
+      "section": "§5",
+      "title": "Multi-service workflows are sagas, never distributed transactions",
+      "intent": "Each step commits locally and has a compensating action; two-phase commit is not used.",
+      "blocking": true,
+      "applies_when": ["db_transaction", "queue_publish"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "Use of an XA or two-phase-commit API, or a transaction manager spanning more than one data store."
+      },
+      "lens": { "ask": "Does each step of the workflow have a compensating action, and is the workflow correct if a later step fails after earlier steps committed?" }
+    },
+    {
+      "id": "ARCH-014",
+      "section": "§6",
+      "title": "Every queue declares delivery, ordering, and dead-lettering",
+      "intent": "Ordering is stated, poison messages go to a DLQ after bounded retries, and DLQ growth is a ticket.",
+      "blocking": true,
+      "applies_when": ["queue_definition"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A queue or topic in IaC without a dead-letter target and a bounded maximum delivery attempts, or without documented ordering (none, or the ordering key)."
+      },
+      "lens": { "ask": "Does the chosen ordering key match the consumer's ordering assumptions, and is the consumer correct when messages arrive out of order?" }
+    },
+    {
+      "id": "ARCH-015",
+      "section": "§6",
+      "title": "Trace context crosses the queue",
+      "intent": "Producers put trace context in message headers, so one trace follows the message.",
+      "blocking": true,
+      "applies_when": ["queue_publish", "queue_consume"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A publish that bypasses the shared wrapper and does not inject trace context into message headers."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A CONSUMER process span with neither a parent nor a span link to a PRODUCER span (an orphaned trace).",
+        "requires": ["messaging.operation.type"]
+      },
+      "lens": { "ask": "Is trace context lost anywhere the message is transformed, batched, or re-published?" }
+    },
+    {
+      "id": "ARCH-016",
+      "section": "§6",
+      "title": "Consumers pull through a Governor",
+      "intent": "A slow consumer lags; it does not fall over.",
+      "blocking": true,
+      "applies_when": ["queue_consume"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A consumer subscription without a maximum concurrency or flow-control limit."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "More concurrently open CONSUMER process spans for one subscription than its app.governor.limit.",
+        "requires": ["app.governor.limit"]
+      },
+      "lens": { "ask": "What happens downstream of this consumer when the backlog is large: does the limit protect the database and the services it calls?" }
+    },
+    {
+      "id": "ARCH-017",
+      "section": "§7",
+      "title": "Every remote call has a timeout shorter than the caller's deadline",
+      "intent": "A slow dependency cannot hold the caller.",
+      "blocking": true,
+      "applies_when": ["http_client"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "An HTTP or gRPC client created or called without a timeout."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A non-database CLIENT span whose app.timeout_ms is 0 (no timeout), that outlasted its app.timeout_ms by more than 50 ms, or whose app.timeout_ms is not shorter than its nearest ancestor's. A span without app.timeout_ms is unverifiable; the static check catches clients built without a timeout.",
+        "requires": ["app.timeout_ms"]
+      },
+      "lens": { "ask": "Do the timeouts on this path add up to less than the end-to-end deadline, including retries?" }
+    },
+    {
+      "id": "ARCH-018",
+      "section": "§7",
+      "title": "Retries only for idempotent operations; writes carry idempotency keys",
+      "intent": "A retried request is applied once.",
+      "blocking": true,
+      "applies_when": ["http_client"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A retry wrapper around a non-idempotent call (POST, PATCH) that sends no idempotency key, or a retry without backoff and jitter."
+      },
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A CLIENT span with app.retry.attempt above 0, a non-idempotent http.request.method, and app.idempotency_key.present not true.",
+        "requires": ["app.retry.attempt", "http.request.method", "app.idempotency_key.present"]
+      },
+      "lens": { "ask": "Does the server side honor the idempotency key, and does the retry budget stop a retry storm?" }
+    },
+    {
+      "id": "ARCH-019",
+      "section": "§7",
+      "title": "Every list endpoint paginates",
+      "intent": "No unbounded responses.",
+      "blocking": true,
+      "applies_when": ["list_endpoint"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A route that returns a collection without a page size limit and a cursor or offset parameter."
+      },
+      "lens": { "ask": "Is the maximum page size enforced on the server, and is the cursor stable under concurrent inserts?" }
+    },
+    {
+      "id": "ARCH-020",
+      "section": "§7",
+      "title": "Synchronous call chains stay shallow and acyclic",
+      "intent": "Long or circular synchronous chains between services are a distributed monolith.",
+      "blocking": false,
+      "applies_when": ["http_client"],
+      "trace_check": {
+        "stage": "specified",
+        "detects": "A chain of synchronous CLIENT-to-SERVER hops across distinct service.name values deeper than max_sync_call_depth, or any service appearing twice on one chain.",
+        "requires": ["service.name"]
+      },
+      "lens": { "ask": "Should part of this chain be an event instead of a synchronous call, or should the services be one module?" }
+    },
+    {
+      "id": "ARCH-021",
+      "section": "§8",
+      "title": "Every cached item has a TTL and an invalidation path",
+      "intent": "Cache-aside by default; nothing is cached forever.",
+      "blocking": true,
+      "applies_when": ["cache"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A cache write without a TTL."
+      },
+      "lens": { "ask": "When the source data changes, what invalidates this entry, and how stale can a reader see it?" }
+    },
+    {
+      "id": "ARCH-022",
+      "section": "§8",
+      "title": "Authorization decisions are never cached beyond their credential or shared",
+      "intent": "A cached authorization outlives neither the credential it rests on nor its user.",
+      "blocking": true,
+      "protected_class": "security",
+      "applies_when": ["cache"],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A cached authorization result with a TTL above max_authz_cache_ttl_seconds, or a cache key for an authorization result that does not include the principal."
+      },
+      "lens": { "ask": "Is any cached value derived from one caller's permissions readable by another caller?" }
+    },
+    {
+      "id": "ARCH-023",
+      "section": "§8",
+      "title": "The service is correct without its cache and safe from stampedes",
+      "intent": "A cache is an optimization; hot keys are protected by coalescing or early refresh.",
+      "blocking": false,
+      "applies_when": ["cache"],
+      "lens": { "ask": "Does the service stay correct with the cache empty or down, and what protects a hot key from a stampede when it expires?" }
+    }
+  ]
+}
