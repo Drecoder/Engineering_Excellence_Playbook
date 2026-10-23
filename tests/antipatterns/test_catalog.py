@@ -66,7 +66,7 @@ class CatalogContract(unittest.TestCase):
                      ("ci", "github-actions"), ("contracts", "openapi"), ("contracts", "asyncapi"),
                      ("contracts", "protobuf"), ("database", "postgres"), ("database", "sql"),
                      ("kubernetes", "manifests"), ("supply-chain", "scripts"), ("shell", "bash"),
-                     ("observability", "prometheus")]:
+                     ("observability", "prometheus"), ("typescript", "vitest"), ("python", "pytest")]:
             self.assertIn(need, covered, need)
 
     def test_terragrunt_checks_are_marked_custom(self):

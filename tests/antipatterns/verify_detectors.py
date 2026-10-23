@@ -29,7 +29,8 @@ ESLINT_HOME = Path(os.environ.get("ESLINT_WORKDIR", "/opt/eslint/work"))
 TIMEOUT = 300
 
 ESLINT_TOOLS = {"eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react",
-                "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "eslint-plugin-jsx-a11y"}
+                "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "eslint-plugin-jsx-a11y",
+                "eslint-plugin-vitest"}
 
 ESLINT_CONFIG = """import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
@@ -38,13 +39,14 @@ import n from 'eslint-plugin-n';
 import angular from '@angular-eslint/eslint-plugin';
 import rxjsX from 'eslint-plugin-rxjs-x';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import vitest from '@vitest/eslint-plugin';
 export default [{
   files: ['**/*.ts', '**/*.tsx', '**/*.js'],
   languageOptions: {
     parser: tseslint.parser,
     parserOptions: { projectService: { allowDefaultProject: ['*.js'] }, tsconfigRootDir: import.meta.dirname, ecmaFeatures: { jsx: true } },
   },
-  plugins: { '@typescript-eslint': tseslint.plugin, react, 'react-hooks': hooks, n, '@angular-eslint': angular, 'rxjs-x': rxjsX, 'jsx-a11y': jsxA11y },
+  plugins: { '@typescript-eslint': tseslint.plugin, react, 'react-hooks': hooks, n, '@angular-eslint': angular, 'rxjs-x': rxjsX, 'jsx-a11y': jsxA11y, vitest },
   settings: { react: { version: '19.0' } },
   rules: { 'RULE': 'error' },
 }];
@@ -320,7 +322,8 @@ def tool_version(tool):
         name = {"eslint": "eslint", "typescript-eslint": "typescript-eslint", "eslint-plugin-n": "eslint-plugin-n",
                 "eslint-plugin-react": "eslint-plugin-react", "eslint-plugin-react-hooks": "eslint-plugin-react-hooks",
                 "angular-eslint": "@angular-eslint/eslint-plugin", "eslint-plugin-rxjs-x": "eslint-plugin-rxjs-x",
-                "eslint-plugin-jsx-a11y": "eslint-plugin-jsx-a11y"}[tool]
+                "eslint-plugin-jsx-a11y": "eslint-plugin-jsx-a11y",
+                "eslint-plugin-vitest": "@vitest/eslint-plugin"}[tool]
         return f"{name}@{pkg[name]} (eslint@{pkg['eslint']})"
     if tool == "oasdiff":
         return "oasdiff v1.34.1 (go install; the binary reports no release tag)"

@@ -28,7 +28,7 @@
   },
   "$defs": {
     "semver": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
-    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB|K8S|SC|SH|OBS)-[0-9]{3}$" },
+    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB|K8S|SC|SH|OBS|TEST)-[0-9]{3}$" },
     "case": {
       "type": "object",
       "additionalProperties": false,
@@ -49,7 +49,7 @@
         "revision": { "type": "integer", "minimum": 1, "description": "Incremented when the rule's meaning or detector mapping changes. The ID never changes." },
         "added_in": { "$ref": "#/$defs/semver" },
         "stack": { "type": "string", "enum": ["go", "typescript", "python", "hcl", "docker", "ci", "contracts", "database", "kubernetes", "supply-chain", "shell", "observability"] },
-        "framework": { "type": "string", "enum": ["none", "nodejs", "react", "angular", "django", "fastapi", "terraform", "terragrunt", "dockerfile", "github-actions", "openapi", "asyncapi", "protobuf", "postgres", "sql", "manifests", "scripts", "python", "bash", "prometheus"] },
+        "framework": { "type": "string", "enum": ["none", "nodejs", "react", "angular", "django", "fastapi", "terraform", "terragrunt", "dockerfile", "github-actions", "openapi", "asyncapi", "protobuf", "postgres", "sql", "manifests", "scripts", "python", "bash", "prometheus", "vitest", "pytest"] },
         "title": { "type": "string", "minLength": 1, "maxLength": 90 },
         "description": { "type": "string", "minLength": 1 },
         "rationale": { "type": "string", "minLength": 1 },
@@ -60,7 +60,7 @@
           "additionalProperties": false,
           "required": ["tool", "rule_id", "custom", "mapping"],
           "properties": {
-            "tool": { "type": "string", "enum": ["go-vet", "staticcheck", "golangci-lint", "eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react", "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "eslint-plugin-jsx-a11y", "ruff", "semgrep", "bandit", "tflint", "checkov", "trivy", "hadolint", "actionlint", "zizmor", "shellcheck", "spectral", "oasdiff", "buf", "squawk", "sqlfluff", "kube-linter", "pint", "rig"] },
+            "tool": { "type": "string", "enum": ["go-vet", "staticcheck", "golangci-lint", "eslint", "typescript-eslint", "eslint-plugin-n", "eslint-plugin-react", "eslint-plugin-react-hooks", "angular-eslint", "eslint-plugin-rxjs-x", "eslint-plugin-jsx-a11y", "eslint-plugin-vitest", "ruff", "semgrep", "bandit", "tflint", "checkov", "trivy", "hadolint", "actionlint", "zizmor", "shellcheck", "spectral", "oasdiff", "buf", "squawk", "sqlfluff", "kube-linter", "pint", "rig"] },
             "rule_id": { "type": "string", "minLength": 1, "description": "The detector's own rule ID, exactly as the tool reports it." },
             "config": { "type": "string", "description": "Ruleset or plugin config the rule ships in, when the tool needs one (e.g. a Semgrep registry ruleset)." },
             "custom": { "type": "boolean", "description": "True only for checks rig implements itself (tool rig); false for an existing tool's rule." },

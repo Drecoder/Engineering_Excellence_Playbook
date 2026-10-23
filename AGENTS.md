@@ -96,6 +96,17 @@ Know what goes into every artifact and prove where it came from (rationale in
   with provenance; deploys admit only artifacts whose signature verifies.
 - **Licenses are checked against a reviewed policy;** a denied license blocks.
 
+## Test Quality Rules
+
+A passing suite counts only if its tests could fail (rationale in
+`00_UniversalStandards/14_Test_Quality.md`).
+
+- **No committed `.only` or `.skip`, and every test asserts**; expected failures are asserted
+  precisely.
+- **Changed-line coverage is reported** on every pull request and each repository holds its
+  coverage floor; **mutation score** is tracked with a floor.
+- **A flaky test is a defect:** rerun once at most, then fixed or quarantined with an owner.
+
 ## Anti-Pattern Rules
 
 One catalog, two consumers (rationale in `00_UniversalStandards/11_Anti_Pattern_Catalog.md`;
