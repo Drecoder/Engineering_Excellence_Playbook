@@ -24,6 +24,7 @@ I write code that is **predictable, testable, and observable**, aligning with ba
 | **Observability** | Log key events; expose metrics where needed |
 | **Documentation** | Component usage, props, context expectations |
 | **Code Review** | Peer-reviewed PRs, adhere to lint rules |
+| **Accessibility** | WCAG 2.2 AA: images have alt text, actions are buttons, every click handler works from the keyboard, labels are tied to their controls; checked by eslint-plugin-jsx-a11y (React) and angular-eslint template rules (Angular) as `AP-REACT-005`–`008` and `AP-ANGULAR-004`–`006` |
 
 ---
 

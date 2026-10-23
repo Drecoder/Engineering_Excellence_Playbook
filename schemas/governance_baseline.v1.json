@@ -183,6 +183,28 @@
         { "sid": "Gov013DenyLeaveOrg", "effect": "Deny", "actions": ["organizations:LeaveOrganization"], "resources": ["*"] },
         { "sid": "Gov013ProtectGovernanceRoles", "effect": "Deny", "actions": ["iam:*"], "resources": ["arn:aws:iam::*:role/governance-*"], "condition": { "ArnNotLike": { "aws:PrincipalArn": "arn:aws:iam::*:role/governance-*" } } }
       ] }
+    },
+    {
+      "id": "GOV-014",
+      "intent": "No management port (SSH 22, RDP 3389) is open to the internet.",
+      "guarantees": "A firewall or security-group rule that allows 0.0.0.0/0 or ::/0 to TCP 22 or 3389 is blocked at plan time (SEC-011) and, if created any other way, detected and removed in the cloud within the remediation window. With GOV-003 in place, a private VM is not reachable from the internet even before remediation.",
+      "does_not_guarantee": "That other ports are closed, that management access through IAP or SSM is limited to the right people, or that a rule created by a stolen credential is prevented rather than detected. API authorization cannot inspect the contents of a firewall rule, so the cloud layer here is detective, not preventive.",
+      "sec": "SEC-011",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "detective", "note": "Plan time: SEC-011 and Checkov (CKV_GCP_2 for SSH, observed blocking seeded rules in the Reviewer benchmark; the RDP check ID is to be confirmed against the Checkov version in use). Cloud: the live firewall-change audit alert, plus Security Command Center open-SSH and open-RDP findings with automated rule removal (finding names and remediation path to be confirmed in the conformance test). A custom organization policy constraint on firewall rules may make this preventive; that is to be verified before it is relied on." },
+      "aws": { "status": "detective", "note": "SCPs cannot see a security-group rule's source CIDR or port: there is no condition key for them, so this cannot be an SCP. Plan time: SEC-011 and Checkov security-group checks (check IDs to be confirmed). Cloud: AWS Config rules for unrestricted SSH and common ports with automatic remediation, or Firewall Manager security-group policies across the organization (rule names to be confirmed in the conformance test)." }
+    },
+    {
+      "id": "GOV-015",
+      "intent": "Workloads resolve DNS only through the platform's approved resolvers.",
+      "guarantees": "Outbound DNS (UDP and TCP 53, and DNS-over-TLS on 853) to anything other than the approved resolvers is dropped by network policy applied above the project or account, so a workload cannot opt out. Queries through the approved resolver are logged and can be filtered.",
+      "does_not_guarantee": "That DNS cannot be tunneled: DNS-over-HTTPS travels as ordinary HTTPS on 443 and is indistinguishable from other web traffic at L4, and data can still be exfiltrated through the approved resolver itself. Resolver-level filtering (e.g. Route 53 Resolver DNS Firewall) only sees queries sent to that resolver; it is not an egress firewall.",
+      "sec": null,
+      "mode": "dry_run",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "hierarchical_firewall", "note": "A hierarchical firewall policy at the organization or folder denies egress on UDP/TCP 53 and TCP 853 except to the approved resolver (the metadata server resolver at 169.254.169.254, or Cloud DNS inbound forwarding endpoints). Stays dry_run until the approved resolver design is decided; the conformance test sends direct queries over UDP and TCP and expects them dropped." },
+      "aws": { "status": "network_policy", "note": "Two different layers, tested separately: Firewall Manager deploys VPC network firewall or security-group egress policy that drops direct DNS (UDP/TCP 53, TCP 853) except to the VPC resolver; Route 53 Resolver DNS Firewall filters and logs the queries that do reach the resolver. Stays dry_run until the resolver design is decided." }
     }
   ]
 }

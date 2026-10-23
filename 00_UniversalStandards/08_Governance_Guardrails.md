@@ -86,8 +86,28 @@ Each control states the intent once, then how each cloud enforces it. The contra
 | `GOV-011` | No automatic Editor grants to default service accounts | `iam.automaticIamGrantsForDefaultServiceAccounts` | — (no equivalent) | `SEC-005` |
 | `GOV-012` | Interactive VM access goes through IAM | `compute.requireOsLogin` | SSM Session Manager only; SCP denies EC2 key pairs and `ec2-instance-connect:SendSSHPublicKey` | — |
 | `GOV-013` | Guardrails cannot be changed or escaped from inside | Only the governance identity holds Org Policy Administrator | SCP denies `organizations:LeaveOrganization` and changes to governance roles | — |
+| `GOV-014` | No management port (SSH 22, RDP 3389) open to the internet | **Detective:** plan-time `SEC-011`, then Security Command Center findings with automatic removal | **Detective:** plan-time `SEC-011`, then AWS Config or Firewall Manager with automatic remediation (not an SCP; see below) | `SEC-011` |
+| `GOV-015` | DNS only through the platform's approved resolvers | **Network policy:** hierarchical firewall policy drops direct DNS egress | **Network policy:** Firewall Manager drops direct DNS egress; Resolver DNS Firewall filters resolver queries | — |
 
 Controls marked `—` for a cloud are recorded as `not_applicable` in the contract, with the reason.
+
+### Control plane and data plane: which mechanism can enforce what
+
+Organization policies and SCPs authorize **API calls** (the control plane): who may create what,
+where, with which arguments that the cloud exposes as condition keys. They never see **packets**
+(the data plane), and they only see a request's arguments when a condition key exists for them.
+That decides each control's mechanism:
+
+| Mechanism | Sees | Use it for | Cannot do |
+| :--- | :--- | :--- | :--- |
+| Org policy / SCP | API requests, through the condition keys the cloud defines | Who may create resources, where, and with which exposed attributes (`GOV-001` to `GOV-013`) | Inspect a firewall rule's CIDR or port; filter traffic |
+| Network policy (hierarchical firewall, Firewall Manager) | Packets, by address, port, and protocol | Traffic every project or account must obey (`GOV-015`) | See inside encrypted traffic (DNS-over-HTTPS looks like any HTTPS on 443) |
+| Detective control (Security Command Center, AWS Config) | Resource configuration after it exists | Rules API authorization cannot express (`GOV-014`), with automatic remediation | Prevent the configuration from existing for the remediation window |
+| Plan-time check (`SEC-*`) | The IaC plan before apply | The same rules, before merge | See changes that skip the pipeline |
+
+A control whose intent cannot be expressed in its mechanism is either moved to a mechanism that can
+express it or documented as detective, never written as an SCP that looks right and authorizes
+nothing.
 
 ### What a control guarantees, and what it does not
 
@@ -140,6 +160,14 @@ only the cloud API can.
   network interface, launch into a subnet that maps public IPs) and asserts the API **denies** it.
 - Each test also performs one **allowed** action nearby, so a control that blocks too much fails
   too.
+- Network controls are tested on both planes: that the prohibited configuration is rejected or
+  removed, **and** that the traffic it governs is actually blocked. For example:
+
+  | Control | Must be denied or removed | Must still work |
+  | :--- | :--- | :--- |
+  | `GOV-014` | A plan adding `0.0.0.0/0` to TCP 22 fails `SEC-011`; the same rule created through the API is detected and removed within the remediation window (measured); an SSH attempt from outside fails | SSH through IAP (GCP) or Session Manager (AWS) by an authorized identity |
+  | `GOV-015` | From a test VM, direct DNS queries to a public resolver over UDP 53, TCP 53, and TCP 853 are dropped | Resolution through the approved resolver, and its query appearing in the resolver log |
+
 - The contract records how far each control's proof has got, per cloud, in `verification`:
 
   | Stage | Evidence |
