@@ -41,6 +41,15 @@
         "boundary_crossings": { "type": "integer", "minimum": 0 },
         "contracts_touched": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
         "tags": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "touches": {
+          "type": "array",
+          "description": "What the unit touches, from the closed vocabulary in architecture_rules.v1 touches. Selects which ARCH-* rules run and which lens asks reach the prompt.",
+          "items": {
+            "type": "string",
+            "enum": ["module_import", "new_deployable", "db_access", "db_transaction", "migration", "contract", "queue_definition", "queue_publish", "queue_consume", "http_client", "list_endpoint", "cache"]
+          },
+          "uniqueItems": true
+        },
         "implicit_state": {
           "type": "array",
           "items": { "type": "string", "enum": ["async_fanout", "goroutine", "channel", "mutex", "retry", "cache", "module_state"] },
@@ -80,16 +89,34 @@
     },
     "rule_findings": {
       "type": "array",
-      "description": "Deterministic rule hits (clones, boundary violations, contract copies, string-contract collisions).",
+      "description": "Deterministic rule hits: reuse rules (clones, boundary violations, contract copies, string-contract collisions) and ARCH-* rules from architecture_rules.v1.",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": ["rule", "blocking"],
         "properties": {
-          "rule": { "type": "string", "enum": ["exact_clone", "near_clone", "illegal_boundary_import", "contract_copy", "string_contract_collision"] },
+          "rule": {
+            "anyOf": [
+              { "type": "string", "enum": ["exact_clone", "near_clone", "illegal_boundary_import", "contract_copy", "string_contract_collision"] },
+              { "type": "string", "pattern": "^ARCH-[0-9]{3}$" }
+            ]
+          },
           "blocking": { "type": "boolean" },
-          "reuse_ref": { "type": "string", "description": "Matching symbol_index entry (path#name), when the rule found one." }
-        }
+          "reuse_ref": { "type": "string", "description": "Matching symbol_index entry (path#name), when the rule found one." },
+          "source": { "type": "string", "enum": ["static", "trace"], "description": "ARCH-* hits: which check found it." },
+          "result": {
+            "type": "string",
+            "enum": ["violation", "unverifiable"],
+            "description": "unverifiable: a span the check needed lacked a required attribute. It is reported, never counted as compliant, and does not block."
+          },
+          "location": { "type": "string", "description": "Static hits: path:line." },
+          "trace_id": { "type": "string", "pattern": "^[0-9a-f]{32}$", "description": "Trace hits: the test-run trace that shows the violation." },
+          "span_id": { "type": "string", "pattern": "^[0-9a-f]{16}$" }
+        },
+        "allOf": [
+          { "if": { "properties": { "source": { "const": "trace" } }, "required": ["source"] }, "then": { "properties": { "trace_id": true, "span_id": true, "result": true }, "required": ["trace_id", "span_id", "result"] } },
+          { "if": { "properties": { "source": { "const": "static" } }, "required": ["source"] }, "then": { "properties": { "location": true, "result": true }, "required": ["location", "result"] } }
+        ]
       }
     },
     "missing": {
