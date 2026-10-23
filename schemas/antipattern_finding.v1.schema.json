@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "antipattern_finding.v1.schema.json",
+  "title": "antipattern_finding.v1",
+  "description": "One normalized anti-pattern finding, as rig and the Reviewer both emit it. A detector hit (tool + the tool's rule ID + location) is looked up in antipatterns.v1 by (tool, rule_id); a hit with no catalog rule is not a finding (it is counted as unmapped). blocking is the constant false in v1: an anti-pattern finding never fails a build or starts a review round on its own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "rule_id", "rule_revision", "catalog_version", "detector", "file", "start_line", "end_line", "severity", "confidence", "enforcement_state", "blocking", "reported_by", "fingerprint"],
+  "properties": {
+    "schema_version": { "const": "antipattern_finding.v1" },
+    "rule_id": { "type": "string", "pattern": "^AP-(GO|TS|NODE|REACT|ANGULAR|PY|DJANGO|FASTAPI|TF|TG|DOCKER|GHA|API|DB|K8S|SC|SH|OBS|TEST|AI|COST)-[0-9]{3}$" },
+    "rule_revision": { "type": "integer", "minimum": 1 },
+    "catalog_version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+    "detector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "rule_id"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "rule_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "file": { "type": "string", "minLength": 1, "description": "Repository-relative path, forward slashes." },
+    "start_line": { "type": "integer", "minimum": 1 },
+    "end_line": { "type": "integer", "minimum": 1 },
+    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"], "description": "Copied from the catalog rule, never from the detector." },
+    "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+    "enforcement_state": { "const": "advisory", "description": "Only advisory rules produce findings; planned and retired rules produce none." },
+    "blocking": { "const": false },
+    "reported_by": { "type": "string", "enum": ["rig", "reviewer"] },
+    "fingerprint": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "First 16 hex chars of sha256 over rule_id|file|start_line|detector.rule_id; identical for both consumers." }
+  }
+}

@@ -1,0 +1,582 @@
+[
+  {
+    "name": "blocks_true",
+    "why": "v1 rules can never block",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": true
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "blocking_state",
+    "why": "there is no blocking enforcement state in v1",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "blocking",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "advisory_on_planned_detector",
+    "why": "an advisory rule needs a detector that exists",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "rig_not_custom",
+    "why": "a rig detector is a custom check",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.x",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "tool_marked_custom",
+    "why": "an existing tool's rule is not custom",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": true,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "verified_without_toolchain",
+    "why": "a verified mapping records the image it ran in",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "measured_without_precision",
+    "why": "a measured benchmark carries all its numbers",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "measured",
+        "corpus": "bench@abc",
+        "measured_on": "2026-10-01",
+        "true_positives": 30,
+        "false_positives": 1,
+        "false_negatives": 2,
+        "clean_cases": 60
+      }
+    }
+  },
+  {
+    "name": "unmeasured_with_numbers",
+    "why": "an unmeasured rule claims no precision",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured",
+        "precision": 0.99
+      }
+    }
+  },
+  {
+    "name": "unknown_stack_prefix",
+    "why": "IDs use the closed stack prefixes",
+    "rule": {
+      "id": "AP-JAVA-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "no_negative_case",
+    "why": "every rule has a clean case that must pass",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": []
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  },
+  {
+    "name": "detector_severity_word",
+    "why": "severity is the catalog's scale, not a tool's",
+    "rule": {
+      "id": "AP-PY-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "python",
+      "framework": "none",
+      "title": "subprocess with shell=True",
+      "description": "A subprocess call runs through the shell.",
+      "rationale": "Command injection when any argument carries input.",
+      "severity": "ERROR",
+      "confidence": "high",
+      "detector": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "custom": false,
+        "mapping": {
+          "status": "verified",
+          "tool_version": "bandit 1.9.4",
+          "verified_on": "2026-10-22",
+          "verified_in": "local",
+          "toolchain": "playbook-antipattern-toolchain@sha256:52560d435cc4310132e38247fffcbb85940dd397809eb17959fe1aaba03151f5"
+        }
+      },
+      "remediation": "Pass an argument list without shell=True; validate inputs.",
+      "references": [
+        "https://bandit.readthedocs.io/en/latest/plugins/b602_subprocess_popen_with_shell_equals_true.html"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call('ls ' + name, shell=True)\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "a.py",
+            "code": "import subprocess\n\n\ndef run(name):\n    subprocess.call(['ls', name])\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "advisory",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    }
+  }
+]
