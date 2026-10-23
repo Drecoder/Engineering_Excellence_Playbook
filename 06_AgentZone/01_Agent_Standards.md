@@ -118,6 +118,11 @@ code; analysis tools and reviewers return findings, never patches.
   trim or fail loudly — never let the runtime silently truncate the instructions.
 - **Few-shot from known-good outputs.** Use one short example per task where it helps; keep
   golden expected outputs as the eval set.
+- **Checked by rig.** The violations of these rules are catalogued as `AP-AI-*` in
+  `schemas/antipatterns.v1.json`: a prompt written at the call site, a model call without a context
+  window, output cap, or timeout, undelimited untrusted input, unvalidated model output, and a model
+  hard-coded at the call site. No existing linter knows these rules, so they are custom rig checks,
+  planned until rig implements them.
 
 ---
 
