@@ -6127,6 +6127,144 @@
       "benchmark": {
         "status": "unmeasured"
       }
+    },
+    {
+      "id": "AP-COST-001",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Resource without cost-allocation labels",
+      "description": "A billable resource has no owner, service, and unit_class labels.",
+      "rationale": "Its spend cannot be attributed to a team or service, so nobody owns reducing it, and ephemeral resources cannot be found and swept.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.cost.missing_allocation_labels",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Apply the standard labels from the root configuration (default labels) so every resource carries them.",
+      "references": [
+        "03_InfrastructureZone/05_Cost.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_storage_bucket\" \"logs\" {\n  name     = \"acme-logs\"\n  location = \"US\"\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_storage_bucket\" \"logs\" {\n  name     = \"acme-logs\"\n  location = \"US\"\n  labels = {\n    owner      = \"platform\"\n    service    = \"logging\"\n    unit_class = \"persistent\"\n  }\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-COST-002",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "GPU instance without spot capacity or a run-time limit",
+      "description": "An instance with an accelerator is neither spot/preemptible nor bounded by a maximum run duration.",
+      "rationale": "GPUs are the most expensive resource on the platform; an idle or forgotten one costs more per day than most services per month.",
+      "severity": "high",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.cost.gpu_without_spot_or_ttl",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Use spot provisioning with a max run duration (and checkpointing so preemption is cheap) unless a reviewed exception says otherwise.",
+      "references": [
+        "03_InfrastructureZone/05_Cost.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_compute_instance\" \"bench\" {\n  name         = \"bench\"\n  machine_type = \"g2-standard-4\"\n  zone         = \"us-central1-a\"\n  guest_accelerator {\n    type  = \"nvidia-l4\"\n    count = 1\n  }\n  scheduling {\n    on_host_maintenance = \"TERMINATE\"\n  }\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_compute_instance\" \"bench\" {\n  name         = \"bench\"\n  machine_type = \"g2-standard-4\"\n  zone         = \"us-central1-a\"\n  guest_accelerator {\n    type  = \"nvidia-l4\"\n    count = 1\n  }\n  scheduling {\n    provisioning_model          = \"SPOT\"\n    preemptible                 = true\n    automatic_restart           = false\n    on_host_maintenance         = \"TERMINATE\"\n    instance_termination_action = \"DELETE\"\n    max_run_duration {\n      seconds = 14400\n    }\n  }\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      }
+    },
+    {
+      "id": "AP-COST-003",
+      "revision": 1,
+      "added_in": "1.0.0",
+      "stack": "hcl",
+      "framework": "terraform",
+      "title": "Project or account without a budget alert",
+      "description": "A project or account is created without a billing budget and alert thresholds.",
+      "rationale": "Runaway spend is discovered on the invoice instead of within hours.",
+      "severity": "medium",
+      "confidence": "high",
+      "detector": {
+        "tool": "rig",
+        "rule_id": "rig.cost.project_without_budget",
+        "custom": true,
+        "mapping": {
+          "status": "planned"
+        }
+      },
+      "remediation": "Vend every project with a budget and alerts at 50%, 90%, and 100% (Genesis does this for vended projects).",
+      "references": [
+        "03_InfrastructureZone/05_Cost.md"
+      ],
+      "test_cases": {
+        "positive": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_project\" \"svc\" {\n  name       = \"svc\"\n  project_id = \"acme-svc\"\n  folder_id  = \"folders/123\"\n}\n"
+          }
+        ],
+        "negative": [
+          {
+            "file": "main.tf",
+            "code": "resource \"google_project\" \"svc\" {\n  name       = \"svc\"\n  project_id = \"acme-svc\"\n  folder_id  = \"folders/123\"\n}\n\nresource \"google_billing_budget\" \"svc\" {\n  billing_account = \"000000-000000-000000\"\n  display_name    = \"acme-svc\"\n  budget_filter {\n    projects = [\"projects/${google_project.svc.number}\"]\n  }\n  amount {\n    specified_amount {\n      currency_code = \"USD\"\n      units         = \"200\"\n    }\n  }\n  threshold_rules {\n    threshold_percent = 0.5\n  }\n  threshold_rules {\n    threshold_percent = 0.9\n  }\n  threshold_rules {\n    threshold_percent = 1.0\n  }\n}\n"
+          }
+        ]
+      },
+      "enforcement": {
+        "state": "planned",
+        "blocks": false
+      },
+      "benchmark": {
+        "status": "unmeasured"
+      },
+      "related": [
+        "GOV-001"
+      ]
     }
   ]
 }
