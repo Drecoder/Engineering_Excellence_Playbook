@@ -5,7 +5,8 @@
 This is the central security standard for every project that follows the playbook. Detailed
 guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity and access) and
 `05_Metadata/Least_Privilege_Checklist.md`. The enforceable subset is in `AGENTS.md` →
-**Security Rules**.
+**Security Rules**. The guardrails the cloud control plane enforces underneath all of this (org
+policies, SCPs) are in `08_Governance_Guardrails.md`.
 
 ---
 
@@ -33,6 +34,26 @@ guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity 
   sessions.
 - Offboarding removes access in one place (the identity provider), not in each tool.
 
+### Session lifetimes
+
+Two timers, set separately. The sign-in session decides how often a person re-authenticates. The
+cloud credential lifetime decides how long stolen credentials stay usable. The SDKs refresh cloud
+credentials from a valid sign-in session automatically, so a short credential lifetime never
+interrupts work.
+
+| Timer | Everyone (NIST SP 800-63B-4 AAL2) | Prod or admin access (AAL3) |
+| :--- | :--- | :--- |
+| Sign-in session: re-authenticate at least every | 24 hours (platform default: 8 hours) | 12 hours |
+| Sign-in session: inactivity timeout, where the IdP supports it | 1 hour | 15 minutes |
+| Cloud credentials (AWS permission set, GCP token, Azure token) | 1 hour | 1 hour |
+
+- **1 hour is the default and the ceiling for cloud credentials.** A longer lifetime (AWS allows up
+  to 12 hours) needs a reviewed exception with an owner and an expiry, like any other exception.
+- The 8-hour sign-in session is one MFA login per working day. Teams may set it shorter, never
+  longer than the column above allows.
+- AAL3 requires phishing-resistant MFA (security keys or passkeys), which this section already
+  requires for prod and admin access.
+
 ---
 
 ## 3️⃣ Human Authorization
@@ -40,6 +61,10 @@ guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity 
 - Access is granted by **role and environment**, never individually where a group will do.
 - **Branch protection** on every default branch: required reviews, required status checks, no
   force-push. Merges to staging and prod require human approval.
+- **The merge is the gate.** Human approval is enforced by the forge on the merge itself (protected
+  branches with required reviewers and checks, no bypass — admins included). A deploy that runs
+  automatically after an approved merge is fine; a manual deploy button without merge approval
+  does not satisfy this rule.
 - **Separation of duties:** the person who writes a change is not its only approver for prod.
 - **Break-glass access** is time-limited, requires a reason, alerts on use, and is reviewed in
   the post-mortem.
@@ -51,6 +76,10 @@ guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity 
 
 - CI, agents, and services authenticate with **federated, short-lived credentials** (GitHub OIDC,
   AWS IAM roles, GCP Workload Identity Federation). **No static keys.**
+- **Workload credentials live 1 hour at most**, the cloud default (AWS STS role sessions, GCP
+  service account tokens). They are never extended: on GCP,
+  `iam.allowServiceAccountCredentialLifetimeExtension` stays unset, and a job that runs longer
+  re-exchanges its OIDC token instead.
 - Trust policies pin the token's subject to the exact repository, branch, and environment.
 - **Separate identities per purpose:** a read-only plan identity and a post-merge apply identity;
   one identity per Deployment Unit per environment.
@@ -64,6 +93,21 @@ guidance lives in `03_InfrastructureZone/02_Security_IAM_Policies.md` (identity 
 - Agents are limited by their **tool allow-list** and sandbox; they never apply infrastructure and
   never write outside their sandbox (`06_AgentZone/01_Agent_Standards.md`).
 - Deployment Units never read each other's state; they share values only through outputs.
+- **CI pipelines are workloads too.** Every workflow declares `permissions:` with read-only
+  defaults (`contents: read`) and grants more per job, only where that job needs it (e.g.
+  `id-token: write` for the plan or apply job alone).
+- **Shared CI is shared code, not shared identity.** Reusable workflows live once in a central
+  repo, and its Actions access is set to the narrowest scope that reaches its callers: the owning
+  user or organization, never public. Prefer a dedicated repo that holds only shared workflows, so
+  granting access exposes nothing else. Callers pass secrets explicitly, never `secrets: inherit`,
+  and cloud trust policies keep pinning the caller repo, so calling a shared workflow never grants
+  its home repo's identities.
+- Callers pin shared workflows to a release tag or commit SHA. Tracking a branch (`@main`) is
+  tolerated only until the central repo tags releases.
+- **Workflow files are code and are checked like code.** actionlint and zizmor find the workflow
+  anti-patterns (`AP-GHA-*` in `schemas/antipatterns.v1.json`): untrusted input expanded into a
+  script, actions not pinned to a commit SHA, broad job permissions, `pull_request_target`,
+  persisted checkout credentials, and `secrets: inherit`.
 
 ---
 
@@ -130,9 +174,45 @@ and PR — no model, no tokens, no reliance on memory. Policy ids appear in find
 | `SEC-008` | Every Deployment Unit configures an authenticated telemetry collector |
 | `SEC-009` | Audit logging is enabled in every account and project |
 | `SEC-010` | No secrets in code or config (secret scanning) |
+| `SEC-011` | No firewall or security-group rule allows `0.0.0.0/0` or `::/0` to management ports (SSH 22, RDP 3389) |
+| `SEC-012` | Container images run as a non-root user, pin their base image by digest, carry no secrets in layers or build arguments, and pass the image scan (`00_UniversalStandards/12_Containers.md`) |
+| `SEC-013` | Every released artifact has an SBOM and a pipeline signature with provenance, and deploys admit only artifacts whose signature verifies (`00_UniversalStandards/13_Supply_Chain.md`) |
 
 A failing `SEC-*` policy blocks the change. Exceptions are granted per unit in a reviewed policy
 file, with an owner and an expiry date.
+
+### Gate thresholds — block on critical, report nothing else
+
+Pipeline gates stay quiet: a change is blocked, and the pull request shows a finding, only when
+it is critical. No noise below that line.
+
+| Check type | Blocks on | Pull request shows |
+| :--- | :--- | :--- |
+| Format, lint errors, type check, compile (`terragrunt hcl fmt`, `tflint`, `tsc --noEmit`, `go vet`, Python compile) | Any failure (pass/fail, no severity) | The failure |
+| Dependency and image scanners (`npm audit`, `pip-audit`, `trivy`) | **CRITICAL** severity, or any vulnerability on the **CISA KEV** list regardless of severity | Only the blocking findings |
+| `govulncheck` | Any finding (it reports only vulnerabilities the code actually calls) | Only the blocking findings |
+| IaC and dependency scanners (`trivy fs`: vulnerabilities and misconfigurations) | **CRITICAL** severity, or a CISA KEV entry | Only the blocking findings |
+| IaC scanners (`checkov`) | The `SEC-*` check list (hard-fail); all other checks soft-fail | Only the blocking findings |
+| Static analysis (`semgrep`: language, secrets, and security-audit rulesets) | `ERROR` severity, Semgrep's top level | Only the blocking findings |
+| Python static analysis (`bandit`) | **HIGH** severity with **HIGH** confidence | Only the blocking findings |
+| Secret scanning (`gitleaks`, `SEC-010`) | Any finding | The finding, redacted |
+| `SEC-*` policies | Always, whatever the severity | The failing policy |
+
+- **KEV overrides severity.** A vulnerability that is being exploited in the wild blocks even when
+  it is rated below critical. The gate reads a pinned, regularly refreshed copy of the KEV
+  catalog, not a live call.
+- **Below-critical findings are counted, not shown.** They go to a dashboard metric
+  (`gate_findings_total{severity}`), never to the pull request, so a growing backlog is visible
+  without adding noise.
+- Tools without a severity filter (`pip-audit`) run through a thin wrapper that maps findings to
+  severity (OSV data) and applies this table. Open-source `checkov` has no severities, so it
+  gates on check IDs instead.
+- **Every pipeline runs every scanner that fits its stack.** The shared gate workflow runs them all;
+  a scanner that exists only in a local benchmark or on one engineer's machine is a gap, not a
+  control. Each `SEC-*` policy maps to the scanner check IDs that enforce it, kept next to the
+  gate's check list.
+- Exceptions follow the same reviewed policy file (owner and expiry); a KEV finding cannot be
+  excepted past its CISA due date.
 
 ---
 

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_context.v1",
+  "title": "Review Context",
+  "description": "Everything the Reviewer's model receives for one unit: the diff hunk, a symbol slice (never the whole index), findings deterministic tools already reported (so the model does not repeat them), the rules in force, the budget, and any evidence gathered so far. The diff is untrusted input and is delimited as data in the prompt. The second (verification) call reuses this context with evidence appended.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "review_id", "repo", "base_sha", "head_sha", "unit", "symbols", "known_findings", "rules", "budget", "evidence"],
+  "properties": {
+    "schema_version": { "const": "review_context.v1" },
+    "review_id": { "type": "string" },
+    "repo": { "type": "string" },
+    "base_sha": { "type": "string" },
+    "head_sha": { "type": "string" },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit_id", "lens", "file", "hunks"],
+      "properties": {
+        "unit_id": { "type": "string" },
+        "lens": { "type": "string" },
+        "file": { "type": "string" },
+        "hunks": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "symbols": {
+      "type": "array",
+      "maxItems": 25,
+      "description": "Retrieved slice: the unit's own boundary first, then shared candidates. One line of information each, no bodies.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref", "signature", "visibility"],
+        "properties": {
+          "ref": { "type": "string", "description": "path#symbol in symbol_index.v1." },
+          "signature": { "type": "string" },
+          "visibility": { "type": "string", "enum": ["internal", "shared"] },
+          "purpose": { "type": "string" },
+          "callers": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "symbols_truncated": { "type": "boolean" },
+    "known_findings": {
+      "type": "array",
+      "description": "Already reported by deterministic tools (Sonar, linters, SEC-*, rig rules). The model must not repeat them.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "rule"],
+        "properties": {
+          "source": { "type": "string" },
+          "rule": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "rules": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_output_tokens", "evidence_rounds", "model_calls_max"],
+      "properties": {
+        "max_output_tokens": { "type": "integer", "minimum": 1 },
+        "evidence_rounds": { "type": "integer", "minimum": 0, "maximum": 1 },
+        "model_calls_max": { "type": "integer", "minimum": 1, "maximum": 2 }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 5,
+      "items": { "$ref": "evidence_response.v1" }
+    }
+  }
+}

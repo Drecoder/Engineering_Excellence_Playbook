@@ -1,0 +1,210 @@
+{
+  "schema_version": "governance_baseline.v1",
+  "description": "The canonical governance baseline: the GOV-* guardrails every cloud account and project lives under, and how each cloud enforces them. Defined in 00_UniversalStandards/08_Governance_Guardrails.md; validated by governance_baseline.v1.schema.json. Vendored into consumer repos as .playbook/schemas/governance_baseline.v1.json; Genesis reads it and implements each control per cloud, so the guardrails have one source of truth and cannot drift. mode is each control's target state at the organization root: enforce blocks violations, dry_run only logs them. Genesis stages every new or changed control in dry run first and promotes it to its target only after the dry-run log is clean or every violation has an approved exception, and only once the control has reached adversarially_verified for that cloud. verification records how far each control's proof has got per cloud: specified (the contract states the invariant), schema_validated (passes governance_baseline.v1.schema.json), integration_tested (the real cloud API accepts it and denies the forbidden action in a test project or account), adversarially_verified (every known bypass path, the exception path, and the authorization boundary are tested). Whether a control is actually enforced in an environment is live state that Genesis observes and reports, never a claim in this file. guarantees is the exact invariant the control enforces; does_not_guarantee is what it is often mistaken for. A target changes only through a reviewed change to this file.",
+  "parameters": {
+    "gcp_allowed_locations": ["in:us-locations"],
+    "aws_allowed_regions": ["us-east-1", "us-west-2"],
+    "gcp_directory_customer_ids": [],
+    "aws_network_admin_role_pattern": "arn:aws:iam::*:role/governance-network-*",
+    "hierarchy": ["governance", "platform", "dev", "staging", "prod"]
+  },
+  "evidence": {
+    "description": "The signals a conformance result must exist as before it can advance a control's verification stage (08_Governance_Guardrails.md section 9a). A result missing any of them does not count.",
+    "span": {
+      "name": "conformance.attempt",
+      "attributes": ["control", "cloud", "test", "expected", "observed", "result", "principal", "scope"]
+    },
+    "log": {
+      "format": "json",
+      "fields": ["control", "cloud", "test", "expected", "observed", "result", "principal", "scope", "request", "response", "effective_policy", "timestamp", "trace_id", "span_id"]
+    },
+    "metrics": [
+      { "name": "governance_conformance_checks_total", "type": "counter", "labels": ["control", "cloud", "test", "expected", "observed", "result"] },
+      { "name": "governance_exception_expiry_latency_seconds", "type": "histogram", "labels": ["control", "cloud"] }
+    ],
+    "incident_records": "docs/incidents/ in the Genesis repo, post-mortem format; a control in an incident drops back to integration_tested on that cloud"
+  },
+  "controls": [
+    {
+      "id": "GOV-001",
+      "intent": "No default networks; every network is declared in IaC.",
+      "guarantees": "New projects get no auto-created network; in AWS, vended accounts have no default VPC in any region.",
+      "does_not_guarantee": "Removing default networks from projects or accounts that existed before the control; those are drift findings to clean up.",
+      "sec": null,
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "compute.skipDefaultNetworkCreation", "type": "boolean", "enforce": true }] },
+      "aws": { "status": "vending", "note": "No SCP can prevent default VPCs; account vending deletes them in every region and drift detection reports any that reappear." }
+    },
+    {
+      "id": "GOV-002",
+      "intent": "No long-lived workload keys; workloads use federated, short-lived identity.",
+      "guarantees": "No new service account keys can be created or uploaded (GCP); no new IAM user access keys can be created (AWS).",
+      "does_not_guarantee": "Revoking keys that already exist (drift findings), or preventing a short-lived credential from being misused while valid.",
+      "sec": "SEC-004",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [
+        { "name": "iam.disableServiceAccountKeyCreation", "type": "boolean", "enforce": true },
+        { "name": "iam.disableServiceAccountKeyUpload", "type": "boolean", "enforce": true }
+      ] },
+      "aws": { "status": "scp", "statements": [{ "sid": "Gov002DenyAccessKeys", "effect": "Deny", "actions": ["iam:CreateAccessKey"], "resources": ["*"] }] }
+    },
+    {
+      "id": "GOV-003",
+      "intent": "No VM is directly reachable from the internet; internet ingress goes through platform-managed load balancers.",
+      "guarantees": "VMs cannot hold external IPs (GCP). In AWS: instances cannot request a public IP at launch, Elastic IPs cannot be associated, and only the platform network role can create or attach internet gateways, so a public IP that slips through (e.g. a subnet's map-public-IP default) has no route from the internet.",
+      "does_not_guarantee": "That nothing is public: load balancers, serverless endpoints, and managed services can still be exposed and are governed by SEC-003 and service-level controls. It also does not cover exposure through an authorized but over-broad identity.",
+      "sec": null,
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "compute.vmExternalIpAccess", "type": "list", "deny_all": true }] },
+      "aws": { "status": "scp", "note": "The internet-gateway statement carries the guarantee; the launch-time and Elastic IP statements stop the common paths early. The conformance test must cover RunInstances with and without a launch template, CreateNetworkInterface plus AssociateAddress, and a subnet with MapPublicIpOnLaunch.", "statements": [
+        { "sid": "Gov003DenyPublicIpAtLaunch", "effect": "Deny", "actions": ["ec2:RunInstances"], "resources": ["arn:aws:ec2:*:*:network-interface/*"], "condition": { "Bool": { "ec2:AssociatePublicIpAddress": "true" } } },
+        { "sid": "Gov003DenyElasticIpAssociation", "effect": "Deny", "actions": ["ec2:AssociateAddress"], "resources": ["*"], "condition": { "ArnNotLike": { "aws:PrincipalArn": { "param": "aws_network_admin_role_pattern" } } } },
+        { "sid": "Gov003NetworkRoleOwnsInternetGateways", "effect": "Deny", "actions": ["ec2:CreateInternetGateway", "ec2:AttachInternetGateway", "ec2:CreateEgressOnlyInternetGateway"], "resources": ["*"], "condition": { "ArnNotLike": { "aws:PrincipalArn": { "param": "aws_network_admin_role_pattern" } } } }
+      ] }
+    },
+    {
+      "id": "GOV-004",
+      "intent": "Storage is never public.",
+      "guarantees": "Buckets cannot grant access to allUsers or allAuthenticatedUsers (GCP); S3 Block Public Access stays on at the account level (AWS).",
+      "does_not_guarantee": "That data is not exposed: an authorized identity with over-broad access, a signed URL, or an export to another system can still leak it. Those are least-privilege (SEC-005) and data-classification concerns.",
+      "sec": "SEC-002",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "storage.publicAccessPrevention", "type": "boolean", "enforce": true }] },
+      "aws": { "status": "scp", "note": "S3 account-level Block Public Access is set at vending; the SCP stops it being turned off.", "statements": [{ "sid": "Gov004LockPublicAccessBlock", "effect": "Deny", "actions": ["s3:PutAccountPublicAccessBlock"], "resources": ["*"] }] }
+    },
+    {
+      "id": "GOV-005",
+      "intent": "Access to storage is IAM-only; no object or bucket ACLs.",
+      "guarantees": "New buckets use uniform, IAM-only access (GCP); new S3 buckets have ACLs disabled (AWS).",
+      "does_not_guarantee": "That the IAM policy on a bucket is narrow; it makes access reviewable in one place, not minimal.",
+      "sec": "SEC-002",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "storage.uniformBucketLevelAccess", "type": "boolean", "enforce": true }] },
+      "aws": { "status": "vending", "note": "New buckets default to Object Ownership BucketOwnerEnforced (ACLs disabled); SEC-002 checks it at plan time." }
+    },
+    {
+      "id": "GOV-006",
+      "intent": "Resources are created only in approved regions.",
+      "guarantees": "Regional resources cannot be created outside the allowed locations or regions.",
+      "does_not_guarantee": "Data residency for global services, or for data a workload copies elsewhere itself.",
+      "sec": null,
+      "mode": "dry_run",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "gcp.resourceLocations", "type": "list", "allowed_values_param": "gcp_allowed_locations" }] },
+      "aws": { "status": "scp", "note": "Global services must stay reachable from every region. Genesis takes the NotAction list from AWS's maintained reference SCP ('Deny access to AWS based on the requested AWS Region', AWS Organizations User Guide) at the version it implements, records that version, and tests it in a test OU before promotion. The list is not hand-maintained here.", "statements": [{
+        "sid": "Gov006DenyOtherRegions", "effect": "Deny", "not_actions_source": "aws-reference-scp:deny-requested-region", "resources": ["*"],
+        "condition": { "StringNotEquals": { "aws:RequestedRegion": { "param": "aws_allowed_regions" } } }
+      }] }
+    },
+    {
+      "id": "GOV-007",
+      "intent": "Access is granted only to identities in the platform's own directory.",
+      "guarantees": "IAM policies can only name members of the allowed directory (GCP); RAM shares cannot include external principals (AWS).",
+      "does_not_guarantee": "Least privilege inside the directory, or that resource policies (e.g. S3 bucket policies) only trust the organization; rig-scan checks aws:PrincipalOrgID at plan time for those.",
+      "sec": null,
+      "mode": "dry_run",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "note": "Needs the organization's directory customer ID; stays dry_run until it is set.", "constraints": [{ "name": "iam.allowedPolicyMemberDomains", "type": "list", "allowed_values_param": "gcp_directory_customer_ids" }] },
+      "aws": { "status": "scp", "statements": [{
+        "sid": "Gov007DenyExternalSharing", "effect": "Deny", "actions": ["ram:CreateResourceShare", "ram:UpdateResourceShare"], "resources": ["*"],
+        "condition": { "Bool": { "ram:RequestedAllowsExternalPrincipals": "true" } }
+      }] }
+    },
+    {
+      "id": "GOV-008",
+      "intent": "VMs cannot act as routers; routing is declared in the network layer.",
+      "guarantees": "VMs cannot enable IP forwarding (GCP) or disable source/destination checks (AWS).",
+      "does_not_guarantee": "That traffic between workloads is restricted; that is firewall and security-group policy.",
+      "sec": null,
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "compute.vmCanIpForward", "type": "list", "deny_all": true }] },
+      "aws": { "status": "scp", "note": "Exceptions per account for appliance VMs. The conformance test must confirm the ec2:Attribute/SourceDestCheck condition key is evaluated for both actions.", "statements": [{ "sid": "Gov008DenySourceDestCheckOff", "effect": "Deny", "actions": ["ec2:ModifyInstanceAttribute", "ec2:ModifyNetworkInterfaceAttribute"], "resources": ["*"], "condition": { "Bool": { "ec2:Attribute/SourceDestCheck": "false" } } }] }
+    },
+    {
+      "id": "GOV-009",
+      "intent": "No network side channels between projects or accounts; traffic goes through the platform network.",
+      "guarantees": "VPC peering cannot be created or accepted without an exception.",
+      "does_not_guarantee": "Isolation from other connectivity paths (Private Service Connect, Transit Gateway, VPN); those are owned by the platform network role and reviewed there.",
+      "sec": null,
+      "mode": "dry_run",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "note": "Managed services with private IP (e.g. Cloud SQL) use peering and need a project-scoped exception.", "constraints": [{ "name": "compute.restrictVpcPeering", "type": "list", "deny_all": true }] },
+      "aws": { "status": "scp", "statements": [{ "sid": "Gov009DenyPeering", "effect": "Deny", "actions": ["ec2:CreateVpcPeeringConnection", "ec2:AcceptVpcPeeringConnection"], "resources": ["*"] }] }
+    },
+    {
+      "id": "GOV-010",
+      "intent": "Audit logging is always on and cannot be disabled from inside an account or project.",
+      "guarantees": "Admin activity is always recorded and copied to the governance project or account, and a project or account cannot turn the organization-level trail or sink off.",
+      "does_not_guarantee": "That anyone reads the logs; detection is the alerting in 07_Security_In_Depth.md section 9, which must be shown firing before this control counts as operational.",
+      "sec": "SEC-009",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_config", "note": "Admin Activity logs are always on. Genesis sets an org-level audit config (Data Access logs for IAM, KMS, Secret Manager, Storage, not allServices) and an org log sink to the governance project; projects cannot remove org-level config." },
+      "aws": { "status": "scp", "note": "An organization trail is created in the governance account.", "statements": [{ "sid": "Gov010ProtectTrail", "effect": "Deny", "actions": ["cloudtrail:StopLogging", "cloudtrail:DeleteTrail", "cloudtrail:UpdateTrail", "cloudtrail:PutEventSelectors"], "resources": ["*"] }] }
+    },
+    {
+      "id": "GOV-011",
+      "intent": "Default service accounts get no automatic roles.",
+      "guarantees": "Default service accounts created after the control get no automatic Editor grant.",
+      "does_not_guarantee": "Removing grants made before the control, or stopping someone granting a broad role by hand (SEC-005).",
+      "sec": "SEC-005",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "not_applicable" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "iam.automaticIamGrantsForDefaultServiceAccounts", "type": "boolean", "enforce": true }] },
+      "aws": { "status": "not_applicable", "note": "AWS has no default service accounts with automatic grants." }
+    },
+    {
+      "id": "GOV-012",
+      "intent": "Interactive VM access goes through IAM, never through distributed SSH keys.",
+      "guarantees": "VM login is authorized by IAM through OS Login (GCP); EC2 key pairs cannot be created or imported and keys cannot be pushed through Instance Connect (AWS).",
+      "does_not_guarantee": "That the IAM roles granting login are narrow, or that a process on the VM cannot open its own listener.",
+      "sec": null,
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "org_policy", "constraints": [{ "name": "compute.requireOsLogin", "type": "boolean", "enforce": true }] },
+      "aws": { "status": "scp", "note": "Interactive access uses SSM Session Manager.", "statements": [{ "sid": "Gov012DenyPushedSshKeys", "effect": "Deny", "actions": ["ec2-instance-connect:SendSSHPublicKey", "ec2:ImportKeyPair", "ec2:CreateKeyPair"], "resources": ["*"] }] }
+    },
+    {
+      "id": "GOV-013",
+      "intent": "Guardrails cannot be changed or escaped from inside an account or project.",
+      "guarantees": "Only the governance identity can change org policies (GCP); member accounts cannot leave the organization or modify governance roles (AWS).",
+      "does_not_guarantee": "Protection against compromise of the governance identity or the organization admin itself; that is break-glass control, alerting, and human-approved Genesis merges.",
+      "sec": null,
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "iam", "note": "Only the governance identity holds roles/orgpolicy.policyAdmin, granted at the organization; project owners cannot override org policies they do not administer." },
+      "aws": { "status": "scp", "statements": [
+        { "sid": "Gov013DenyLeaveOrg", "effect": "Deny", "actions": ["organizations:LeaveOrganization"], "resources": ["*"] },
+        { "sid": "Gov013ProtectGovernanceRoles", "effect": "Deny", "actions": ["iam:*"], "resources": ["arn:aws:iam::*:role/governance-*"], "condition": { "ArnNotLike": { "aws:PrincipalArn": "arn:aws:iam::*:role/governance-*" } } }
+      ] }
+    },
+    {
+      "id": "GOV-014",
+      "intent": "No management port (SSH 22, RDP 3389) is open to the internet.",
+      "guarantees": "A firewall or security-group rule that allows 0.0.0.0/0 or ::/0 to TCP 22 or 3389 is blocked at plan time (SEC-011) and, if created any other way, detected and removed in the cloud within the remediation window. With GOV-003 in place, a private VM is not reachable from the internet even before remediation.",
+      "does_not_guarantee": "That other ports are closed, that management access through IAP or SSM is limited to the right people, or that a rule created by a stolen credential is prevented rather than detected. API authorization cannot inspect the contents of a firewall rule, so the cloud layer here is detective, not preventive.",
+      "sec": "SEC-011",
+      "mode": "enforce",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "detective", "note": "Plan time: SEC-011 and Checkov (CKV_GCP_2 for SSH, observed blocking seeded rules in the Reviewer benchmark; the RDP check ID is to be confirmed against the Checkov version in use). Cloud: the live firewall-change audit alert, plus Security Command Center open-SSH and open-RDP findings with automated rule removal (finding names and remediation path to be confirmed in the conformance test). A custom organization policy constraint on firewall rules may make this preventive; that is to be verified before it is relied on." },
+      "aws": { "status": "detective", "note": "SCPs cannot see a security-group rule's source CIDR or port: there is no condition key for them, so this cannot be an SCP. Plan time: SEC-011 and Checkov security-group checks (check IDs to be confirmed). Cloud: AWS Config rules for unrestricted SSH and common ports with automatic remediation, or Firewall Manager security-group policies across the organization (rule names to be confirmed in the conformance test)." }
+    },
+    {
+      "id": "GOV-015",
+      "intent": "Workloads resolve DNS only through the platform's approved resolvers.",
+      "guarantees": "Outbound DNS (UDP and TCP 53, and DNS-over-TLS on 853) to anything other than the approved resolvers is dropped by network policy applied above the project or account, so a workload cannot opt out. Queries through the approved resolver are logged and can be filtered.",
+      "does_not_guarantee": "That DNS cannot be tunneled: DNS-over-HTTPS travels as ordinary HTTPS on 443 and is indistinguishable from other web traffic at L4, and data can still be exfiltrated through the approved resolver itself. Resolver-level filtering (e.g. Route 53 Resolver DNS Firewall) only sees queries sent to that resolver; it is not an egress firewall.",
+      "sec": null,
+      "mode": "dry_run",
+      "verification": { "gcp": "schema_validated", "aws": "schema_validated" },
+      "gcp": { "status": "hierarchical_firewall", "note": "A hierarchical firewall policy at the organization or folder denies egress on UDP/TCP 53 and TCP 853 except to the approved resolver (the metadata server resolver at 169.254.169.254, or Cloud DNS inbound forwarding endpoints). Stays dry_run until the approved resolver design is decided; the conformance test sends direct queries over UDP and TCP and expects them dropped." },
+      "aws": { "status": "network_policy", "note": "Two different layers, tested separately: Firewall Manager deploys VPC network firewall or security-group egress policy that drops direct DNS (UDP/TCP 53, TCP 853) except to the VPC resolver; Route 53 Resolver DNS Firewall filters and logs the queries that do reach the resolver. Stays dry_run until the resolver design is decided." }
+    }
+  ]
+}

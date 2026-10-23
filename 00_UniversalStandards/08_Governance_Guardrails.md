@@ -1,0 +1,297 @@
+# Governance Guardrails
+
+*Governance comes before everything. The cloud's control plane enforces the platform's limits, so
+no service, agent, or person can step outside them, whatever path a change takes.*
+
+This standard defines the guardrails every cloud account and project lives under. The playbook
+owns **what** the guardrails are. Genesis owns **how** each cloud enforces them. Services are built
+**inside** them. The enforceable subset is in `AGENTS.md` → **Governance Rules**, and the
+machine-readable baseline is `schemas/governance_baseline.v1.json`.
+
+---
+
+## 1️⃣ Where Governance Sits
+
+```text
+Engineering Excellence Playbook   what the guardrails are   (GOV-* controls, this doc + baseline contract)
+        │  vendored as .playbook/schemas/governance_baseline.v1.json
+        ▼
+Genesis                           how each cloud enforces them   (GCP org policies, AWS SCPs, hierarchy, vending)
+        │  every account and project is created under the guardrails
+        ▼
+Services and platform stacks      built inside them   (sovereign-vpc, inference, agents, apps)
+```
+
+- **The playbook never implements a cloud control**, and Genesis never invents one. A guardrail
+  that is not in the baseline is not enforced. A control in the baseline that Genesis does not
+  implement for a cloud is a visible gap, not a silent one.
+- **Services never manage guardrails.** A service repo cannot create, change, or except an org
+  policy or SCP. It asks for an exception through Genesis (§6).
+
+---
+
+## 2️⃣ Guardrails vs `SEC-*` Policies
+
+Two layers, both required. Each assumes the other can fail.
+
+| | `SEC-*` policies | `GOV-*` guardrails |
+| :--- | :--- | :--- |
+| Enforced by | rig-scan and CI gates, on the plan | The cloud control plane (GCP Organization Policy, AWS SCPs) |
+| When | Before merge | On every API call, forever |
+| Catches | Bad code in a pull request | Anything that skips the pull request: console clicks, a third-party agent, a stolen credential, a misconfigured pipeline |
+| Fails | Closed: the change is blocked | Closed: the API call is denied |
+| Lives in | `07_Security_In_Depth.md` §10 | This doc and `schemas/governance_baseline.v1.json` |
+
+Where a control exists in both layers, the baseline names the matching `SEC-*` id, so a finding in
+CI and a denial in the cloud point at the same rule.
+
+---
+
+## 3️⃣ Resource Hierarchy
+
+Guardrails attach to the hierarchy, never to individual projects or accounts, so everything created
+later inherits them without anyone remembering to.
+
+| Node | GCP | AWS | Holds |
+| :--- | :--- | :--- | :--- |
+| Root | Organization | Organization root | The baseline guardrails |
+| `governance` | Folder | OU | Genesis's own project or account, the central audit log sink |
+| `platform` | Folder | OU | Shared platform stacks (VPC shell, CI runners, inference, observability) |
+| `dev` / `staging` / `prod` | Folders | OUs | Service projects or accounts, one per service per environment |
+
+- **No project or account lives outside the hierarchy.** A standalone project inherits no
+  guardrails, so it is a finding, not a configuration.
+- Environment nodes may tighten the baseline (e.g. `prod` enforces controls that `dev` runs in dry
+  run), never loosen it.
+
+---
+
+## 4️⃣ The Baseline Controls
+
+Each control states the intent once, then how each cloud enforces it. The contract
+(`schemas/governance_baseline.v1.json`) carries the exact constraint names and SCP statements.
+
+| Control | Intent | GCP | AWS | `SEC-*` |
+| :--- | :--- | :--- | :--- | :--- |
+| `GOV-001` | No default networks; every network is declared in IaC | `compute.skipDefaultNetworkCreation` | Default VPCs deleted at account vending | — |
+| `GOV-002` | No long-lived workload keys | `iam.disableServiceAccountKeyCreation`, `iam.disableServiceAccountKeyUpload` | SCP denies `iam:CreateAccessKey` | `SEC-004` |
+| `GOV-003` | No VM directly reachable from the internet | `compute.vmExternalIpAccess` (deny all) | SCPs deny public IPs at launch, Elastic IP association, and internet gateways outside the platform network role | — |
+| `GOV-004` | Storage is never public | `storage.publicAccessPrevention` | S3 account Block Public Access; SCP denies changing it | `SEC-002` |
+| `GOV-005` | Access to storage is IAM-only, no ACLs | `storage.uniformBucketLevelAccess` | S3 Object Ownership `BucketOwnerEnforced` at vending | `SEC-002` |
+| `GOV-006` | Resources only in approved regions | `gcp.resourceLocations` | SCP denies `aws:RequestedRegion` outside the list; global-service exclusions come from AWS's maintained reference SCP, not a hand-kept list | — |
+| `GOV-007` | Access only for identities in the platform's own directory | `iam.allowedPolicyMemberDomains` | SCP denies RAM shares to external principals; `aws:PrincipalOrgID` checked at plan time | — |
+| `GOV-008` | VMs cannot act as routers | `compute.vmCanIpForward` (deny all) | SCP denies disabling `SourceDestCheck` | — |
+| `GOV-009` | No network side channels between projects | `compute.restrictVpcPeering` (deny all) | SCP denies `ec2:CreateVpcPeeringConnection` | — |
+| `GOV-010` | Audit logging cannot be disabled | Org-level audit config + org log sink | SCP denies `cloudtrail:StopLogging` / `DeleteTrail` | `SEC-009` |
+| `GOV-011` | No automatic Editor grants to default service accounts | `iam.automaticIamGrantsForDefaultServiceAccounts` | — (no equivalent) | `SEC-005` |
+| `GOV-012` | Interactive VM access goes through IAM | `compute.requireOsLogin` | SSM Session Manager only; SCP denies EC2 key pairs and `ec2-instance-connect:SendSSHPublicKey` | — |
+| `GOV-013` | Guardrails cannot be changed or escaped from inside | Only the governance identity holds Org Policy Administrator | SCP denies `organizations:LeaveOrganization` and changes to governance roles | — |
+| `GOV-014` | No management port (SSH 22, RDP 3389) open to the internet | **Detective:** plan-time `SEC-011`, then Security Command Center findings with automatic removal | **Detective:** plan-time `SEC-011`, then AWS Config or Firewall Manager with automatic remediation (not an SCP; see below) | `SEC-011` |
+| `GOV-015` | DNS only through the platform's approved resolvers | **Network policy:** hierarchical firewall policy drops direct DNS egress | **Network policy:** Firewall Manager drops direct DNS egress; Resolver DNS Firewall filters resolver queries | — |
+
+Controls marked `—` for a cloud are recorded as `not_applicable` in the contract, with the reason.
+
+### Control plane and data plane: which mechanism can enforce what
+
+Organization policies and SCPs authorize **API calls** (the control plane): who may create what,
+where, with which arguments that the cloud exposes as condition keys. They never see **packets**
+(the data plane), and they only see a request's arguments when a condition key exists for them.
+That decides each control's mechanism:
+
+| Mechanism | Sees | Use it for | Cannot do |
+| :--- | :--- | :--- | :--- |
+| Org policy / SCP | API requests, through the condition keys the cloud defines | Who may create resources, where, and with which exposed attributes (`GOV-001` to `GOV-013`) | Inspect a firewall rule's CIDR or port; filter traffic |
+| Network policy (hierarchical firewall, Firewall Manager) | Packets, by address, port, and protocol | Traffic every project or account must obey (`GOV-015`) | See inside encrypted traffic (DNS-over-HTTPS looks like any HTTPS on 443) |
+| Detective control (Security Command Center, AWS Config) | Resource configuration after it exists | Rules API authorization cannot express (`GOV-014`), with automatic remediation | Prevent the configuration from existing for the remediation window |
+| Plan-time check (`SEC-*`) | The IaC plan before apply | The same rules, before merge | See changes that skip the pipeline |
+
+A control whose intent cannot be expressed in its mechanism is either moved to a mechanism that can
+express it or documented as detective, never written as an SCP that looks right and authorizes
+nothing.
+
+### What a control guarantees, and what it does not
+
+A control enforces one narrow invariant. Reading it as a broader security outcome is how a false
+sense of security starts. For example, `GOV-003` keeps VMs off the internet, but a load balancer can
+still be public. `GOV-004` keeps buckets from being public, but an authorized identity with
+over-broad access can still leak the data.
+
+So every control in the contract states both:
+
+- `guarantees`: the exact invariant the cloud enforces.
+- `does_not_guarantee`: the outcome it is most often mistaken for, and which other control or
+  practice covers it.
+
+When a control's description and its `guarantees` disagree, `guarantees` wins and the description
+is the bug.
+
+---
+
+## 5️⃣ Rollout: Dry Run, Then Enforce
+
+A guardrail that breaks running stacks on day one gets disabled on day two. The contract's `mode`
+is each control's **target**, and Genesis reaches it in two steps:
+
+1. **Stage in dry run.** Every new or changed control is first applied in dry run: violations are
+   logged (GCP Organization Policy dry run; AWS SCP attached to a test OU first) and nothing is
+   blocked.
+2. **Promote to the target.** Once the dry-run log shows no violations, or every violation has an
+   approved exception, **and** the control's conformance test passes for that cloud (§5a), a
+   reviewed Genesis change promotes the control to its target mode.
+
+- A target of `enforce` means the control blocks once staged. A target of `dry_run` means the
+  control stays in dry run until a prerequisite is met (a parameter, an exception), which the
+  contract notes.
+- The target per control lives in the contract, so changing it is a reviewed change in the
+  playbook, not a click in a console.
+- New projects and accounts get every `enforce` control from their first API call.
+- A control never moves back from `enforce` to `dry_run` to unblock a change. That is what
+  exceptions are for.
+
+### 5a. Conformance tests: proof the cloud enforces it
+
+A policy that looks right but does not match the cloud's authorization semantics is worse than no
+policy, because everyone believes it holds. A plan, a lint, or a review cannot prove enforcement;
+only the cloud API can.
+
+- Genesis keeps a **conformance test per control per cloud**, run against a dedicated test project
+  or account in the test folder or OU. It attempts the forbidden action through every known path
+  (e.g. `GOV-003` on AWS: launch with and without a launch template, attach an Elastic IP to a
+  network interface, launch into a subnet that maps public IPs) and asserts the API **denies** it.
+- Each test also performs one **allowed** action nearby, so a control that blocks too much fails
+  too.
+- Network controls are tested on both planes: that the prohibited configuration is rejected or
+  removed, **and** that the traffic it governs is actually blocked. For example:
+
+  | Control | Must be denied or removed | Must still work |
+  | :--- | :--- | :--- |
+  | `GOV-014` | A plan adding `0.0.0.0/0` to TCP 22 fails `SEC-011`; the same rule created through the API is detected and removed within the remediation window (measured); an SSH attempt from outside fails | SSH through IAP (GCP) or Session Manager (AWS) by an authorized identity |
+  | `GOV-015` | From a test VM, direct DNS queries to a public resolver over UDP 53, TCP 53, and TCP 853 are dropped | Resolution through the approved resolver, and its query appearing in the resolver log |
+
+- The contract records how far each control's proof has got, per cloud, in `verification`:
+
+  | Stage | Evidence |
+  | :--- | :--- |
+  | `specified` | The contract states the invariant |
+  | `schema_validated` | The contract passes `governance_baseline.v1.schema.json` |
+  | `integration_tested` | The real cloud API accepts the configuration and denies the forbidden action in a test project or account |
+  | `adversarially_verified` | Every known bypass path, the exception path, and the authorization boundary (only the governance identity can change it) are tested |
+
+  A stage moves forward only from a passing test run, and a control is promoted to `enforce` only on
+  a cloud where it has reached `adversarially_verified`.
+- **Verified is not enforced.** A passing test in a test project proves the control works; it does
+  not prove the production organization is configured. Whether a control is enforced in each
+  environment is live state Genesis observes (drift detection, `governance_controls_total{mode}`),
+  never a claim written into the contract.
+- **The unit of progress is a verified control, not a documented one.** Genesis takes a few
+  high-value controls end to end before the baseline grows.
+- Conformance tests rerun on every Genesis change and on a schedule, because cloud authorization
+  semantics change underneath policies.
+- The contract is validated against `schemas/governance_baseline.v1.schema.json` in the playbook's
+  CI and again by Genesis before it reads the baseline. An invalid baseline is rejected, not
+  repaired.
+
+---
+
+## 6️⃣ Exceptions
+
+Some workloads need what a guardrail denies, e.g. peering for a managed database's private IP
+(`GOV-009`).
+
+- Exceptions live in Genesis, in a reviewed exceptions file, never in a service repo.
+- Every exception names the control, the **narrowest scope** that works (one project or account,
+  never a folder or OU unless every project in it needs it), an **owner**, a **reason**, and an
+  **expiry date**.
+- An expired exception is removed by the next Genesis plan. Renewing it is a new review.
+- Exceptions are listed on the governance dashboard, so the size of the exception list is visible.
+
+---
+
+## 7️⃣ The Governance Identity
+
+Changing guardrails is the most powerful action on the platform, so it gets its own identity.
+
+- **One identity, used only by Genesis's apply pipeline**, holds Organization Policy Administrator
+  (GCP) or the SCP management permissions (AWS). No other pipeline, service, agent, or person holds
+  them day to day.
+- It is federated and short-lived like every workload identity (`07_Security_In_Depth.md` §4), and
+  its trust policy pins the Genesis repo, `main`, and the `governance` environment.
+- Every Genesis change merges with **human approval**. Agents may propose governance changes; they
+  never apply them (`06_AgentZone/01_Agent_Standards.md`).
+- Break-glass access to the organization exists, is alerted on (`07_Security_In_Depth.md` §9), and
+  is reviewed after every use.
+
+---
+
+## 8️⃣ Vending: Spinning Up Services Inside the Guardrails
+
+Governance is what makes new services fast and safe. A new service does not design its own
+security; it is **vended** into a place where the security already exists.
+
+Genesis vends a project (GCP) or account (AWS) for a service from a short, reviewed request:
+
+| Input | Example |
+| :--- | :--- |
+| Service name | `scan-engine` |
+| Environment | `dev` |
+| Owner | `platform` |
+| APIs or services it needs | `run.googleapis.com`, `secretmanager.googleapis.com` |
+
+What the service gets, with no extra work:
+
+- A project or account in the right environment folder or OU, inheriting every `GOV-*` guardrail.
+- Required labels or tags (`env`, `owner`, `service`, `managed_by=terragrunt`), billing, and only
+  the requested APIs enabled.
+- Its CI identity: federated, pinned to the service's repo, plan and apply split
+  (`07_Security_In_Depth.md` §4).
+- Attachment to the platform network and telemetry (the shell VPC, the observability stack), not a
+  network of its own.
+
+The service repo then holds only the service's own Deployment Units.
+
+---
+
+## 9️⃣ Audit and Drift
+
+- Genesis runs a scheduled plan against the live organization. Any drift (a policy changed outside
+  Genesis, a project outside the hierarchy, a default network) is a finding routed like any other.
+- Policy changes, exception use, and dry-run violations are logged centrally and alerted on
+  (`07_Security_In_Depth.md` §9).
+- Metrics: `governance_controls_total{mode}`, `governance_dry_run_violations_total{control}`,
+  `governance_exceptions_active{control}`, `governance_drift_findings_total`,
+  `governance_conformance_checks_total{control,cloud,test,expected,observed,result}`,
+  `governance_exception_expiry_latency_seconds{control,cloud}`.
+
+### 9a. Evidence is telemetry
+
+Governance makes claims about the platform; telemetry is how those claims are checked by someone
+other than the person who made them.
+
+- A conformance result advances a control's `verification` stage only when it exists as **all** the
+  signals the baseline's `evidence` block requires: a span per attempt, a structured log line
+  carrying that span's `trace_id`, and an increment of the conformance counter. A result that exists
+  only as a file, a screenshot, or a CI log line does not count.
+- The required signals are part of the contract (`evidence` in `governance_baseline.v1.json`), so
+  Genesis enforces them by validation rather than by convention.
+- The pipeline that applies governance is instrumented like any service (`AGENTS.md` →
+  Observability Rules): a failed or stuck Genesis apply alerts, it is not discovered later.
+
+### 9b. Governance incidents
+
+A control that failed to deny, a drift event, an exception used after expiry, a policy changed
+outside Genesis, or a governance apply that failed partway is a **governance incident**:
+
+- It gets an incident record in the Genesis repo (`docs/incidents/`), in the post-mortem format
+  (`03_Post_Mortem_Template.md`), with its evidence: the conformance spans, the audit-log entries,
+  the plan or apply run.
+- A control involved in an incident drops back to `integration_tested` on that cloud until its
+  conformance test is extended to cover the path that failed and passes again.
+- When an incident was found by a person instead of an alert, its preventive actions add the missing
+  signal.
+
+---
+
+## Principle
+
+Guardrails are set once, at the top, and inherited by everything below. A service is fast to build
+because it never has to rebuild the guardrails, and safe because it cannot step outside them.

@@ -1,0 +1,147 @@
+{
+  "description": "Conformance vectors for antipatterns.v1 consumers. rig and the Reviewer must turn each hit into exactly the expected finding (or none). Fingerprints match across consumers; only reported_by differs.",
+  "catalog_version": "1.0.0",
+  "vectors": [
+    {
+      "name": "mapped_hit",
+      "reported_by": "rig",
+      "hit": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "file": "src/run.py",
+        "start_line": 12,
+        "end_line": 12
+      },
+      "expect": {
+        "schema_version": "antipattern_finding.v1",
+        "rule_id": "AP-PY-001",
+        "rule_revision": 1,
+        "catalog_version": "1.0.0",
+        "detector": {
+          "tool": "bandit",
+          "rule_id": "B602"
+        },
+        "file": "src/run.py",
+        "start_line": 12,
+        "end_line": 12,
+        "severity": "high",
+        "confidence": "high",
+        "enforcement_state": "advisory",
+        "blocking": false,
+        "reported_by": "rig",
+        "fingerprint": "3b3112d59c72f4b8"
+      }
+    },
+    {
+      "name": "windows_path_normalized",
+      "reported_by": "reviewer",
+      "hit": {
+        "tool": "hadolint",
+        "rule_id": "DL3007",
+        "file": ".\\docker\\Dockerfile",
+        "start_line": 1
+      },
+      "expect": {
+        "schema_version": "antipattern_finding.v1",
+        "rule_id": "AP-DOCKER-001",
+        "rule_revision": 1,
+        "catalog_version": "1.0.0",
+        "detector": {
+          "tool": "hadolint",
+          "rule_id": "DL3007"
+        },
+        "file": "docker/Dockerfile",
+        "start_line": 1,
+        "end_line": 1,
+        "severity": "high",
+        "confidence": "high",
+        "enforcement_state": "advisory",
+        "blocking": false,
+        "reported_by": "reviewer",
+        "fingerprint": "e0b2df8c281cdfb3"
+      }
+    },
+    {
+      "name": "critical_rule_still_advisory",
+      "reported_by": "rig",
+      "hit": {
+        "tool": "checkov",
+        "rule_id": "CKV_GCP_2",
+        "file": "modules/network/main.tf",
+        "start_line": 40,
+        "end_line": 52
+      },
+      "expect": {
+        "schema_version": "antipattern_finding.v1",
+        "rule_id": "AP-TF-001",
+        "rule_revision": 1,
+        "catalog_version": "1.0.0",
+        "detector": {
+          "tool": "checkov",
+          "rule_id": "CKV_GCP_2"
+        },
+        "file": "modules/network/main.tf",
+        "start_line": 40,
+        "end_line": 52,
+        "severity": "critical",
+        "confidence": "high",
+        "enforcement_state": "advisory",
+        "blocking": false,
+        "reported_by": "rig",
+        "fingerprint": "99c17501f97e5563"
+      }
+    },
+    {
+      "name": "unmapped_detector_rule",
+      "reported_by": "rig",
+      "hit": {
+        "tool": "bandit",
+        "rule_id": "B999",
+        "file": "a.py",
+        "start_line": 1
+      },
+      "expect": null
+    },
+    {
+      "name": "planned_rule_produces_nothing",
+      "reported_by": "rig",
+      "hit": {
+        "tool": "rig",
+        "rule_id": "rig.terragrunt.bare_terraform",
+        "file": "deploy.sh",
+        "start_line": 2
+      },
+      "expect": null
+    },
+    {
+      "name": "same_hit_same_fingerprint_for_both_consumers",
+      "reported_by": "reviewer",
+      "hit": {
+        "tool": "bandit",
+        "rule_id": "B602",
+        "file": "src/run.py",
+        "start_line": 12,
+        "end_line": 12
+      },
+      "expect": {
+        "schema_version": "antipattern_finding.v1",
+        "rule_id": "AP-PY-001",
+        "rule_revision": 1,
+        "catalog_version": "1.0.0",
+        "detector": {
+          "tool": "bandit",
+          "rule_id": "B602"
+        },
+        "file": "src/run.py",
+        "start_line": 12,
+        "end_line": 12,
+        "severity": "high",
+        "confidence": "high",
+        "enforcement_state": "advisory",
+        "blocking": false,
+        "reported_by": "reviewer",
+        "fingerprint": "3b3112d59c72f4b8"
+      }
+    }
+  ]
+}

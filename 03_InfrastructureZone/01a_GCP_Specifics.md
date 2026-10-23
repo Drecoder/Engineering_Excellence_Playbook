@@ -11,7 +11,7 @@
 - The bucket lives in a dedicated state/admin project, not in the workload project.
 
 ```hcl
-# root terragrunt.hcl
+# root.hcl (units include it with find_in_parent_folders("root.hcl"))
 remote_state {
   backend = "gcs"
   config = {
@@ -48,4 +48,5 @@ remote_state {
 
 - Cloud Logging and Cloud Monitoring enabled per project
 - Audit logs (Admin Activity is always on; enable Data Access logs for sensitive services)
-- Organization policies for: no external SA keys, restricted resource locations
+- Organization policies per the governance baseline (`GOV-*` in
+  `00_UniversalStandards/08_Governance_Guardrails.md`), applied by Genesis at the organization

@@ -65,6 +65,7 @@ I grant **only the permissions required to perform a task**, minimizing risk whi
 | Queues / Async Systems | Limit enqueue/dequeue to needed services | Dead-letter queues monitored |
 | Storage / S3 / GCS | Restrict bucket access to required paths | Audit logs enabled |
 | CI/CD Pipelines | Limit deploy access per environment | PR approval required |
+| CI Workflows | `permissions: contents: read` default; grant per job | Shared workflows: owner/org access only, explicit secrets, pinned by tag/SHA (`07_Security_In_Depth.md` §5) |
 | Kubernetes RBAC | RoleBindings follow least privilege | Avoid cluster-admin unless unavoidable |
 
 ---

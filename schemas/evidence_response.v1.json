@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidence_response.v1",
+  "title": "Evidence Response",
+  "description": "The orchestrator's answer to one evidence_request.v1. Every response carries provenance, its limits, and a statement of what it does NOT show (uncertainty), so a passing test is never read as proof of correctness. Content passes the shared redaction before it reaches a model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "status", "provenance", "limits", "uncertainty"],
+  "properties": {
+    "schema_version": { "const": "evidence_response.v1" },
+    "request_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["ok", "partial", "rejected", "timeout", "error"] },
+    "reason": { "type": "string", "description": "Why the request was rejected or failed." },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "sha", "tool", "tool_version", "captured_at", "truncated", "redacted"],
+      "properties": {
+        "repo": { "type": "string" },
+        "sha": { "type": "string" },
+        "tool": { "type": "string", "enum": ["rig-symbols", "test-runner"] },
+        "tool_version": { "type": "string" },
+        "execution_id": { "type": "string" },
+        "captured_at": { "type": "string", "format": "date-time" },
+        "truncated": { "type": "boolean" },
+        "redacted": { "type": "boolean" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_bytes", "time_limit_ms"],
+      "properties": {
+        "max_bytes": { "type": "integer", "minimum": 1 },
+        "time_ms": { "type": "integer", "minimum": 0 },
+        "time_limit_ms": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Op-specific payload: for symbol_context, the symbols with signatures and callers; for run_tests, the tests run with pass/fail and a redacted failure excerpt."
+    },
+    "uncertainty": { "type": "string", "minLength": 1, "description": "What this evidence does not establish, e.g. 'tests cover 2 of 5 callers'." }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_findings.v1",
+  "title": "Review Findings (Gold)",
+  "description": "The Reviewer's output: advisory findings over a set of evaluation units. Advisory only — findings never block a merge and never override a deterministic gate (Sonar is federal; the Reviewer is state). Humans approve; deterministic gates block.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "status", "advisory", "rounds", "unit_count", "findings"],
+  "properties": {
+    "schema_version": { "const": "review_findings.v1" },
+    "repo": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["clean", "findings", "stalled", "gave_up"],
+      "description": "clean = no findings; findings = advisory findings present; stalled = a round resolved no fingerprints; gave_up = Governor limit hit."
+    },
+    "advisory": {
+      "const": true,
+      "description": "Always true. The Reviewer advises; it never blocks or overrides a gate."
+    },
+    "rounds": { "type": "integer", "minimum": 1 },
+    "unit_count": { "type": "integer", "minimum": 0 },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["unit_id", "file", "severity", "summary"],
+        "properties": {
+          "unit_id": { "type": "string" },
+          "file": { "type": "string" },
+          "start_line": { "type": "integer", "minimum": 1 },
+          "end_line": { "type": "integer", "minimum": 1 },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "info"] },
+          "summary": { "type": "string" },
+          "detail": { "type": "string" },
+          "fingerprint": { "type": "string", "description": "Stable id so repeat rounds can tell resolved from persisting findings." },
+          "tier": { "type": "string", "enum": ["TIER_1", "TIER_2"] },
+          "model": { "type": "string", "description": "Model that produced the finding." }
+        }
+      }
+    }
+  }
+}

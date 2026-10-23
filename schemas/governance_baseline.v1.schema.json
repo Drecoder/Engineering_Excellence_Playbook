@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "governance_baseline.v1.schema.json",
+  "title": "governance_baseline.v1",
+  "description": "Validates schemas/governance_baseline.v1.json. Genesis validates the vendored baseline against this schema before reading it and rejects an invalid baseline instead of repairing it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "description", "parameters", "evidence", "controls"],
+  "properties": {
+    "schema_version": { "const": "governance_baseline.v1" },
+    "description": { "type": "string", "minLength": 1 },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gcp_allowed_locations", "aws_allowed_regions", "gcp_directory_customer_ids", "aws_network_admin_role_pattern", "hierarchy"],
+      "properties": {
+        "gcp_allowed_locations": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "aws_allowed_regions": { "type": "array", "items": { "type": "string", "pattern": "^[a-z]{2}(-gov)?-[a-z]+-[0-9]$" }, "minItems": 1 },
+        "gcp_directory_customer_ids": { "type": "array", "items": { "type": "string" } },
+        "aws_network_admin_role_pattern": { "type": "string", "pattern": "^arn:aws:iam::" },
+        "hierarchy": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "span", "log", "metrics", "incident_records"],
+      "properties": {
+        "description": { "type": "string" },
+        "span": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "attributes"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "attributes": { "type": "array", "items": { "type": "string" }, "contains": { "const": "result" } }
+          }
+        },
+        "log": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["format", "fields"],
+          "properties": {
+            "format": { "const": "json" },
+            "fields": {
+              "type": "array",
+              "items": { "type": "string" },
+              "allOf": [{ "contains": { "const": "trace_id" } }, { "contains": { "const": "span_id" } }]
+            }
+          }
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "type", "labels"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^governance_[a-z_]+$" },
+              "type": { "enum": ["counter", "histogram", "gauge"] },
+              "labels": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "incident_records": { "type": "string" }
+      }
+    },
+    "controls": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/control" } }
+  },
+  "$defs": {
+    "stage": {
+      "description": "How far a control's proof has got on one cloud. Enforcement is live state Genesis reports, not a stage.",
+      "enum": ["specified", "schema_validated", "integration_tested", "adversarially_verified", "not_applicable"]
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "intent", "guarantees", "does_not_guarantee", "sec", "mode", "verification", "gcp", "aws"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^GOV-[0-9]{3}$" },
+        "intent": { "type": "string", "minLength": 1 },
+        "guarantees": { "type": "string", "minLength": 1 },
+        "does_not_guarantee": { "type": "string", "minLength": 1 },
+        "sec": { "type": ["string", "null"], "pattern": "^SEC-[0-9]{3}$" },
+        "mode": { "enum": ["dry_run", "enforce"] },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["gcp", "aws"],
+          "properties": { "gcp": { "$ref": "#/$defs/stage" }, "aws": { "$ref": "#/$defs/stage" } }
+        },
+        "gcp": { "$ref": "#/$defs/gcpImpl" },
+        "aws": { "$ref": "#/$defs/awsImpl" }
+      }
+    },
+    "gcpImpl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["org_policy", "org_config", "iam", "hierarchical_firewall", "detective", "vending", "not_applicable"] },
+        "note": { "type": "string" },
+        "constraints": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/gcpConstraint" } }
+      },
+      "if": { "properties": { "status": { "const": "org_policy" } } },
+      "then": { "required": ["constraints"], "properties": { "constraints": { "type": "array" } } },
+      "else": { "not": { "required": ["constraints"], "properties": { "constraints": { "type": "array" } } }, "required": ["note"], "properties": { "note": { "type": "string" } } }
+    },
+    "gcpConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z]+\\.[A-Za-z]+$" },
+        "type": { "enum": ["boolean", "list"] },
+        "enforce": { "const": true },
+        "deny_all": { "const": true },
+        "allowed_values_param": { "type": "string" }
+      },
+      "oneOf": [
+        { "properties": { "type": { "const": "boolean" } }, "required": ["enforce"] },
+        { "properties": { "type": { "const": "list" } }, "required": ["deny_all"] },
+        { "properties": { "type": { "const": "list" } }, "required": ["allowed_values_param"] }
+      ]
+    },
+    "awsImpl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["scp", "network_policy", "detective", "vending", "not_applicable"] },
+        "note": { "type": "string" },
+        "statements": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scpStatement" } }
+      },
+      "if": { "properties": { "status": { "const": "scp" } } },
+      "then": { "required": ["statements"], "properties": { "statements": { "type": "array" } } },
+      "else": { "not": { "required": ["statements"], "properties": { "statements": { "type": "array" } } }, "required": ["note"], "properties": { "note": { "type": "string" } } }
+    },
+    "scpStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sid", "effect", "resources"],
+      "properties": {
+        "sid": { "type": "string", "pattern": "^Gov[0-9]{3}[A-Za-z]+$" },
+        "effect": { "const": "Deny" },
+        "actions": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "not_actions_source": { "type": "string" },
+        "resources": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "condition": { "type": "object" }
+      },
+      "oneOf": [{ "required": ["actions"] }, { "required": ["not_actions_source"] }]
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "symbol_index.v1",
+  "title": "Symbol Index Entry",
+  "description": "One line of rig's symbol index (JSONL, one entry per definition). Generated deterministically by rig from the source at a given revision; never hand-written. Indexes definitions only: exported code symbols, IaC module inputs and outputs, contracts, and string contracts (metric, span, env var, PR label names). The index is the reuse map: the Builder retrieves from it, rig's rules check against it, and the Reviewer's reuse lens gets candidates from it. See 00_UniversalStandards/09_Reuse_and_DRY.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "name", "kind", "language", "location", "visibility", "boundary"],
+  "properties": {
+    "schema_version": { "const": "symbol_index.v1" },
+    "name": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["function", "method", "class", "type", "interface", "constant", "module", "module_input", "module_output", "contract", "metric_name", "span_name", "env_var", "pr_label"]
+    },
+    "language": { "type": "string", "enum": ["typescript", "python", "go", "hcl", "json", "promql", "text"] },
+    "signature": { "type": "string", "description": "Normalized signature, e.g. \"(value: unknown) => unknown\". Absent for string contracts." },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "path", "line", "sha"],
+      "properties": {
+        "repo": { "type": "string" },
+        "path": { "type": "string" },
+        "line": { "type": "integer", "minimum": 1 },
+        "sha": { "type": "string", "description": "Commit the index was generated from." }
+      }
+    },
+    "purpose": { "type": "string", "description": "First line of the doc comment, if any. Used for 'same thing, different name' retrieval." },
+    "visibility": {
+      "type": "string",
+      "enum": ["internal", "shared"],
+      "description": "shared = in packages/, schemas/, or marked @shared (and exported). Everything else, including undeclared or ambiguous, is internal (fail closed)."
+    },
+    "boundary": { "type": "string", "description": "The declared boundary (TS package, Go module, Python package, Terraform module) the symbol belongs to." },
+    "body_hash": {
+      "type": "string",
+      "pattern": "^[a-z]+-norm-v[0-9]+:[0-9a-f]+$",
+      "description": "Hash of the normalized body (comments and whitespace removed, locals renamed to placeholders), prefixed with the normalizer version, e.g. \"ts-norm-v1:9f2c...\". Equal hashes = clone, whatever the name."
+    },
+    "body_shingles": { "type": "string", "description": "Near-miss signature (MinHash or winnowing) over the normalized token stream." },
+    "shape_fingerprint": { "type": "string", "description": "For data shapes and contracts: canonical field-set fingerprint, comparable across languages." },
+    "value": { "type": "string", "description": "For string contracts (metric, span, env var, label names): the exact string value." },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["security", "contract", "telemetry", "iam", "concurrency", "crypto"] },
+      "uniqueItems": true
+    },
+    "callers": { "type": "integer", "minimum": 0, "description": "Fan-in within the indexed scope." },
+    "callees": { "type": "integer", "minimum": 0, "description": "Fan-out within the indexed scope." },
+    "cognitive_complexity": { "type": "integer", "minimum": 0, "description": "Per function, computed with Sonar's published rules. Absent for HCL and non-code kinds." }
+  }
+}
