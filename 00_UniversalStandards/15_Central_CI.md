@@ -120,11 +120,15 @@ its job, so its scanners run, while its build steps report there is nothing to b
   | Per-stack jobs (#18) | 55 min, for about 6 min of work | 5 |
   | One job (#24) | 11.5 min (gates 5.6, recycle 3.6, plan 2.3) | 2 |
 
+  The 11.5 minutes run from the first gate job starting. From the workflow's creation it was about
+  21 minutes, because the run first waited about 9 minutes for the runner.
+
   A recycle is about 3.6 min: about 1.5 min for the instance group to recreate the VM, about 1 min
   to boot, and 68 s of startup script. The one-job shape costs nothing extra.
 - **The next steps cost money**, and are taken only when the wait justifies them:
   - **A prebuilt runner image** (OS packages and the pinned runner baked in, no secrets, no
-    registration) saves about 1 min per recycle, for cents a month of image storage.
+    registration) saves about 1 min per recycle, for cents a month of image storage (an
+    estimate, not yet measured or billed).
   - **A second always-on plan VM** removes the wait when the queue is idle, for about $15 a month
     on demand (an estimate from list prices).
 
@@ -151,9 +155,10 @@ its job, so its scanners run, while its build steps report there is nothing to b
 - **`exclude-paths` hides code from every gate except secret scanning,** so it needs a reviewed
   reason in the caller. Gitleaks ignores it: a secret committed into a frozen corpus is still a
   leaked secret.
-- **Every job is bounded.** Each factory job sets `timeout-minutes` at 3 to 5 times its longest
-  measured run, and the single job is bounded at 45 minutes. A hung tool fails the gate in minutes,
-  not after GitHub's 6-hour default.
+- **Every job is bounded.** Each factory job's `timeout-minutes` is a floor for its kind of job,
+  at least 4 times its longest measured run: 5 minutes for detection, 10 for secret scanning and
+  Trivy, 15 for Semgrep, and 20 for jobs that build and test. The single job is bounded at 45
+  minutes. A hung tool fails the gate in minutes, not after GitHub's 6-hour default.
 - **A timeout does not bound the queue.** `timeout-minutes` starts when a job starts. A job waiting
   for a runner can stay queued for up to 24 hours. Queued-job age therefore needs its own alert
   (AGENTS.md → Observability: the platform instruments itself).
