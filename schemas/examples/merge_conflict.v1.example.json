@@ -1,0 +1,51 @@
+{
+  "schema_version": "merge_conflict.v1",
+  "repo": "Drecoder/sovereign-vpc-gcp",
+  "pull_request": 17,
+  "base": { "branch": "main", "sha": "e54b201e6ea904cb1f85fef6aaafd96439c00496" },
+  "head": { "branch": "ci/gates-bubblewrap-input", "sha": "5b65d45be758e3989c299d6573c61a94ab39e99f" },
+  "merge_base": "42f1a2bb06cc83ab8bd648dcc7a91d17c716ee4d",
+  "produced_by": { "tool": "rig", "version": "0.1.0" },
+  "conflicts": [
+    {
+      "path": ".github/workflows/gates.yml",
+      "kind": "content",
+      "protected": true,
+      "ours_commits": ["5c30228910256224ade0336138f8a3375ff2b57b", "5b65d45be758e3989c299d6573c61a94ab39e99f"],
+      "theirs_commits": [
+        "83d59bbb1d30ca98f1bf0e99f93a56c722c8d725",
+        "ee12b195b5c8e7e643e4b746714f3d12e8f9cfc7",
+        "dcb4392100d754b7c99c1133d747ea3433a2f4b2"
+      ],
+      "hunks": [
+        {
+          "base": { "start_line": 39, "lines": [] },
+          "ours": {
+            "start_line": 39,
+            "lines": [
+              "  # Ubuntu 24.04 (noble) package version; a runner image without it fails the install (fail closed).",
+              "  BUBBLEWRAP_VERSION: \"0.9.0-1ubuntu0.3\""
+            ]
+          },
+          "theirs": {
+            "start_line": 39,
+            "lines": [
+              "  BANDIT_VERSION: \"1.9.4\"",
+              "  SEMGREP_VERSION: \"1.182.1\"",
+              "  # github.com/semgrep/semgrep-rules (Semgrep Rules License v1.0), commit of 2026-10-08.",
+              "  SEMGREP_RULES_SHA: 9bbf021d0acffa3095fcffd17b2bc7787eb4796d",
+              "  SEMGREP_RULES_SHA256: b6cb72d07e060fe03e890bb88d40e5c1f2a177780dbb5be1c3b01e5509fd9cec",
+              "  GITLEAKS_VERSION: \"8.30.1\"",
+              "  GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
+              "  TRIVY_VERSION: \"0.71.1\"",
+              "  TRIVY_SHA256: 3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f8894928c41a88d"
+            ]
+          },
+          "class": "mechanical",
+          "reason": "disjoint_additions",
+          "route": "person"
+        }
+      ]
+    }
+  ]
+}
