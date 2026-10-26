@@ -1,0 +1,896 @@
+{
+  "title": "Engineering Excellence",
+  "subtitle": "A Textbook on Governed, Observable, AI-Assisted Platform Engineering",
+  "series": "Based on the Engineering Excellence Playbook",
+  "preface": [
+    "This book turns the Engineering Excellence Playbook into a course. The playbook is a working rulebook: the standards an engineering platform, its engineers, its coding assistants, and its own AI agents all follow. A rulebook tells you what to do; a textbook also has to teach why, in an order a reader can follow, and check that the lesson landed.",
+    "The material is the playbook itself, reorganized into parts and chapters. Each chapter opens with learning objectives, presents the standards, and closes with key takeaways and review questions. References between documents have become references between chapters, so the book reads as one argument rather than a folder of files.",
+    "The argument runs in a deliberate order. Part I sets the principles and the physics of flow that every later rule depends on. Part II puts security and governance before anything is built, because a platform is only as safe as the guardrails its services inherit. Part III and Part IV cover building services and the infrastructure under them. Part V covers what happens when things go wrong. Part VI covers the AI agents that increasingly write and review the code, and the rules that keep them inside the same guardrails as everyone else.",
+    "Two ideas recur throughout. First, deterministic controls come before judgment: code decides what code can decide, and models and people judge only what is left. Second, a claim is not a result: a control counts when the cloud is shown enforcing it, a fix counts when telemetry shows it working, and a benchmark counts when it has ground truth."
+  ],
+  "howToUse": [
+    "Read Part I first; every later chapter assumes its vocabulary (flow, governors, Red/Green, the lifecycle).",
+    "Parts II to VI can be read in any order after that, but Part II's governance chapters are referenced constantly.",
+    "Appendix A is the enforceable rulebook (AGENTS.md) in full. Use it as a reference once the chapters have explained the reasoning behind each rule.",
+    "Review questions have no answer key on purpose: most have more than one defensible answer, and the reasoning is the point."
+  ],
+  "parts": [
+    {
+      "title": "Foundations",
+      "intro": "Principles, the mathematics of flow, and the lifecycle every deliverable follows.",
+      "chapters": [
+        {
+          "title": "Principles and Decision Frameworks",
+          "sources": [
+            "README.md",
+            "05_Metadata/Playbook_Metadata_Overview.md",
+            "05_Metadata/RedGreen_Logic.md",
+            "05_Metadata/Two_Sides_of_the_Coin.md"
+          ],
+          "objectives": [
+            "State the playbook's purpose and its core principles",
+            "Apply Red/Green logic to decide whether work may proceed",
+            "Weigh immediate impact against long-term flow when making a trade-off",
+            "Describe how the playbook's zones are organized"
+          ],
+          "takeaways": [
+            "The playbook is the single source of truth for engineers, assistants, and agents alike.",
+            "Red/Green is a flow-control signal, not a prohibition: Red means pause and fix, not stop forever.",
+            "Every decision has two sides; optimizing only for speed borrows against future flow."
+          ],
+          "questions": [
+            "Give an example of a change that is Green for speed but Red for long-term flow. How would you decide?",
+            "Why does the playbook insist that its rules be tool- and vendor-neutral?",
+            "Which decisions in your own work would benefit from being documented with their trade-off, and which would not?"
+          ]
+        },
+        {
+          "title": "The Physics of Flow",
+          "sources": [
+            "docs/PHYSICS_OF_FLOW.md",
+            "00_UniversalStandards/04_CONCURRENCY_GOVERNORS.md"
+          ],
+          "objectives": [
+            "Use Little's Law to size a concurrency governor",
+            "Explain contention and coherency with the Universal Scalability Law",
+            "Define the -1 sigma invariant and why alerts fire before capacity",
+            "Describe the semantics every governor must implement"
+          ],
+          "takeaways": [
+            "Size governors from arrival rate and P99 duration, deliberately over-provisioning against queuing.",
+            "Adding workers past the USL peak reduces throughput; measure the knee instead of guessing.",
+            "Saturation alerts fire at knee minus one standard deviation, keeping a quiet substrate.",
+            "No unbounded parallelism: every worker is bounded, cancellable, and observable."
+          ],
+          "questions": [
+            "A service sees 120 requests per second with a P99 of 250 ms. What governor size does Little's Law suggest, and why use P99 rather than the mean?",
+            "Describe a symptom in production that would suggest you are past the USL peak.",
+            "Why is alerting at 100% capacity too late?"
+          ]
+        },
+        {
+          "title": "The Deliverable Lifecycle and Definition of Done",
+          "sources": [
+            "00_UniversalStandards/01_Deliverable_Lifecycle.md",
+            "00_UniversalStandards/02_Definition_of_Done.md"
+          ],
+          "objectives": [
+            "Walk any deliverable through Design, Build, Validate, Deploy, Observe, Improve",
+            "Use entry and exit gates to decide when work may advance",
+            "Apply the Flow Audit and the cross-layer Definition of Done"
+          ],
+          "takeaways": [
+            "One lifecycle applies to modules, APIs, features, pipelines, monitoring rules, and agents.",
+            "A stage that fails its exit gate is Red and does not advance.",
+            "Done means complete, observable, tested, and aligned across layers, not merely pushed."
+          ],
+          "questions": [
+            "Which exit gate is most often skipped in teams you have worked with, and what does skipping it cost later?",
+            "How would the Definition of Done differ for an infrastructure module and a frontend feature?",
+            "Why does the lifecycle treat documentation as infrastructure?"
+          ]
+        },
+        {
+          "title": "Test Quality",
+          "sources": [
+            "00_UniversalStandards/14_Test_Quality.md"
+          ],
+          "objectives": [
+            "Recognize tests that cannot fail",
+            "Use changed-line coverage as a floor rather than a goal",
+            "Explain what mutation testing measures that coverage does not",
+            "Treat flaky tests as defects"
+          ],
+          "takeaways": [
+            "A committed .only or .skip silently removes tests from CI; neither is allowed.",
+            "A test without an assertion raises coverage without testing anything.",
+            "Mutation testing checks that the suite notices wrong code; its score has a floor.",
+            "A flaky test is rerun once at most, then fixed or quarantined with an owner."
+          ],
+          "questions": [
+            "A pull request raises coverage from 70% to 85% and every new test calls the code without asserting. What changed in the evidence?",
+            "Why does an assertion inside an except block let a broken test pass?",
+            "What does a surviving mutant on an authorization check tell you?"
+          ]
+        },
+        {
+          "title": "Distributing Standards",
+          "sources": [
+            "00_UniversalStandards/05_Standards_Distribution.md"
+          ],
+          "objectives": [
+            "Explain why rules must be delivered into each repository",
+            "Describe dependency inversion between the playbook and its consumers",
+            "Trace how a rule change reaches a consumer repository"
+          ],
+          "takeaways": [
+            "Coding tools only read instructions from the repository they work in, so rules are vendored, not linked.",
+            "The playbook publishes; consumers declare a pinned dependency and adopt new versions by reviewed pull request.",
+            "Rules never change underneath a repository silently."
+          ],
+          "questions": [
+            "What would go wrong if consumer repositories always tracked the latest playbook automatically?",
+            "Why does the playbook never keep a list of its consumers?"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Security and Governance",
+      "intro": "Defense in depth, guardrails the cloud enforces, and keeping shared things in one place.",
+      "chapters": [
+        {
+          "title": "Security in Depth",
+          "sources": [
+            "00_UniversalStandards/07_Security_In_Depth.md",
+            "03_InfrastructureZone/02_Security_IAM_Policies.md",
+            "05_Metadata/Least_Privilege_Checklist.md"
+          ],
+          "objectives": [
+            "Describe each security layer and what it assumes about the others",
+            "Set credential and session lifetimes from NIST assurance levels",
+            "Apply least privilege to people, workloads, CI, and agents",
+            "Explain why gates block on critical findings only"
+          ],
+          "takeaways": [
+            "Every layer assumes the one before it can fail.",
+            "Cloud credentials live one hour by default and at most; sign-in re-authenticates within 24 hours, 12 for prod and admin.",
+            "Workloads and agents use short-lived federated identity, never static keys.",
+            "Below-critical findings are counted on a dashboard, never shown in the pull request."
+          ],
+          "questions": [
+            "Why separate the sign-in session timer from the cloud credential timer?",
+            "A scanner reports 40 medium findings on a pull request. What does this chapter's gate policy say should happen, and why?",
+            "Where would a stolen short-lived credential still be dangerous, and what limits the damage?",
+            "A workflow echoes the pull request title in a run step. What can an attacker do, and what is the fix?"
+          ]
+        },
+        {
+          "title": "Supply Chain",
+          "sources": [
+            "00_UniversalStandards/13_Supply_Chain.md"
+          ],
+          "objectives": [
+            "Pin every input to a build and update pins deliberately",
+            "Explain what an SBOM answers that a rebuild cannot",
+            "Describe keyless signing, provenance, and verification at deploy",
+            "Apply a license policy with reviewed exceptions"
+          ],
+          "takeaways": [
+            "Packages, base images, downloads, and actions are all pinned; floating ranges are an anti-pattern.",
+            "Every released artifact carries an SBOM, so a new vulnerability is a query, not a rebuild.",
+            "Artifacts are signed by the pipeline's short-lived identity, and deploys admit only verified signatures.",
+            "Denied licenses block like CRITICAL findings; review-required ones escalate to a person."
+          ],
+          "questions": [
+            "A dependency is listed as flask>=2.0. What can change between two builds, and what is the fix?",
+            "Why does keyless signing with the CI job's identity remove a risk that a signing key would create?",
+            "A CVE is announced in a library. How does the SBOM change the response?"
+          ]
+        },
+        {
+          "title": "Central CI",
+          "sources": [
+            "00_UniversalStandards/15_Central_CI.md"
+          ],
+          "objectives": [
+            "Explain why gates live in one reusable workflow that callers configure only through inputs",
+            "Pin a shared workflow safely, including what a squash merge does to a pin",
+            "Describe the shared severity gate and how it fails closed",
+            "Roll out a change to the factory through consumer repin pull requests"
+          ],
+          "takeaways": [
+            "One factory holds every gate; a consumer's caller file only calls it by full commit SHA and passes inputs.",
+            "A caller-local action inside a reusable workflow resolves against the caller's checkout, so the factory installs everything itself.",
+            "Every vulnerability scanner reports in full, and one gate blocks only CRITICAL or CISA KEV findings, failing closed when it cannot classify.",
+            "Frozen code is excluded from every gate except secret scanning."
+          ],
+          "questions": [
+            "A consumer's HCL job fails because ./.github/actions/setup-iac is missing. Where is the bug, and why?",
+            "Callers pin a pull request's head SHA, and the pull request is squash-merged. What breaks, and what is the fix?",
+            "A pip dependency has a HIGH vulnerability that is on the KEV list. What does the gate do, and how does it know?"
+          ]
+        },
+        {
+          "title": "Governance Guardrails",
+          "sources": [
+            "00_UniversalStandards/08_Governance_Guardrails.md"
+          ],
+          "objectives": [
+            "Distinguish SEC policies in CI from GOV guardrails in the cloud control plane",
+            "Map a governance control to GCP organization policies and AWS SCPs",
+            "State what a control guarantees and what it does not",
+            "Explain staged rollout, exceptions, conformance tests, and verification stages"
+          ],
+          "takeaways": [
+            "CI checks stop bad pull requests; guardrails stop everything that skips the pull request.",
+            "Every control is staged in dry run and promoted only after adversarial verification on that cloud.",
+            "Verified is not enforced: enforcement is observed live, never claimed in a file.",
+            "Exceptions are narrow, owned, and expire."
+          ],
+          "questions": [
+            "Give an example of a change that bypasses every CI check. Which guardrail would stop it?",
+            "Why must each control state what it does not guarantee?",
+            "Design a conformance test for the no-service-account-keys control, including the allowed action it must also check."
+          ]
+        },
+        {
+          "title": "Reuse and DRY",
+          "sources": [
+            "00_UniversalStandards/09_Reuse_and_DRY.md"
+          ],
+          "objectives": [
+            "Apply the rule of three, and its stricter form for security and contracts",
+            "Separate internal and shared scope with declared boundaries",
+            "Explain how a generated reuse map helps AI agents avoid duplication",
+            "Share specifications and test vectors across languages instead of code"
+          ],
+          "takeaways": [
+            "Duplication is cheaper than the wrong abstraction, but a duplicated security fix is a vulnerability.",
+            "Exported is not shared: shared scope is an explicit decision.",
+            "The reuse map is generated, never hand-written, and agents see a slice of it.",
+            "Contracts have one home and are vendored, never copied."
+          ],
+          "questions": [
+            "When would you refuse to extract a shared helper even though three copies exist?",
+            "Why must the reuse map be regenerated on every merge?",
+            "Two services in different languages both redact secrets. What should be shared between them?"
+          ]
+        },
+        {
+          "title": "The Anti-Pattern Catalog",
+          "sources": [
+            "00_UniversalStandards/11_Anti_Pattern_Catalog.md"
+          ],
+          "objectives": [
+            "Explain how one catalog serves both rig and the Reviewer",
+            "Distinguish verified, mapped, and planned detector mappings",
+            "Score a detector's precision and recall on a labelled corpus",
+            "State what promotion allows and what it never allows"
+          ],
+          "takeaways": [
+            "Each anti-pattern maps one existing tool rule to a stable AP-* ID; custom checks exist only where no tool covers the pattern.",
+            "Verified means the tool actually ran on the rule's positive and negative cases in the pinned toolchain image.",
+            "Every v1 rule is advisory: the catalog adds no blocking and leaves the CI gate unchanged.",
+            "Promotion needs measured precision (a Wilson lower bound of at least 0.90), never an assumption."
+          ],
+          "questions": [
+            "Why does the catalog point at existing tool rules instead of re-implementing them?",
+            "Two consumers produce findings for the same hit. What makes them deduplicate cleanly?",
+            "A rule catches 25 of 26 seeded defects but flags 9 of 50 clean cases. Is it eligible for promotion, and why?"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Building Services",
+      "intro": "Frontend, backend, and the telemetry that ships with the first line of code.",
+      "chapters": [
+        {
+          "title": "Frontend Engineering",
+          "sources": [
+            "01_FrontendZone/01_React_Patterns.md",
+            "01_FrontendZone/02_Clean_Code_Checklist.md",
+            "01_FrontendZone/03_Performance_Guide.md"
+          ],
+          "objectives": [
+            "Choose component and state patterns that keep UI predictable",
+            "Apply the clean-code checklist to React code",
+            "Use performance strategies that keep applications responsive"
+          ],
+          "takeaways": [
+            "Components mirror platform flow: modular, predictable, aligned with backend contracts.",
+            "Data is fetched through services, not directly in UI components.",
+            "Performance is designed in, not tuned afterward."
+          ],
+          "questions": [
+            "When does global context become a liability rather than a convenience?",
+            "Which checklist item would you enforce automatically, and which needs human review?",
+            "A div with onClick opens a dialog. Who cannot use it, and what is the smallest correct fix?"
+          ]
+        },
+        {
+          "title": "Backend Services",
+          "sources": [
+            "02_BackendZone/01_API_Architecture.md",
+            "02_BackendZone/02_Async_Processing.md",
+            "02_BackendZone/03_Database_Health.md"
+          ],
+          "objectives": [
+            "Design APIs as versioned platform contracts",
+            "Build asynchronous workflows with idempotency and safe retries",
+            "Monitor database health with the metrics that matter"
+          ],
+          "takeaways": [
+            "APIs are platform contracts, not isolated endpoints.",
+            "At-least-once delivery means every consumer will see duplicates; handlers must be idempotent.",
+            "Database health is observed continuously, not inspected after an outage."
+          ],
+          "questions": [
+            "How would you make a payment-processing consumer idempotent?",
+            "What makes a change to an exported API shape safe or unsafe?",
+            "Which database metric would warn you earliest of trouble in your systems?",
+            "A release removes a required field from a response. Which tool catches it, and how should the change ship instead?"
+          ]
+        },
+        {
+          "title": "Application Architecture",
+          "sources": [
+            "02_BackendZone/05_Application_Architecture.md"
+          ],
+          "objectives": [
+            "Decide when a module should become its own service, using evidence rather than anticipation",
+            "Assign data ownership so every store has exactly one owning service",
+            "Change a database schema with expand-then-contract steps that never break readers or writers",
+            "Publish events reliably with a transactional outbox and consume them idempotently",
+            "Specify a queue's ordering, dead-letter, replay, and tracing behavior"
+          ],
+          "takeaways": [
+            "Start as a modular monolith; every split adds a network hop, a failure mode, and an identity to govern.",
+            "One owner per data store; data crosses boundaries only through versioned contracts.",
+            "No network call inside a database transaction.",
+            "Schemas, APIs, and messages all change by expand, then contract.",
+            "Write the event in the same transaction as the data; never write, then publish, and hope."
+          ],
+          "questions": [
+            "A team wants to split a module into a service because it will need to scale. What evidence would you ask for first?",
+            "Walk through renaming a database column that three services read, using expand-then-contract. Which step needs human approval, and why?",
+            "Why does publishing an event right after committing a transaction lose events, and how does the outbox fix it?",
+            "An order workflow spans payment, inventory, and shipping services. Design its saga, including compensating actions.",
+            "A migration renames a column. Which expand-and-contract steps replace it, and which tool flags the rename?"
+          ]
+        },
+        {
+          "title": "Observability",
+          "sources": [
+            "02_BackendZone/04_Telemetry_Standards.md",
+            "docs/RED_METHOD.md",
+            "docs/USE_METHOD.md"
+          ],
+          "objectives": [
+            "Instrument services with traces, metrics, and structured logs from the first commit",
+            "Apply the RED method to services and the USE method to resources",
+            "Treat metric and span names as contracts"
+          ],
+          "takeaways": [
+            "Telemetry ships with the first line of code, not after the feature works.",
+            "Every log line carries trace and span identifiers so it links to its trace.",
+            "RED describes the work a service does; USE describes the resources it does it on.",
+            "Renaming a metric or span requires updating its dashboards and alerts in the same change."
+          ],
+          "questions": [
+            "Why instrument through a shared wrapper instead of creating spans inside business logic?",
+            "A dashboard shows CPU at 95%. Using RED and USE, what else do you check before acting?",
+            "An alert has no for: duration and no runbook_url. What happens at 3 a.m., and what does the alerting policy require?"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Infrastructure",
+      "intro": "Infrastructure as code, refactoring it safely, and running containers in production.",
+      "chapters": [
+        {
+          "title": "Infrastructure as Code",
+          "sources": [
+            "03_InfrastructureZone/01_IaC_Standards.md",
+            "03_InfrastructureZone/01a_GCP_Specifics.md",
+            "03_InfrastructureZone/01b_AWS_Specifics.md",
+            "03_InfrastructureZone/03_Network_Fundamentals.md",
+            "03_InfrastructureZone/04_Shell_Scripts.md"
+          ],
+          "objectives": [
+            "Structure infrastructure as Terragrunt deployment units",
+            "Keep state configuration in one place and modules isolated",
+            "Apply cloud-specific identity, labeling, and service conventions on GCP and AWS",
+            "Map networking fundamentals to cloud guardrails, and choose the mechanism (access policy, network policy, detective control) that can actually express each one"
+          ],
+          "takeaways": [
+            "Terragrunt orchestrates Terraform; backend configuration is defined once and included.",
+            "Modules never reach into each other's state; values cross only through outputs.",
+            "Every deployment unit declares a class, persistent or ephemeral, and ephemeral units carry a TTL.",
+            "Access policies see API requests, not packets: a rule about firewall contents or traffic needs a network policy or a detective control, never an SCP that only looks right.",
+            "Shell scripts start with set -euo pipefail, quote every expansion, and pass ShellCheck."
+          ],
+          "questions": [
+            "Why is sharing state between modules dangerous even when it is convenient?",
+            "What belongs in a deployment unit's labels, and who uses them?",
+            "Why can no SCP block a security-group rule that opens SSH to the internet? Which layers of the platform stop that connection instead?",
+            "A workload uses DNS-over-HTTPS. Which part of GOV-015 still holds, and which does not?",
+            "Why can rm -rf $DIR/build delete the wrong thing, and what two changes prevent it?"
+          ]
+        },
+        {
+          "title": "Containers",
+          "sources": [
+            "00_UniversalStandards/12_Containers.md"
+          ],
+          "objectives": [
+            "Explain why every tool runs in a pinned container image",
+            "Apply the image architecture rules to a Dockerfile",
+            "Identify container anti-patterns and the SEC-012 requirements",
+            "Isolate conflicting tool dependencies"
+          ],
+          "takeaways": [
+            "The same image runs locally and in CI; a result names its image digest, and host results are provisional.",
+            "Pin completely: base images by digest, packages with lockfiles, binaries by checksum.",
+            "Images are multi-stage, minimal, stateless, and non-root, and run one process in exec form.",
+            "Forcing a resolver past a dependency conflict is an anti-pattern; give each tool its own environment."
+          ],
+          "questions": [
+            "Why is a result from a workstation provisional even when the tool version matches CI?",
+            "What breaks when CMD uses the shell form, and how does the exec form fix it?",
+            "Two tools need incompatible versions of one library. What are the options, and which does this chapter require?",
+            "A Deployment sets hostNetwork: true and no memory limit. What does each allow, and which checks catch them?"
+          ]
+        },
+        {
+          "title": "Refactoring Modules Safely",
+          "sources": [
+            "00_UniversalStandards/06_Module_Refactor_Framework.md"
+          ],
+          "objectives": [
+            "Separate structural from behavioral infrastructure changes",
+            "Sequence a module refactor so each plan stays readable",
+            "Route state-touching steps to the highest scrutiny"
+          ],
+          "takeaways": [
+            "Never mix moving resources with changing their behavior in the same step.",
+            "Plans that touch state (moved blocks, replacements, deletes) take the highest-scrutiny path.",
+            "The loop never fixes a plan by accepting a replacement."
+          ],
+          "questions": [
+            "Why does mixing a rename with an argument change make a plan hard to review?",
+            "Describe the order of steps to split one module into two without destroying anything."
+          ]
+        },
+        {
+          "title": "Kubernetes Troubleshooting",
+          "sources": [
+            "03_InfrastructureZone/K8s/01_K8s_Troubleshooting.md",
+            "03_InfrastructureZone/K8s/02_K8s_Troubleshooting_CheatSheet.md"
+          ],
+          "objectives": [
+            "Follow a repeatable drill flow for pods, services, and nodes",
+            "Recognize common failure forks and edge cases",
+            "Use the cheat sheet to move from symptom to command quickly"
+          ],
+          "takeaways": [
+            "Troubleshooting is a drill, not improvisation: anchor, fork, act, verify.",
+            "Most incidents fall into a small set of recurring paths; practice them before you need them."
+          ],
+          "questions": [
+            "A pod restarts every few minutes. Walk through the drill flow you would follow.",
+            "Which edge case in this chapter have you seen in practice, and how did it present?"
+          ]
+        },
+        {
+          "title": "Messaging Building Blocks",
+          "sources": [
+            "03_InfrastructureZone/06_Messaging_Building_Blocks.md"
+          ],
+          "objectives": [
+            "Name the five messaging blocks and their equivalents on each cloud",
+            "Apply the security, observability, and dead-lettering requirements to each block",
+            "Weigh the fixed cost of an event stream against topics and queues"
+          ],
+          "takeaways": [
+            "Object store, event stream, bridge, fan-out topic, and work queue are built once, as Genesis modules.",
+            "Every block is encrypted, private, identity-only, labelled, and alarmed.",
+            "Each consumer has its own queue with a dead-letter queue and a policy that accepts only its topic."
+          ],
+          "questions": [
+            "Why does each consumer get its own queue instead of sharing one?",
+            "When is a managed Kafka cluster worth its fixed monthly cost in development?"
+          ]
+        },
+        {
+          "title": "Cost",
+          "sources": [
+            "03_InfrastructureZone/05_Cost.md"
+          ],
+          "objectives": [
+            "Show the cost of a change before it merges",
+            "Attribute every resource's spend to an owner",
+            "Run expensive capacity on spot with run-time limits",
+            "Connect model cost to the model ladder"
+          ],
+          "takeaways": [
+            "Every plan gets a cost diff; a large delta needs a person's approval.",
+            "Every billable resource carries owner, service, and unit_class labels.",
+            "Every project is vended with a budget and alerts at 50%, 90%, and 100%.",
+            "GPUs run on spot with a maximum run duration, and the work checkpoints."
+          ],
+          "questions": [
+            "A GPU instance is left running over a weekend on on-demand capacity. Which two settings would have limited the cost?",
+            "Why is a resource without an owner label a finding even if it is cheap?",
+            "Where does the cost of a model call show up, and what decides which model is called?"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Operations",
+      "intro": "When things go wrong: incidents, post-mortems, rollbacks, and alerts.",
+      "chapters": [
+        {
+          "title": "Incidents and Post-Mortems",
+          "sources": [
+            "00_UniversalStandards/03_Post_Mortem_Template.md"
+          ],
+          "objectives": [
+            "Write an incident record with timeline, root cause, and evidence",
+            "Treat near misses as incidents worth recording",
+            "Turn manual detection into a missing-signal action item"
+          ],
+          "takeaways": [
+            "Every failure and every near miss gets a record.",
+            "A failure found by a person looking is itself a finding: its record adds the missing signal.",
+            "Claims in a record point at evidence anyone can check, or say 'not determined'."
+          ],
+          "questions": [
+            "Why record a near miss that caused no impact?",
+            "What evidence would you attach to a record of a failed deployment?"
+          ]
+        },
+        {
+          "title": "Runbooks: Rollbacks and Alerting",
+          "sources": [
+            "04_OperationalRunbooks/01_Emergency_Rollbacks.md",
+            "04_OperationalRunbooks/02_Monitoring_Alert_Thresholds.md"
+          ],
+          "objectives": [
+            "Run a rollback as a managed flow, not a panic action",
+            "Decide whether a signal pages, opens a ticket, or stays on a dashboard",
+            "Page on symptoms using error-budget burn rates"
+          ],
+          "takeaways": [
+            "Every deployment is reversible by design, and rollback restores service before root cause analysis.",
+            "Page on symptoms, not causes; utilization never pages.",
+            "Saturation alerts use the -1 sigma invariant once the knee is measured."
+          ],
+          "questions": [
+            "Why should high CPU never wake someone up on its own?",
+            "What must be true before a rollback is declared complete?"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "AI Agents on the Platform",
+      "intro": "Agents that build and review code, inside the same guardrails as everyone else.",
+      "chapters": [
+        {
+          "title": "Agent Standards",
+          "sources": [
+            "06_AgentZone/01_Agent_Standards.md"
+          ],
+          "objectives": [
+            "Separate actors that hold judgment from tools that hold capability",
+            "Route work by scrutiny tier and model cost ladder, kept as separate axes",
+            "Bound agent loops with budgets, timeouts, and round caps",
+            "Keep AI review advisory and human approval binding"
+          ],
+          "takeaways": [
+            "Tools hold capability; agents hold judgment. A tool never loops or decides.",
+            "Rules decide first; models judge only what rules leave, and never override a failing deterministic gate.",
+            "Model weight is a ladder: the cheapest model that fits the change's complexity.",
+            "Agents plan; they never apply. Humans approve merges."
+          ],
+          "questions": [
+            "Why must scrutiny tier and model weight be separate decisions?",
+            "An agent's review loop reached round 4 three times this week. What does the chapter say to investigate, and what should you not do?",
+            "Why classify a build failure before sending it to an AI builder?",
+            "A model call sets no context window and the prompt grows past 4,096 tokens on Ollama. What happens, and which rule prevents it?"
+          ]
+        },
+        {
+          "title": "Autonomy by Evidence",
+          "sources": [
+            "00_UniversalStandards/10_Autonomy_by_Evidence.md"
+          ],
+          "objectives": [
+            "Apply DMAIC to a software change process",
+            "Place a process class on the L0 to L4 autonomy ladder and state what promotion requires",
+            "Calculate how many defect-free events demonstrate a defect rate at 95% confidence",
+            "Explain why high severity keeps a person in the loop in software, unlike in manufacturing",
+            "Distinguish the Six Sigma objective from what current volume can demonstrate"
+          ],
+          "takeaways": [
+            "Six Sigma (3.4 defects per million) is the long-term target and the working hypothesis, not a current claim.",
+            "Never automate a broken process: autonomy requires statistical control and demonstrated capability first.",
+            "Measure the human before removing the human; a human step that catches what machines miss stays.",
+            "Security, ethics, irreversible changes, and staging and production merges never go above L2.",
+            "Demotion is automatic: an out-of-control signal takes autonomy back."
+          ],
+          "questions": [
+            "A process class has had 450 consecutive defect-free changes. Which autonomy level's interim target does that demonstrate, and which does it not?",
+            "Why does a severity rating of 9 or 10 remove the human in a factory but keep the human in software?",
+            "How would you test whether human code review is an unreliable gauge for a given class of changes?",
+            "Why would demonstrating Six Sigma by counting defects take a small platform decades, and what does the standard measure instead in the meantime?"
+          ]
+        },
+        {
+          "title": "Software Factory Intake",
+          "sources": [
+            "06_AgentZone/03_Software_Factory_Intake.md"
+          ],
+          "objectives": [
+            "Distinguish the factory's ingress from its egress",
+            "Trace a requirement from questionnaire to an approved spec reaching the Builder",
+            "Explain the claim-check pattern and why consumers verify the digest",
+            "Explain why model findings enter as claims, not proof"
+          ],
+          "takeaways": [
+            "Ingress is how work enters the factory; egress is the domain events it publishes.",
+            "Grooming runs Bronze (raw), Silver (normalized and enriched), Gold (the reviewable spec).",
+            "Events carry an object reference and its SHA-256, never the document; consumers verify before use.",
+            "An approval names one exact spec version; the Builder starts only from a verified spec.approved event."
+          ],
+          "questions": [
+            "Why does the event carry the spec's digest when the Builder could simply read the newest object?",
+            "A deep dive concludes a dependency is safe to upgrade. What tier is that evidence, and what raises it?",
+            "Which of the open decisions would you settle first, and what changes in the flow either way?"
+          ]
+        },
+        {
+          "title": "The Compliance Engine",
+          "sources": [
+            "06_AgentZone/02_Compliance_Engine.md"
+          ],
+          "objectives": [
+            "Explain why the builder cannot authorize its own release",
+            "Name each component and the boundary it sits behind",
+            "Follow evidence from attestation to a single-use release token"
+          ],
+          "takeaways": [
+            "The Builder scopes and dry-runs; an independent authority evaluates and signs; the deploy boundary consumes the token once.",
+            "Missing evidence is BLOCKED; failing or under-tier evidence is REMEDIATE; the gate is BLOCKED > REMEDIATE > PASS.",
+            "Tokens are bound to the artifact's canonical identity digest, so drift is refused."
+          ],
+          "questions": [
+            "What could a compromised Builder do if it held the authority's signing key?",
+            "Why must every implementation reproduce the canonical-identity vectors exactly?"
+          ]
+        },
+        {
+          "title": "Review Lenses",
+          "sources": [
+            "06_AgentZone/04_Review_Lenses.md"
+          ],
+          "objectives": [
+            "Explain what a lens is and why the playbook, not the Reviewer, owns its questions",
+            "Apply the architecture lens's selection rules to a unit",
+            "Explain how catalog findings become known findings for the lens"
+          ],
+          "takeaways": [
+            "Deterministic checks run first; their results are known findings the model must not repeat.",
+            "Rubrics are generated from playbook files, never hand-written in the Reviewer.",
+            "A catalog rule whose related list names an ARCH rule enforces it; its findings reach the architecture lens.",
+            "Lenses advise or escalate; they never block. Conformance vectors keep implementations honest."
+          ],
+          "questions": [
+            "rig could not compute a unit's features. Which architecture rules does the lens apply, and why?",
+            "squawk flags a column rename. How does that finding change what the model is asked?"
+          ]
+        },
+        {
+          "title": "Review Loop (Design)",
+          "sources": [
+            "06_AgentZone/05_Review_Loop.md"
+          ],
+          "objectives": [
+            "Describe the target event-driven loop between the Builder and the Reviewer",
+            "Explain why a review request is data, never the Reviewer's prompt",
+            "Walk an incident back from a deployed digest to the spec that started it"
+          ],
+          "takeaways": [
+            "The target loop is review.requested and review.completed on the event backbone, with claim-checked objects.",
+            "The object store is the history; the event stream only delivers.",
+            "Triage reconstructs every exchange from stored objects, prompt versions, and one trace.",
+            "Rollback needs its own authorization rule; which one is still an open decision."
+          ],
+          "questions": [
+            "What could go wrong if the Builder wrote the Reviewer's prompt?",
+            "Kafka keeps events for seven days and an incident is found after three weeks. Where does triage look?"
+          ]
+        }
+      ]
+    }
+  ],
+  "appendices": [
+    {
+      "title": "The Rulebook (AGENTS.md)",
+      "source": "AGENTS.md",
+      "intro": "The enforceable rule set, reproduced in full. Each rule is explained in the chapters; this appendix is the reference."
+    },
+    {
+      "title": "Metrics Index",
+      "source": "metrics/promql/MASTER_INDEX.md",
+      "intro": "Standard PromQL queries referenced throughout the book."
+    },
+    {
+      "title": "Contracts",
+      "contracts": true,
+      "intro": "The machine-readable contracts the playbook publishes and vendors into consumer repositories."
+    }
+  ],
+  "glossary": [
+    [
+      "-1 sigma invariant",
+      "Setting saturation thresholds at the measured knee minus one standard deviation."
+    ],
+    [
+      "Actor",
+      "A component that holds a loop and makes decisions, such as an agent. Contrast with tool."
+    ],
+    [
+      "Adversarially verified",
+      "The final verification stage: every known bypass path, the exception path, and the authorization boundary have been tested against the real cloud."
+    ],
+    [
+      "Anti-pattern catalog",
+      "The versioned list of AP-* rules (schemas/antipatterns.v1.json) that rig and the Reviewer both read; every v1 rule is advisory."
+    ],
+    [
+      "Autonomy ladder",
+      "Levels L0 (manual) to L4 (unattended) that a process class climbs one at a time, on evidence, and falls back down automatically."
+    ],
+    [
+      "Blast radius",
+      "How much of a system a change can affect, approximated by the callers of the changed code."
+    ],
+    [
+      "Claim check",
+      "Messaging pattern where a message carries a reference to a stored object and its digest instead of the object itself."
+    ],
+    [
+      "Cognitive complexity",
+      "A measure of how hard code is to understand, counting breaks in linear flow with extra weight for nesting."
+    ],
+    [
+      "Contract",
+      "A versioned, machine-readable interface shared across repositories, such as a JSON Schema."
+    ],
+    [
+      "Deployment Unit",
+      "One independently planned and applied piece of infrastructure, declared persistent or ephemeral."
+    ],
+    [
+      "DPMO",
+      "Defects per million opportunities; Six Sigma quality is 3.4."
+    ],
+    [
+      "Dry run",
+      "Evaluating a guardrail and logging violations without blocking them."
+    ],
+    [
+      "Egress",
+      "The domain events the factory publishes for consuming domains such as finance and operations."
+    ],
+    [
+      "Error budget",
+      "The amount of unreliability a service's objective allows; burn rate measures how fast it is spent."
+    ],
+    [
+      "Expand-then-contract",
+      "Changing a schema, API, or contract in reversible steps: add the new shape, migrate readers and writers, then remove the old shape."
+    ],
+    [
+      "Fail closed",
+      "When a decision is uncertain or its inputs are missing, take the safest, highest-scrutiny path."
+    ],
+    [
+      "Governor",
+      "A bound on concurrent work that provides backpressure and sheds load past P99."
+    ],
+    [
+      "Guardrail (GOV)",
+      "A control enforced by the cloud control plane, such as a GCP organization policy or AWS SCP."
+    ],
+    [
+      "Ingress",
+      "How work enters the factory: from questionnaire to an approved spec reaching the Builder."
+    ],
+    [
+      "Jidoka",
+      "Toyota's principle of automation that detects a problem and stops itself, adopted before a process runs unattended."
+    ],
+    [
+      "Least privilege",
+      "Granting only the permissions a task requires, at the narrowest scope that works."
+    ],
+    [
+      "Little's Law",
+      "L = lambda W: items in a system equal arrival rate times residence time."
+    ],
+    [
+      "Model ladder",
+      "Ordered model rungs from cheapest to strongest; a difficulty score selects the cheapest that fits."
+    ],
+    [
+      "Modular monolith",
+      "One deployable with internal module boundaries enforced like repository boundaries; the default starting architecture."
+    ],
+    [
+      "Mutation testing",
+      "Changing code in small ways (mutants) and checking that a test fails; the share of mutants caught is the mutation score."
+    ],
+    [
+      "Protected class",
+      "A kind of change (security, ethics, irreversible, staging and production) that always keeps a person in the loop."
+    ],
+    [
+      "Provenance",
+      "A signed record of how an artifact was built: repository, commit, workflow, and builder."
+    ],
+    [
+      "Red/Green logic",
+      "A decision signal: Green proceeds, Red pauses for review or fixing."
+    ],
+    [
+      "Reuse map",
+      "A generated index of definitions agents consult before writing new code."
+    ],
+    [
+      "Rule of three",
+      "With n consecutive defect-free events, the 95% upper bound on the defect rate is about 3/n."
+    ],
+    [
+      "Saga",
+      "A multi-service workflow where each step commits locally and has a compensating action, instead of a distributed transaction."
+    ],
+    [
+      "SBOM",
+      "Software bill of materials: the list of components inside an artifact, generated by the pipeline and attached to it."
+    ],
+    [
+      "Scrutiny tier",
+      "A rule-driven safety level for a change, independent of model cost."
+    ],
+    [
+      "SEC policy",
+      "A deterministic check run on every plan or pull request in CI."
+    ],
+    [
+      "Toolchain image",
+      "A container image with every tool pinned, used for builds, tests, scanning, and verification, the same image locally and in CI."
+    ],
+    [
+      "Transactional outbox",
+      "Writing an event to an outbox table in the same transaction as the data change, then publishing it, so events are never lost or invented."
+    ],
+    [
+      "Universal Scalability Law",
+      "A model of throughput that accounts for contention and coherency costs as workers are added."
+    ],
+    [
+      "Vendoring",
+      "Copying pinned rules and contracts into a consumer repository so local tools and agents can read them."
+    ],
+    [
+      "Verified mapping",
+      "A catalog rule whose detector was run on its positive and negative cases in the toolchain image and reported the rule ID exactly on the positives."
+    ]
+  ]
+}

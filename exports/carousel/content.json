@@ -1,0 +1,386 @@
+[
+  {
+    "slug": "01-pipeline",
+    "kicker": "Pipeline",
+    "title": "We hardened our CI/CD pipeline in one day. Here's what broke first.",
+    "sub": "Merging five pull requests on a private GCP shell.",
+    "problem": [
+      "CI ran on private runners in GCP, but every change to those runners was risky.",
+      "Our own safety gate blocked any change that replaced a resource, even a harmless one."
+    ],
+    "did": [
+      "Merged multi-language gates: Terraform/HCL, TypeScript, Python, Go",
+      "Turned on security alerts for IAM, key, firewall, bucket, and policy changes",
+      "Fixed runner boots: retries, unique names, safe rollouts",
+      "Gave the no-destroy gate a reviewed allow-list with an expiry"
+    ],
+    "stats": [
+      [
+        "5",
+        "pull requests merged"
+      ],
+      [
+        "5",
+        "security alerts live"
+      ],
+      [
+        "1",
+        "gate exception, owned and expiring"
+      ]
+    ],
+    "lesson": "A safety gate with no exception path doesn't make you safe. It makes whole classes of change unshippable.",
+    "tag": "sovereign-vpc-gcp #2 #3 #5 #6 #7"
+  },
+  {
+    "slug": "02-incidents",
+    "kicker": "Incidents",
+    "title": "Four failures in one day. Not one was caught by an alert.",
+    "sub": "Why every incident record now names the missing signal.",
+    "problem": [
+      "Every failure that day was found by a person looking at a queue or a log.",
+      "The platform had no telemetry on its own CI."
+    ],
+    "did": [
+      "A single GitHub API timeout failed a runner boot",
+      "A stale registration trapped a runner in a 409 loop",
+      "Cloud Monitoring rejected alert filters that passed plan",
+      "Near miss: a rollout would have deleted the VM running its own apply"
+    ],
+    "stats": [
+      [
+        "4",
+        "incidents recorded with evidence"
+      ],
+      [
+        "0",
+        "caught by an alert"
+      ],
+      [
+        "4",
+        "missing signals turned into metrics"
+      ]
+    ],
+    "lesson": "A plan is not proof. If a person had to find it, the record must add the signal that would have found it.",
+    "tag": "docs/incidents INC-001 to INC-004"
+  },
+  {
+    "slug": "03-least-privilege",
+    "kicker": "Least privilege",
+    "title": "The riskiest resource in our cloud was one nobody created.",
+    "sub": "Narrowing access across CI, cloud, and people.",
+    "problem": [
+      "GCP had auto-created a default network with SSH and RDP open to the whole internet.",
+      "Shared CI workflows and an admin login had more reach than they needed."
+    ],
+    "did": [
+      "Shared CI workflows reachable only by the owner's repos, never public",
+      "Workflows default to read-only, with permissions granted per job",
+      "Flagged the default network for deletion",
+      "Removed an admin user's console password until SSO replaces it"
+    ],
+    "stats": [
+      [
+        "0",
+        "public workflow access"
+      ],
+      [
+        "1",
+        "default network flagged"
+      ],
+      [
+        "1",
+        "standing admin password removed"
+      ]
+    ],
+    "lesson": "Least privilege isn't a one-time setting. It's a habit of asking 'who can reach this?' every time.",
+    "tag": "Playbook: CI least privilege"
+  },
+  {
+    "slug": "04-governance-first",
+    "kicker": "Governance",
+    "title": "CI checks stop bad pull requests. What stops everything else?",
+    "sub": "Guardrails enforced by the cloud itself.",
+    "problem": [
+      "Every check we had ran in CI.",
+      "A console click, a stolen credential, or a third-party agent could skip the pull request entirely."
+    ],
+    "did": [
+      "Defined 13 GOV-* guardrails mapped to GCP org policies and AWS SCPs",
+      "Wrote one machine-readable baseline, validated by JSON Schema",
+      "Every control states what it guarantees and what it does not",
+      "Dry run first; every exception needs an owner, a reason, and an expiry"
+    ],
+    "stats": [
+      [
+        "13",
+        "guardrails defined"
+      ],
+      [
+        "2",
+        "clouds mapped"
+      ],
+      [
+        "1",
+        "source of truth"
+      ]
+    ],
+    "lesson": "Governance comes before services. A service is fast to build when the guardrails already exist.",
+    "tag": "08_Governance_Guardrails"
+  },
+  {
+    "slug": "05-proof-over-promises",
+    "kicker": "Verification",
+    "title": "A security control you haven't tested is a hope.",
+    "sub": "Why we count verified controls, not documented ones.",
+    "problem": [
+      "A policy can look right and still not match how the cloud authorizes a request.",
+      "Our own alert filters passed review and plan, then failed at the API."
+    ],
+    "did": [
+      "Four stages per control: specified, schema-validated, integration-tested, adversarially verified",
+      "Verified is not enforced: enforcement is observed live, never claimed in a file",
+      "Evidence must exist as a trace, a log line, and a metric",
+      "First milestone: prove 3 controls end to end in a disposable test folder"
+    ],
+    "stats": [
+      [
+        "4",
+        "verification stages"
+      ],
+      [
+        "3",
+        "controls in the first milestone"
+      ],
+      [
+        "0",
+        "promoted without proof"
+      ]
+    ],
+    "lesson": "One verified control is worth more than ten documented ones.",
+    "tag": "Genesis milestone M1"
+  },
+  {
+    "slug": "06-identity",
+    "kicker": "Identity",
+    "title": "How long should a cloud credential live? We picked a number.",
+    "sub": "Session and credential lifetimes, grounded in NIST.",
+    "problem": [
+      "'Short-lived' meant nothing until it had a number.",
+      "Our AI builder was about to use an admin user's static keys."
+    ],
+    "did": [
+      "Cloud credentials live 1 hour by default and at most",
+      "Re-authenticate within 24 h (NIST AAL2), 12 h for prod and admin (AAL3)",
+      "A new, empty AWS management account, because SCPs never apply to it",
+      "The AI builder reaches Bedrock only through SSO"
+    ],
+    "stats": [
+      [
+        "1 h",
+        "maximum credential lifetime"
+      ],
+      [
+        "24 h",
+        "re-authentication, standard access"
+      ],
+      [
+        "12 h",
+        "re-authentication, prod and admin"
+      ]
+    ],
+    "lesson": "Fifteen extra minutes of setup now beats a permanent gap in governance.",
+    "tag": "07_Security_In_Depth"
+  },
+  {
+    "slug": "07-dry",
+    "kicker": "DRY",
+    "title": "We fixed a bug. The same bug lived on in its copy.",
+    "sub": "What a duplication review across five repos found.",
+    "problem": [
+      "A retry fix landed in one startup script and missed the identical one next to it.",
+      "AI agents make this worse: without a map, they rewrite what already exists."
+    ],
+    "did": [
+      "Scanned five repos for copy-pasted code",
+      "Found the same prompts copied four times, and only one copy is read",
+      "Moved shared contracts to one home, vendored everywhere",
+      "Wrote a rule of three: extract on the second copy for security and contracts"
+    ],
+    "stats": [
+      [
+        "15",
+        "duplicated blocks found"
+      ],
+      [
+        "4x",
+        "identical prompt copies"
+      ],
+      [
+        "1",
+        "fix that missed its copy"
+      ]
+    ],
+    "lesson": "Duplication is cheaper than the wrong abstraction, but a duplicated security fix is a vulnerability.",
+    "tag": "09_Reuse_and_DRY"
+  },
+  {
+    "slug": "08-review-pipeline",
+    "kicker": "AI review",
+    "title": "An AI code reviewer that spends tokens only where code can't decide.",
+    "sub": "Designing the review loop before writing it.",
+    "problem": [
+      "A single big AI reviewer sees too much, costs too much, and loops forever.",
+      "Infrastructure failures were being sent to the AI to 'fix'."
+    ],
+    "did": [
+      "Build fails: classify first, and only real code errors reach the AI builder",
+      "Build passes: deterministic gates, then the AI reviewer per unit",
+      "The model asks for evidence; code fetches it. At most 2 calls per unit",
+      "A cap of 4 review rounds, with 3 or fewer as the measured target"
+    ],
+    "stats": [
+      [
+        "2",
+        "model calls per unit, max"
+      ],
+      [
+        "4",
+        "round cap"
+      ],
+      [
+        "3",
+        "expected rounds"
+      ]
+    ],
+    "lesson": "Tools hold capability, agents hold judgment. A tool never loops and never decides.",
+    "tag": "Playbook PR #4"
+  },
+  {
+    "slug": "09-model-routing",
+    "kicker": "Cost",
+    "title": "Pick the cheapest AI model that can handle the change.",
+    "sub": "Routing by complexity, measured per function.",
+    "problem": [
+      "Sending every change to a frontier model is expensive.",
+      "File-level complexity scores bury a risky change inside a big file."
+    ],
+    "did": [
+      "The router answers questions about complexity, never about routing",
+      "Per-function cognitive complexity using Sonar's published rules",
+      "Checked against Sonar's own totals, so the numbers can't drift",
+      "Combined with blast radius: how many callers the changed code has"
+    ],
+    "stats": [
+      [
+        "1",
+        "complexity score per changed function"
+      ],
+      [
+        "0",
+        "model calls to pick a model"
+      ],
+      [
+        "4",
+        "ladder rungs, cheapest first"
+      ]
+    ],
+    "lesson": "No model should ever run just to decide which model to run.",
+    "tag": "features.v1 and symbol_index.v1"
+  },
+  {
+    "slug": "10-benchmark",
+    "kicker": "Benchmark",
+    "title": "Measure your AI reviewer before you optimize it.",
+    "sub": "A benchmark with ground truth, built from our own code.",
+    "problem": [
+      "Every optimization claim ('70% cheaper') was a guess.",
+      "There was no baseline to compare against."
+    ],
+    "did": [
+      "104 frozen test cases from real files in TypeScript, Python, and Terraform",
+      "Seeded defects with known answers, plus clean changes",
+      "Compared full-file vs diff-only review through the real reviewer",
+      "A deterministic judge: no AI grading another AI"
+    ],
+    "stats": [
+      [
+        "61",
+        "seeded defects"
+      ],
+      [
+        "43",
+        "clean changes"
+      ],
+      [
+        "17",
+        "held out, never tuned on"
+      ]
+    ],
+    "lesson": "The first probe found 7 of 8 calls timing out on a laptop CPU. Hardware, not the model, set the result.",
+    "tag": "gcp-reviewer-agent PR #1"
+  },
+  {
+    "slug": "11-tools-vs-ai",
+    "kicker": "Tools vs AI",
+    "title": "Free scanners caught half the bugs before any AI looked.",
+    "sub": "Where an AI reviewer actually has to earn its cost.",
+    "problem": [
+      "It's easy to credit an AI with catching bugs a free tool already catches.",
+      "The real question: what does the AI add?"
+    ],
+    "did": [
+      "Ran Checkov, Trivy, Gitleaks, Semgrep, and Bandit on the same cases",
+      "Scored findings by exact line, so old issues earn no credit",
+      "Every Terraform defect and hardcoded secret: caught by tools",
+      "Logged secrets, path traversal, dropped awaits, unbounded loops: missed by all"
+    ],
+    "stats": [
+      [
+        "52%",
+        "of seeded defects caught by tools"
+      ],
+      [
+        "0",
+        "false alarms on 33 clean changes"
+      ],
+      [
+        "26",
+        "defects left for the AI"
+      ]
+    ],
+    "lesson": "Judge an AI reviewer only on what deterministic tools miss. Everywhere else it just adds cost.",
+    "tag": "bench/results/tools-local"
+  },
+  {
+    "slug": "12-gpu-budget",
+    "kicker": "Budget",
+    "title": "A valid AI model test for about a dollar.",
+    "sub": "Running a GPU benchmark on spot VMs, safely.",
+    "problem": [
+      "A laptop CPU can't run the 7B model inside the reviewer's timeout.",
+      "GPU time is expensive if a VM is forgotten."
+    ],
+    "did": [
+      "Checked live prices: a spot L4 GPU VM is $0.423/hour (us-central1)",
+      "One VM per run, created from a template with no standing cost",
+      "A time limit that Google Cloud itself enforces, so the VM deletes itself",
+      "The run aborts unless the model is confirmed in GPU memory"
+    ],
+    "stats": [
+      [
+        "$0.42",
+        "per hour, spot L4"
+      ],
+      [
+        "~$1",
+        "estimated per full baseline"
+      ],
+      [
+        "3 h",
+        "hard time limit per VM"
+      ]
+    ],
+    "lesson": "A silent CPU fallback must never pass as a GPU result. Guard the measurement, not just the bill.",
+    "tag": "sovereign-vpc-gcp PR #9"
+  }
+]
