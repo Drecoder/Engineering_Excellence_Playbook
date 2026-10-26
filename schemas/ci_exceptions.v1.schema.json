@@ -19,7 +19,7 @@
     "exception": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "check", "finding_id", "path", "resource", "owner", "reason", "follow_up", "approved_in", "created", "expires"],
+      "required": ["id", "check", "finding_id", "path", "resource", "owner", "reason", "follow_up", "approved_in", "approved_by", "created", "expires"],
       "properties": {
         "id": { "type": "string", "pattern": "^EXC-[0-9]{3,}$" },
         "check": {
@@ -55,6 +55,11 @@
           "type": "string",
           "pattern": "^https://github\\.com/[A-Za-z0-9-]+/[A-Za-z0-9._-]+/pull/[0-9]+$",
           "description": "The reviewed pull request that added or renewed this entry. Renewal is a new pull request, never an edit in place."
+        },
+        "approved_by": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$",
+          "description": "GitHub login of the code owner who approved approved_in. The file is owned in CODEOWNERS by the platform team, not the caller's team, and the factory verifies through the API that this login approved that pull request and is a code owner of the file; a caller cannot exempt itself."
         },
         "created": { "type": "string", "format": "date" },
         "expires": { "type": "string", "format": "date" }

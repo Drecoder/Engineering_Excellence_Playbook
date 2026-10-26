@@ -160,6 +160,12 @@ change, instead of a workflow with the checks written into it.
   files and units, rig's `features.v1`, the plan JSON, and the caller's exceptions, then writes
   `gate_plan.v1`. The plan is evidence: a span, a log line with `trace_id`, and an object kept with
   the run, recording the policy version and its canonical-JSON digest.
+- **Only the factory writes the plan.** A caller never supplies one. Checks run from the plan the
+  factory just wrote, and a plan that is missing, or names a different head commit or factory pin
+  than the run, fails the run.
+- **One digest rule for every language:** SHA-256 over the policy's canonical JSON, meaning keys
+  sorted at every level, no whitespace (`,` and `:` separators), and non-ASCII characters escaped as
+  `\uXXXX`. File formatting and line endings never change the digest.
 - **Scoped by need, with floors.**
   - Pass/fail checks may run only on the changed units.
   - Security categories (`SEC-*` policy, dependency vulnerabilities, misconfiguration, SAST,
@@ -178,8 +184,20 @@ change, instead of a workflow with the checks written into it.
   - **Validated:** the engine applies an entry only to the exact finding and resource it names. An
     expired, over-long, mismatched, or non-exceptable entry is rejected and recorded in the plan.
   - **Never excepted:** pass/fail checks and secret scanning. Active exceptions are a metric.
+  - **No self-exemption:** in every caller, `.ci/exceptions.v1.json` belongs in CODEOWNERS to the
+    platform team, not the caller's team, and branch protection requires a code-owner review.
+    Each entry names its approver (`approved_by`), and the engine checks through the API that this
+    login approved the `approved_in` pull request and is a code owner of the file.
+  - **Excepting a finding is not weakening a rule.** No exception changes a threshold. An exception
+    covers one known finding on one resource until it expires, and only in the categories the
+    playbook already lets a reviewed exception cover (`SEC-*` policy, dependency vulnerabilities,
+    misconfiguration, SAST).
 - **Callers don't change.** The engine keeps the factory's inputs (§3) and is still called by full
-  commit SHA; the policy reaches it vendored, like every playbook contract.
+  commit SHA. The contracts have one home, the playbook's `schemas/`, and reach the factory
+  vendored byte-identical as `.playbook/schemas/`, like every playbook contract.
+- **Reference behavior** for what a schema cannot express (exception eligibility, exact-resource
+  matching, plan provenance, the digest) is `tests/contracts/ci_reference.py`. Every engine
+  implementation must agree with it on the contract tests' vectors.
 
 ---
 

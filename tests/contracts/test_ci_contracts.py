@@ -9,12 +9,16 @@ date checks):
 """
 
 import copy
-import hashlib
 import json
+import sys
 import unittest
+from datetime import date
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ci_reference import canonical_sha256, evaluate_exceptions, finding_is_excepted, plan_is_trusted  # noqa: E402
 
 SCHEMAS = Path(__file__).resolve().parents[2] / "schemas"
 FORMATS = FormatChecker()
@@ -84,11 +88,106 @@ class Documents(unittest.TestCase):
             self.assertTrue(check(POLICY_DOC, applied["check"])["exceptions_allowed"])
 
     def test_plan_records_the_policy_digest(self):
-        # Canonical JSON (sorted keys, compact, ASCII), so line endings and formatting don't matter.
-        canonical = json.dumps(POLICY_DOC, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-        digest = hashlib.sha256(canonical.encode("ascii")).hexdigest()
-        self.assertEqual(PLAN_EX["policy"]["sha256"], digest)
+        self.assertEqual(PLAN_EX["policy"]["sha256"], canonical_sha256(POLICY_DOC))
         self.assertEqual(PLAN_EX["policy"]["version"], POLICY_DOC["policy_version"])
+
+
+class Canonicalization(unittest.TestCase):
+    """Every language must produce the same digest: sorted keys, compact separators, ASCII escapes."""
+
+    def test_key_order_and_whitespace_do_not_change_the_digest(self):
+        a = json.loads('{"b": 1, "a": {"d": [1, 2], "c": "x"}}')
+        b = json.loads('{\n  "a": {"c": "x", "d": [1, 2]},\n  "b": 1\n}')
+        self.assertEqual(canonical_sha256(a), canonical_sha256(b))
+
+    def test_fixed_vector(self):
+        # Canonical text: {"a":"é","b":[1,2]} (keys sorted, compact, non-ASCII escaped).
+        self.assertEqual(
+            canonical_sha256({"b": [1, 2], "a": "é"}),
+            "e72bd1bfe08db42c7cb48a01fcbbe441a57d28e5e64fcb08dcfab2cffe99f7a2",
+        )
+
+    def test_a_value_change_changes_the_digest(self):
+        doc = copy.deepcopy(POLICY_DOC)
+        doc["exceptions"]["max_days"] = 29
+        self.assertNotEqual(canonical_sha256(doc), canonical_sha256(POLICY_DOC))
+
+
+TODAY = date(2026, 10, 26)
+
+
+class ExceptionFloors(unittest.TestCase):
+    """A caller exception can never weaken a check the policy marks as unexceptable."""
+
+    def entry(self, **fields):
+        doc = copy.deepcopy(EXC_EX)
+        doc["exceptions"][0].update(fields)
+        return doc
+
+    def test_the_example_is_applied(self):
+        result = evaluate_exceptions(POLICY_DOC, EXC_EX, TODAY)
+        self.assertEqual(result["rejected"], [])
+        self.assertEqual(result["applied"], PLAN_EX["exceptions"]["applied"])
+
+    def test_every_pass_fail_and_secrets_check_refuses_exceptions(self):
+        unexceptable = [c["id"] for c in POLICY_DOC["checks"] if c["category"] in
+                        ("format", "lint", "type", "compile", "validate", "test", "secrets")]
+        self.assertIn("gitleaks", unexceptable)
+        self.assertIn("mypy", unexceptable)
+        for check_id in unexceptable:
+            result = evaluate_exceptions(POLICY_DOC, self.entry(check=check_id), TODAY)
+            self.assertEqual(result["rejected"], [{"id": "EXC-001", "reason": "check_not_exceptable"}], check_id)
+
+    def test_a_counted_only_check_refuses_exceptions(self):
+        result = evaluate_exceptions(POLICY_DOC, self.entry(check="checkov-other"), TODAY)
+        self.assertEqual(result["rejected"][0]["reason"], "check_not_exceptable")
+
+    def test_an_unknown_check(self):
+        result = evaluate_exceptions(POLICY_DOC, self.entry(check="no-such-check"), TODAY)
+        self.assertEqual(result["rejected"][0]["reason"], "unknown_check")
+
+    def test_longer_than_the_cap(self):
+        result = evaluate_exceptions(POLICY_DOC, self.entry(expires="2026-12-26"), TODAY)
+        self.assertEqual(result["rejected"][0]["reason"], "over_max_days")
+
+    def test_expires_before_it_was_created(self):
+        result = evaluate_exceptions(POLICY_DOC, self.entry(expires="2026-10-01"), TODAY)
+        self.assertEqual(result["rejected"][0]["reason"], "over_max_days")
+
+    def test_expired(self):
+        result = evaluate_exceptions(POLICY_DOC, self.entry(created="2026-09-01", expires="2026-09-30"), TODAY)
+        self.assertEqual(result["rejected"][0]["reason"], "expired")
+
+    def test_an_applied_exception_covers_only_its_own_resource(self):
+        applied = evaluate_exceptions(POLICY_DOC, EXC_EX, TODAY)["applied"]
+        self.assertTrue(finding_is_excepted(applied, "trivy-misconfig", "GCP-0035", "google_compute_firewall.runner_egress"))
+        self.assertFalse(finding_is_excepted(applied, "trivy-misconfig", "GCP-0035", "google_compute_firewall.other_egress"))
+        self.assertFalse(finding_is_excepted(applied, "trivy-misconfig", "GCP-0036", "google_compute_firewall.runner_egress"))
+        self.assertFalse(finding_is_excepted(applied, "trivy-vuln", "GCP-0035", "google_compute_firewall.runner_egress"))
+
+    def test_an_exception_without_a_code_owner_approval(self):
+        doc = copy.deepcopy(EXC_EX)
+        del doc["exceptions"][0]["approved_by"]
+        self.assertTrue(rejected(EXCEPTIONS, doc))
+
+
+class PlanProvenance(unittest.TestCase):
+    """Only a plan the factory wrote for this exact head counts; anything else fails closed."""
+
+    HEAD = PLAN_EX["commit"]
+    FACTORY = PLAN_EX["factory_commit"]
+
+    def test_the_example_is_trusted_for_its_head(self):
+        self.assertTrue(plan_is_trusted(PLAN_EX, self.HEAD, self.FACTORY))
+
+    def test_a_missing_plan(self):
+        self.assertFalse(plan_is_trusted(None, self.HEAD, self.FACTORY))
+
+    def test_a_plan_for_another_commit(self):
+        self.assertFalse(plan_is_trusted(PLAN_EX, "0" * 40, self.FACTORY))
+
+    def test_a_plan_from_another_factory_pin(self):
+        self.assertFalse(plan_is_trusted(PLAN_EX, self.HEAD, "1" * 40))
 
 
 class PolicyRejects(unittest.TestCase):

@@ -12,6 +12,7 @@
       "reason": "CI runners need HTTPS to GitHub and pinned tool downloads, which have no fixed IP range; all other egress is denied. Removed once runner egress goes through an allow-listed proxy.",
       "follow_up": "https://github.com/Drecoder/sovereign-vpc-gcp/issues/15",
       "approved_in": "https://github.com/Drecoder/sovereign-vpc-gcp/pull/14",
+      "approved_by": "Drecoder",
       "created": "2026-10-26",
       "expires": "2026-11-25"
     }
