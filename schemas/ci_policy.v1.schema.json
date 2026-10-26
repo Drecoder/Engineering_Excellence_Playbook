@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ci_policy.v1.schema.json",
+  "title": "ci_policy.v1",
+  "description": "Status: design. The platform's CI policy as data: every check the central CI factory can run, when it applies, how wide it scans, and what blocks. The factory reads this policy and computes a gate plan per change (gate_plan.v1); adding or changing a check is a reviewed change to the policy, not to a workflow (00_UniversalStandards/15_Central_CI.md §9). Invariants that encode the playbook's thresholds are enforced here, so a policy that weakens them is rejected, not repaired.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_version", "floors", "risk", "exceptions", "checks"],
+  "properties": {
+    "schema_version": { "const": "ci_policy.v1" },
+    "policy_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this policy document; recorded in every gate plan."
+    },
+    "floors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_repo_categories", "high_risk_runs_all", "unknown_input_runs_all"],
+      "description": "What scoping can never remove.",
+      "properties": {
+        "full_repo_categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/category" },
+          "description": "Categories that always scan the whole repository, whatever the change touched."
+        },
+        "high_risk_runs_all": { "const": true, "description": "A high-risk change runs every applicable check at full scope." },
+        "unknown_input_runs_all": { "const": true, "description": "An unreadable policy, unknown features, or an unclassifiable risk runs every applicable check at full scope (fail closed)." }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["high_when"],
+      "properties": {
+        "high_when": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["iam", "state_layout", "moved", "delete", "replace", "governance", "ci_factory"] },
+          "description": "Change kinds that make a change high-risk. Decided by code from the plan JSON and the changed paths, never by a model."
+        }
+      }
+    },
+    "exceptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_days", "require_follow_up", "allowed_categories"],
+      "properties": {
+        "max_days": { "type": "integer", "minimum": 1, "maximum": 90, "description": "Longest an exception may live, from created to expires." },
+        "require_follow_up": { "const": true, "description": "Every exception links the work that removes the need for it." },
+        "allowed_categories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["dependency_vuln", "misconfig", "sast", "sec_policy"] },
+          "description": "Categories a caller may except. Pass/fail checks and secret scanning can never be excepted."
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/check" }
+    }
+  },
+  "$defs": {
+    "category": {
+      "enum": ["format", "lint", "type", "compile", "validate", "test", "sec_policy", "dependency_vuln", "misconfig", "sast", "secrets"]
+    },
+    "stack": { "enum": ["hcl", "ts", "py", "go"] },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source"],
+      "if": { "properties": { "source": { "const": "factory" } } },
+      "then": { "required": ["version"] },
+      "else": { "not": { "anyOf": [{ "required": ["version"] }, { "required": ["sha256"] }] } },
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9._-]{0,63}$" },
+        "source": {
+          "enum": ["factory", "project"],
+          "description": "factory = the factory installs and pins the tool; project = the tool comes from the caller's own lockfile (tsc, the test runner), so its pin lives there."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^v?[0-9]+(\\.[0-9]+){0,3}$",
+          "description": "Exact version; no ranges, no 'latest'."
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Checksum of the downloaded binary, when the tool is a download." },
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repo", "commit", "sha256"],
+          "description": "A rule set fetched separately from the tool, pinned like the tool.",
+          "properties": {
+            "repo": { "type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$" },
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "tool", "applies_when", "scope", "blocks_on", "honors_exclude_paths", "exceptions_allowed", "status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,40}$" },
+        "category": { "$ref": "#/$defs/category" },
+        "tool": { "$ref": "#/$defs/tool" },
+        "applies_when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "always": { "const": true },
+            "stacks": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/stack" } }
+          },
+          "oneOf": [{ "required": ["always"] }, { "required": ["stacks"] }]
+        },
+        "scope": { "enum": ["changed_units", "full_repo"] },
+        "blocks_on": {
+          "enum": ["any_failure", "any_finding", "critical_or_kev", "critical", "error", "high_severity_high_confidence", "sec_checks", "never"],
+          "description": "never = counted on the dashboard, never shown in the pull request."
+        },
+        "honors_exclude_paths": { "type": "boolean" },
+        "exceptions_allowed": { "type": "boolean" },
+        "policy_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(SEC|GOV|ARCH)-[0-9]{3}$" }
+        },
+        "status": {
+          "enum": ["enforced", "pending", "design"],
+          "description": "enforced = running on the factory's main; pending = in an open pull request; design = agreed, not built."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "category": { "enum": ["format", "lint", "type", "compile", "validate", "test"] } } },
+          "then": { "properties": { "blocks_on": { "const": "any_failure" }, "exceptions_allowed": { "const": false } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "dependency_vuln" } } },
+          "then": { "properties": { "blocks_on": { "const": "critical_or_kev" }, "scope": { "const": "full_repo" } } }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["misconfig", "sast"] } } },
+          "then": { "properties": { "scope": { "const": "full_repo" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "secrets" } } },
+          "then": {
+            "properties": {
+              "blocks_on": { "const": "any_finding" },
+              "scope": { "const": "full_repo" },
+              "honors_exclude_paths": { "const": false },
+              "exceptions_allowed": { "const": false }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "category": { "const": "sec_policy" } } },
+          "then": { "properties": { "blocks_on": { "const": "sec_checks" } } }
+        }
+      ]
+    }
+  }
+}

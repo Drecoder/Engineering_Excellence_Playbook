@@ -1,0 +1,283 @@
+{
+  "schema_version": "ci_policy.v1",
+  "policy_version": "1.0.0",
+  "floors": {
+    "full_repo_categories": ["sec_policy", "dependency_vuln", "misconfig", "sast", "secrets"],
+    "high_risk_runs_all": true,
+    "unknown_input_runs_all": true
+  },
+  "risk": {
+    "high_when": ["iam", "state_layout", "moved", "delete", "replace", "governance", "ci_factory"]
+  },
+  "exceptions": {
+    "max_days": 30,
+    "require_follow_up": true,
+    "allowed_categories": ["dependency_vuln", "misconfig", "sast", "sec_policy"]
+  },
+  "checks": [
+    {
+      "id": "terraform-fmt",
+      "category": "format",
+      "tool": { "name": "terraform", "source": "factory", "version": "1.16.0" },
+      "applies_when": { "stacks": ["hcl"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "terragrunt-fmt",
+      "category": "format",
+      "tool": { "name": "terragrunt", "source": "factory", "version": "1.1.6", "sha256": "d75a80bb264758ba00dabcb17f4b507fcdab4ca90d9e41f96750df036bf69b04" },
+      "applies_when": { "stacks": ["hcl"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "tflint",
+      "category": "lint",
+      "tool": { "name": "tflint", "source": "factory", "version": "0.64.0", "sha256": "cca9d13e2e1d7a2c627af60ff899a3c9b74212899416aeb96ec764d2ef954537" },
+      "applies_when": { "stacks": ["hcl"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "terraform-validate",
+      "category": "validate",
+      "tool": { "name": "terraform", "source": "factory", "version": "1.16.0" },
+      "applies_when": { "stacks": ["hcl"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "checkov-sec",
+      "category": "sec_policy",
+      "tool": { "name": "checkov", "source": "factory", "version": "3.3.29" },
+      "applies_when": { "stacks": ["hcl"] },
+      "scope": "full_repo",
+      "blocks_on": "sec_checks",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "policy_refs": ["SEC-001", "SEC-002", "SEC-005", "SEC-007", "SEC-011"],
+      "status": "enforced"
+    },
+    {
+      "id": "checkov-other",
+      "category": "misconfig",
+      "tool": { "name": "checkov", "source": "factory", "version": "3.3.29" },
+      "applies_when": { "stacks": ["hcl"] },
+      "scope": "full_repo",
+      "blocks_on": "never",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "pending"
+    },
+    {
+      "id": "tsc",
+      "category": "type",
+      "tool": { "name": "typescript", "source": "project" },
+      "applies_when": { "stacks": ["ts"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "npm-test",
+      "category": "test",
+      "tool": { "name": "npm-test", "source": "project" },
+      "applies_when": { "stacks": ["ts"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "npm-audit",
+      "category": "dependency_vuln",
+      "tool": { "name": "npm-audit", "source": "project" },
+      "applies_when": { "stacks": ["ts"] },
+      "scope": "full_repo",
+      "blocks_on": "critical_or_kev",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "enforced"
+    },
+    {
+      "id": "ruff",
+      "category": "lint",
+      "tool": { "name": "ruff", "source": "factory", "version": "0.17.2" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "compileall",
+      "category": "compile",
+      "tool": { "name": "python", "source": "factory", "version": "3.12" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "mypy",
+      "category": "type",
+      "tool": { "name": "mypy", "source": "factory", "version": "2.4.0" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "pytest",
+      "category": "test",
+      "tool": { "name": "pytest", "source": "factory", "version": "8.4.2" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "pip-audit",
+      "category": "dependency_vuln",
+      "tool": { "name": "pip-audit", "source": "factory", "version": "2.10.1" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "full_repo",
+      "blocks_on": "critical_or_kev",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "enforced"
+    },
+    {
+      "id": "bandit",
+      "category": "sast",
+      "tool": { "name": "bandit", "source": "factory", "version": "1.9.4" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "full_repo",
+      "blocks_on": "high_severity_high_confidence",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "pending"
+    },
+    {
+      "id": "go-vet",
+      "category": "lint",
+      "tool": { "name": "go", "source": "factory", "version": "1.23" },
+      "applies_when": { "stacks": ["go"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "go-build",
+      "category": "compile",
+      "tool": { "name": "go", "source": "factory", "version": "1.23" },
+      "applies_when": { "stacks": ["go"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "go-test",
+      "category": "test",
+      "tool": { "name": "go", "source": "factory", "version": "1.23" },
+      "applies_when": { "stacks": ["go"] },
+      "scope": "changed_units",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "enforced"
+    },
+    {
+      "id": "govulncheck",
+      "category": "dependency_vuln",
+      "tool": { "name": "govulncheck", "source": "factory", "version": "v1.1.4" },
+      "applies_when": { "stacks": ["go"] },
+      "scope": "full_repo",
+      "blocks_on": "critical_or_kev",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "enforced"
+    },
+    {
+      "id": "gitleaks",
+      "category": "secrets",
+      "tool": { "name": "gitleaks", "source": "factory", "version": "8.30.1", "sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb" },
+      "applies_when": { "always": true },
+      "scope": "full_repo",
+      "blocks_on": "any_finding",
+      "honors_exclude_paths": false,
+      "exceptions_allowed": false,
+      "policy_refs": ["SEC-010"],
+      "status": "pending"
+    },
+    {
+      "id": "trivy-vuln",
+      "category": "dependency_vuln",
+      "tool": { "name": "trivy", "source": "factory", "version": "0.71.1", "sha256": "3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f8894928c41a88d" },
+      "applies_when": { "always": true },
+      "scope": "full_repo",
+      "blocks_on": "critical_or_kev",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "pending"
+    },
+    {
+      "id": "trivy-misconfig",
+      "category": "misconfig",
+      "tool": { "name": "trivy", "source": "factory", "version": "0.71.1", "sha256": "3cbae37cd440cd8676e5ce9207fe460b5641c7579a17e9d00f8894928c41a88d" },
+      "applies_when": { "always": true },
+      "scope": "full_repo",
+      "blocks_on": "critical",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "pending"
+    },
+    {
+      "id": "semgrep",
+      "category": "sast",
+      "tool": {
+        "name": "semgrep",
+        "source": "factory",
+        "version": "1.182.1",
+        "rules": {
+          "repo": "semgrep/semgrep-rules",
+          "commit": "9bbf021d0acffa3095fcffd17b2bc7787eb4796d",
+          "sha256": "b6cb72d07e060fe03e890bb88d40e5c1f2a177780dbb5be1c3b01e5509fd9cec"
+        }
+      },
+      "applies_when": { "stacks": ["ts", "py"] },
+      "scope": "full_repo",
+      "blocks_on": "error",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": true,
+      "status": "pending"
+    }
+  ]
+}
