@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "compliance_submission.v6.schema.json",
+  "title": "compliance_submission.v6",
+  "description": "What a builder agent submits for a compliance gate: the artifact it wants released and the evidence for each criterion. Everything here is untrusted input. agent_assertions (the builder's own decision, status, freshness, and authorization claims) is accepted only so it can be recorded; no decision ever reads it. Contract version 6.0.0. See 06_AgentZone/02_Compliance_Engine.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "submission_id",
+    "lifecycle_stage",
+    "submitted_at",
+    "evaluated_artifact",
+    "evidence"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "6.0.0"
+    },
+    "submission_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "lifecycle_stage": {
+      "enum": [
+        "DESIGN_REVIEW",
+        "IMPLEMENTATION_AUDIT",
+        "PRODUCTION_READINESS"
+      ]
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evaluated_artifact": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/gitShaArtifact"
+        },
+        {
+          "$ref": "#/$defs/containerDigestArtifact"
+        },
+        {
+          "$ref": "#/$defs/terraformPlanArtifact"
+        }
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/evidenceRecord"
+      }
+    },
+    "agent_assertions": {
+      "description": "Untrusted builder claims. Recorded, never used for any decision.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "enum": [
+            "PASS",
+            "REMEDIATE",
+            "BLOCKED"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "evidence_fresh": {
+          "type": "boolean"
+        },
+        "authorized": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2048
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}$"
+    },
+    "environment": {
+      "enum": [
+        "dev",
+        "staging",
+        "production"
+      ]
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gitShaArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "repository",
+        "environment",
+        "git_sha"
+      ],
+      "properties": {
+        "artifact_type": {
+          "const": "GIT_SHA"
+        },
+        "repository": {
+          "$ref": "#/$defs/repository"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment"
+        },
+        "git_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "containerDigestArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "repository",
+        "environment",
+        "container_digest"
+      ],
+      "properties": {
+        "artifact_type": {
+          "const": "CONTAINER_DIGEST"
+        },
+        "repository": {
+          "$ref": "#/$defs/repository"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment"
+        },
+        "container_digest": {
+          "$ref": "#/$defs/sha256Digest"
+        }
+      }
+    },
+    "terraformPlanArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "repository",
+        "environment",
+        "workspace",
+        "state_version_id",
+        "plan_digest"
+      ],
+      "properties": {
+        "artifact_type": {
+          "const": "TERRAFORM_PLAN"
+        },
+        "repository": {
+          "$ref": "#/$defs/repository"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment"
+        },
+        "workspace": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,90}$"
+        },
+        "state_version_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "plan_digest": {
+          "$ref": "#/$defs/sha256Digest"
+        }
+      }
+    },
+    "evidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterion_id",
+        "evidence_reference",
+        "evidence_type",
+        "bound_artifact_identity",
+        "test_run_identifier",
+        "timestamp_utc",
+        "check_version",
+        "verification_result",
+        "evidence_tier",
+        "evidence_presence",
+        "monitored_paths",
+        "attestation_signature"
+      ],
+      "properties": {
+        "criterion_id": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}-[0-9]{3}$"
+        },
+        "evidence_reference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "evidence_type": {
+          "enum": [
+            "TEST_REPORT",
+            "SCAN_REPORT",
+            "DESIGN_REVIEW",
+            "CHAOS_EXPERIMENT",
+            "POLICY_CHECK"
+          ]
+        },
+        "bound_artifact_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "test_run_identifier": {
+          "$ref": "#/$defs/identifier"
+        },
+        "timestamp_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "check_version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._+-]{1,64}$"
+        },
+        "verification_result": {
+          "enum": [
+            "PASSED",
+            "FAILED"
+          ]
+        },
+        "evidence_tier": {
+          "enum": [
+            "ABSENT",
+            "CLAIMED",
+            "OBSERVED",
+            "VERIFIED"
+          ]
+        },
+        "evidence_presence": {
+          "type": "boolean"
+        },
+        "monitored_paths": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "attestation_signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{1,2048}={0,2}$"
+        }
+      }
+    }
+  }
+}
