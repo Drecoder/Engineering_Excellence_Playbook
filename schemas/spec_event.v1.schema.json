@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "spec_event.v1.schema.json",
+  "title": "spec_event.v1",
+  "description": "A spec lifecycle event on the factory's ingress path (06_AgentZone/03_Software_Factory_Intake.md). It carries a claim check (claim_check.v1): a reference to the spec object and its digest, never the document. Consumers fetch the object and verify object.sha256 before using it (ARCH-024). Trace context travels in message headers, not in this body (ARCH-015).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "producer",
+    "spec_id",
+    "spec_version",
+    "object"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "spec_event.v1"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique per event; consumers record it in their inbox, so a redelivered event changes nothing."
+    },
+    "event_type": {
+      "enum": [
+        "spec.submitted",
+        "spec.approved",
+        "spec.rejected"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,62}$",
+      "description": "The producing service. Topic policies decide who may publish each event type; this field is informational."
+    },
+    "spec_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+    },
+    "spec_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "object": {
+      "$ref": "claim_check.v1.schema.json",
+      "description": "The spec object (claim_check.v1)."
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_ref",
+        "approved_by",
+        "approved_at"
+      ],
+      "properties": {
+        "review_ref": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]{1,9}-[0-9]{1,9}$",
+          "description": "The review issue, e.g. a Jira key."
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "rejection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_ref",
+        "reason"
+      ],
+      "properties": {
+        "review_ref": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]{1,9}-[0-9]{1,9}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "spec.approved"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval": true,
+          "rejection": false
+        },
+        "required": [
+          "approval"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "spec.rejected"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "rejection": true,
+          "approval": false
+        },
+        "required": [
+          "rejection"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "spec.submitted"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval": false,
+          "rejection": false
+        }
+      }
+    }
+  ]
+}

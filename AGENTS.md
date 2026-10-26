@@ -62,6 +62,8 @@ How services are shaped (rationale in `02_BackendZone/05_Application_Architectur
   (inbox) and are safe to replay. Multi-service workflows are sagas with compensating actions, never
   distributed transactions.
 - **Every queue states its ordering and DLQ policy**, and carries trace context in message headers.
+- **Large payloads travel by claim check:** messages carry an object reference and its SHA-256;
+  consumers verify the digest before use and dead-letter a mismatch.
 - **Every remote call has a timeout**; retries only for idempotent operations, with backoff, jitter,
   and idempotency keys for writes.
 - **Never cache an authorization decision** longer than the credential it rests on.
@@ -83,6 +85,25 @@ How work runs and how images are built (rationale in `00_UniversalStandards/12_C
 - **Images are multi-stage, minimal, stateless, and non-root**, run one process in exec form, take
   configuration from the environment, and are built once and promoted by digest.
 - **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
+
+## CI Rules
+
+One factory for every repository's gates (rationale in `00_UniversalStandards/15_Central_CI.md`).
+
+- **CI lives in one reusable workflow:** `Drecoder/sovereign-vpc-gcp/.github/workflows/gates.yml`.
+  A consumer has one caller file that calls it and passes inputs. No per-repo or per-module CI, no
+  copied setup steps, no caller-local actions (`./.github/actions/...`).
+- **Callers pin it to a full commit SHA,** never a tag or a branch, and repin through a reviewed
+  pull request. After a squash merge, callers repin to the merge commit.
+- **The factory is self-contained:** it installs its own pinned, checksum-verified toolchain, keeps
+  gate tools and project dependencies in separate environments, and reads nothing from the caller
+  but its code and configuration files.
+- **Inputs are a contract** (`runs-on`, `exclude-paths`, `run-tests`): never renamed, removed, or
+  repurposed without updating every caller. A caller that needs more asks for an input.
+- **Every vulnerability scanner goes through one severity gate** (CRITICAL or CISA KEV, failing
+  closed); `exclude-paths` skips frozen code in every gate except secret scanning.
+- **Fix CI failures in the factory,** and test a factory change through each consumer's repin
+  pull request before it merges.
 
 ## Supply Chain Rules
 
@@ -235,7 +256,7 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   account keys; trust policies pin repo, branch, and environment.
 - **CI least privilege:** workflows default to `permissions: contents: read` and grant more per
   job. Shared reusable workflows are reachable only by the owning user/org (never public), receive
-  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a tag or SHA.
+  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a full commit SHA.
 - **In transit:** TLS 1.2+ on every connection; service-to-service traffic (including telemetry)
   is authenticated with mTLS or signed tokens; webhooks are signature-verified.
 - **At rest:** storage is encrypted (customer-managed keys where classification requires) and
@@ -257,6 +278,17 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   input and return typed output. A tool holds no loop, decides nothing about what to do next, and
   never applies. Dependencies point one way — actor → tool, never the reverse. Actor logic found
   inside a tool is moved up into the caller (a sanctioned refactor), not left in place.
+- **The builder never authorizes its own release.** At scoping it may read the compliance criteria
+  and dry-run its submission (advisory only); evaluation and release tokens come from the independent
+  compliance authority, and the deploy boundary consumes each token once
+  (`06_AgentZone/02_Compliance_Engine.md`).
+- **Target design: the Builder and the Reviewer hand off through events.** `review.requested` and
+  `review.completed` on the event backbone, with claim-checked objects kept as the triage history;
+  the request is data, never the Reviewer's prompt. Not implemented yet; today the handoff is the
+  pull request (`06_AgentZone/05_Review_Loop.md`).
+- **Work enters only as an approved spec.** The Builder starts from a `spec.approved` event on its
+  queue, fetches the spec object, and verifies its digest; the approval names one exact spec
+  version (`06_AgentZone/03_Software_Factory_Intake.md`).
 - **Plan, never apply.** Agents may run `terragrunt plan` / `validate` only. `apply` runs in a
   separate post-merge pipeline with its own scoped identity and is never exposed as an agent tool.
 - **Schemas at every boundary.** Agent inputs, outputs, and tool arguments are defined as

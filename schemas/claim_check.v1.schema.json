@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim_check.v1.schema.json",
+  "title": "claim_check.v1",
+  "description": "A reference to an object in the object store, carried by an event instead of the object itself (ARCH-024). Every event contract on the factory backbone uses this one definition. A consumer fetches the object and compares its SHA-256 with sha256 before using it; a missing or mismatched object is refused and dead-lettered.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["uri", "sha256", "size_bytes", "media_type"],
+  "properties": {
+    "uri": {
+      "type": "string",
+      "maxLength": 1024,
+      "pattern": "^(s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/|gs://[a-z0-9][a-z0-9._-]{1,61}[a-z0-9]/|https://[a-z0-9]{3,24}\\.blob\\.core\\.windows\\.net/)\\S+$"
+    },
+    "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "size_bytes": { "type": "integer", "minimum": 1 },
+    "media_type": { "enum": ["application/json", "text/markdown"] },
+    "object_version": { "type": "string", "maxLength": 1024, "description": "The store's version ID for the object, when the store versions objects." }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "spec_event.v1",
+  "event_id": "6f1c2b9e-3d4a-4f5b-9c8d-7e6f5a4b3c2d",
+  "event_type": "spec.approved",
+  "occurred_at": "2026-10-25T15:04:05Z",
+  "producer": "approval-service",
+  "spec_id": "spec-2026-0042",
+  "spec_version": 3,
+  "object": {
+    "uri": "s3://drecoder-factory-specs/specs/spec-2026-0042/3.json",
+    "sha256": "sha256:9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
+    "size_bytes": 18432,
+    "media_type": "application/json",
+    "object_version": "3HL4kqtJlcpXroDTDmJ+rmSpXd3dIbrHY"
+  },
+  "approval": {
+    "review_ref": "FAC-128",
+    "approved_by": "architect@drecoder.dev",
+    "approved_at": "2026-10-25T15:03:58Z"
+  }
+}

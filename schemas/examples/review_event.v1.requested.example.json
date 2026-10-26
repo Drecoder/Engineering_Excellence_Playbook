@@ -1,0 +1,22 @@
+{
+  "schema_version": "review_event.v1",
+  "event_id": "0b8f6c1e-2a3d-4e5f-8a9b-1c2d3e4f5a6b",
+  "event_type": "review.requested",
+  "occurred_at": "2026-10-26T10:00:00Z",
+  "producer": "aws-builder-agent",
+  "change": {
+    "repo": "drecoder/genesis",
+    "pr_number": 42,
+    "head_sha": "3f66082a1b2c3d4e5f60718293a4b5c6d7e8f901",
+    "task_id": "msg-001",
+    "spec_id": "spec-2026-0042",
+    "spec_version": 3
+  },
+  "round": 1,
+  "object": {
+    "uri": "s3://drecoder-factory-reviews/requests/drecoder-genesis/42/3f66082a/round-1.json",
+    "sha256": "sha256:1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+    "size_bytes": 6144,
+    "media_type": "application/json"
+  }
+}

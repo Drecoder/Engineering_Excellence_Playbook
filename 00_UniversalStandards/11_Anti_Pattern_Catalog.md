@@ -19,7 +19,7 @@ Each rule maps **one detector rule** to a stable ID, `AP-<STACK>-<NNN>`:
 | `stack`, `framework` | Go, TypeScript (Node.js, React, Angular), Python (Django, FastAPI), HCL (Terraform, Terragrunt), Docker, CI (GitHub Actions), contracts (OpenAPI, AsyncAPI, Protobuf), database (Postgres migrations, SQL), Kubernetes manifests, supply chain (scripts, lockfiles, pinning), shell scripts, observability (Prometheus rules), frontend accessibility, tests (Vitest, pytest), the AI agent layer, cost |
 | `severity`, `confidence` | The catalog's own impact scale and expected hit quality, not the tool's |
 | `detector` | The tool, its own rule ID exactly as reported, whether it is a custom rig check, and the mapping status |
-| `remediation`, `references`, `related` | The fix, the tool's documentation, and the `ARCH-*`/`SEC-*`/`GOV-*` rules it also violates |
+| `remediation`, `references`, `related` | The fix, the tool's documentation, and the `ARCH-*`/`SEC-*`/`GOV-*` rules it also violates. An `ARCH-*` entry links the rule to the architecture rule it enforces: its findings reach the Reviewer's architecture lens as known findings (`06_AgentZone/04_Review_Lenses.md` §3) |
 | `test_cases` | At least one positive case (must be reported) and one negative case (the fixed form, must not be); breaking-change rules add the previous version as `base` |
 | `enforcement` | `planned`, `advisory`, or `retired`; `blocks` is the constant `false` in v1 |
 | `benchmark` | `unmeasured`, or the measured counts and precision (§4) |
@@ -44,7 +44,9 @@ such as the Terragrunt rules and dependency conflicts.
 Verification runs only in the toolchain image (`tests/antipatterns/toolchain/`,
 `tests/antipatterns/verify_detectors.py`), never with host-installed tools
 (`00_UniversalStandards/12_Containers.md`). A `local` verification is provisional until the CI job
-repeats it in the same image.
+(`.github/workflows/antipatterns.yml`) repeats it in the same image. The job verifies every pull
+request that touches the catalog; a manual run with `record` opens a pull request that records the
+results as `verified_in: ci`. A run with any failed mapping records nothing.
 
 ## 3️⃣ The Contract for rig and the Reviewer
 
