@@ -485,6 +485,26 @@
           ]
         },
         {
+          "title": "Messaging Building Blocks",
+          "sources": [
+            "03_InfrastructureZone/06_Messaging_Building_Blocks.md"
+          ],
+          "objectives": [
+            "Name the five messaging blocks and their equivalents on each cloud",
+            "Apply the security, observability, and dead-lettering requirements to each block",
+            "Weigh the fixed cost of an event stream against topics and queues"
+          ],
+          "takeaways": [
+            "Object store, event stream, bridge, fan-out topic, and work queue are built once, as Genesis modules.",
+            "Every block is encrypted, private, identity-only, labelled, and alarmed.",
+            "Each consumer has its own queue with a dead-letter queue and a policy that accepts only its topic."
+          ],
+          "questions": [
+            "Why does each consumer get its own queue instead of sharing one?",
+            "When is a managed Kafka cluster worth its fixed monthly cost in development?"
+          ]
+        },
+        {
           "title": "Cost",
           "sources": [
             "03_InfrastructureZone/05_Cost.md"
@@ -608,6 +628,91 @@
             "Why does a severity rating of 9 or 10 remove the human in a factory but keep the human in software?",
             "How would you test whether human code review is an unreliable gauge for a given class of changes?",
             "Why would demonstrating Six Sigma by counting defects take a small platform decades, and what does the standard measure instead in the meantime?"
+          ]
+        },
+        {
+          "title": "Software Factory Intake",
+          "sources": [
+            "06_AgentZone/03_Software_Factory_Intake.md"
+          ],
+          "objectives": [
+            "Distinguish the factory's ingress from its egress",
+            "Trace a requirement from questionnaire to an approved spec reaching the Builder",
+            "Explain the claim-check pattern and why consumers verify the digest",
+            "Explain why model findings enter as claims, not proof"
+          ],
+          "takeaways": [
+            "Ingress is how work enters the factory; egress is the domain events it publishes.",
+            "Grooming runs Bronze (raw), Silver (normalized and enriched), Gold (the reviewable spec).",
+            "Events carry an object reference and its SHA-256, never the document; consumers verify before use.",
+            "An approval names one exact spec version; the Builder starts only from a verified spec.approved event."
+          ],
+          "questions": [
+            "Why does the event carry the spec's digest when the Builder could simply read the newest object?",
+            "A deep dive concludes a dependency is safe to upgrade. What tier is that evidence, and what raises it?",
+            "Which of the open decisions would you settle first, and what changes in the flow either way?"
+          ]
+        },
+        {
+          "title": "The Compliance Engine",
+          "sources": [
+            "06_AgentZone/02_Compliance_Engine.md"
+          ],
+          "objectives": [
+            "Explain why the builder cannot authorize its own release",
+            "Name each component and the boundary it sits behind",
+            "Follow evidence from attestation to a single-use release token"
+          ],
+          "takeaways": [
+            "The Builder scopes and dry-runs; an independent authority evaluates and signs; the deploy boundary consumes the token once.",
+            "Missing evidence is BLOCKED; failing or under-tier evidence is REMEDIATE; the gate is BLOCKED > REMEDIATE > PASS.",
+            "Tokens are bound to the artifact's canonical identity digest, so drift is refused."
+          ],
+          "questions": [
+            "What could a compromised Builder do if it held the authority's signing key?",
+            "Why must every implementation reproduce the canonical-identity vectors exactly?"
+          ]
+        },
+        {
+          "title": "Review Lenses",
+          "sources": [
+            "06_AgentZone/04_Review_Lenses.md"
+          ],
+          "objectives": [
+            "Explain what a lens is and why the playbook, not the Reviewer, owns its questions",
+            "Apply the architecture lens's selection rules to a unit",
+            "Explain how catalog findings become known findings for the lens"
+          ],
+          "takeaways": [
+            "Deterministic checks run first; their results are known findings the model must not repeat.",
+            "Rubrics are generated from playbook files, never hand-written in the Reviewer.",
+            "A catalog rule whose related list names an ARCH rule enforces it; its findings reach the architecture lens.",
+            "Lenses advise or escalate; they never block. Conformance vectors keep implementations honest."
+          ],
+          "questions": [
+            "rig could not compute a unit's features. Which architecture rules does the lens apply, and why?",
+            "squawk flags a column rename. How does that finding change what the model is asked?"
+          ]
+        },
+        {
+          "title": "Review Loop (Design)",
+          "sources": [
+            "06_AgentZone/05_Review_Loop.md"
+          ],
+          "objectives": [
+            "Describe the target event-driven loop between the Builder and the Reviewer",
+            "Explain why a review request is data, never the Reviewer's prompt",
+            "Walk an incident back from a deployed digest to the spec that started it"
+          ],
+          "takeaways": [
+            "The target loop is review.requested and review.completed on the event backbone, with claim-checked objects.",
+            "The object store is the history; the event stream only delivers.",
+            "Triage reconstructs every exchange from stored objects, prompt versions, and one trace.",
+            "Rollback needs its own authorization rule; which one is still an open decision."
+          ],
+          "questions": [
+            "What could go wrong if the Builder wrote the Reviewer's prompt?",
+            "Kafka keeps events for seven days and an incident is found after three weeks. Where does triage look?"
           ]
         }
       ]
