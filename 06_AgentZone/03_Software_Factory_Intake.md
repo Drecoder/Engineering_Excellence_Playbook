@@ -20,7 +20,7 @@ the infrastructure is `03_InfrastructureZone/06_Messaging_Building_Blocks.md`.
 | **3. Grooming** | The intake pipeline | Raw answers become a complete spec through the stages in §2; gaps go back to the architect as new questions |
 | **4. Review** | People, on the Jira board | The spec is published (`spec.submitted`) and reviewed; it is approved or rejected with a reason |
 | **5. Approval** | The approval service | A verified approval becomes a `spec.approved` event on the backbone |
-| **6. Build** | The Builder | Receives the event from its queue, fetches the spec object, verifies its digest, and only then starts work |
+| **6. Build** | The Builder | Receives the event from its queue, fetches the spec object, verifies its digest, and only then starts work; review then runs over the same backbone (`06_AgentZone/05_Review_Loop.md`) |
 
 ## 2️⃣ Grooming Stages
 
@@ -38,7 +38,9 @@ confirming it raises it to `OBSERVED`; only a measurement or a signed tool resul
 
 ## 3️⃣ Claim Check: Objects Travel by Reference
 
-- **The spec is an object, stored once.** Each spec version is written to the spec object store
+- **The spec is an object, stored once, and kept.** The object store is the factory's history:
+  the event stream delivers for days, the store keeps every version for at least the triage window
+  (`06_AgentZone/05_Review_Loop.md` §3). Each spec version is written to the spec object store
   (S3 or its equivalent) under its spec ID and version: versioned, write-once after approval (object
   lock), encrypted with a customer-managed key, public access blocked, access-logged. Only the intake
   service writes; the Builder reads.

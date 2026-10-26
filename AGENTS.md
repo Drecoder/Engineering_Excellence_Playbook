@@ -263,6 +263,10 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   and dry-run its submission (advisory only); evaluation and release tokens come from the independent
   compliance authority, and the deploy boundary consumes each token once
   (`06_AgentZone/02_Compliance_Engine.md`).
+- **Target design: the Builder and the Reviewer hand off through events.** `review.requested` and
+  `review.completed` on the event backbone, with claim-checked objects kept as the triage history;
+  the request is data, never the Reviewer's prompt. Not implemented yet; today the handoff is the
+  pull request (`06_AgentZone/05_Review_Loop.md`).
 - **Work enters only as an approved spec.** The Builder starts from a `spec.approved` event on its
   queue, fetches the spec object, and verifies its digest; the approval names one exact spec
   version (`06_AgentZone/03_Software_Factory_Intake.md`).

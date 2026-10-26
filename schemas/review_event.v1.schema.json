@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_event.v1.schema.json",
+  "title": "review_event.v1",
+  "description": "A review-loop event between the Builder and the Reviewer on the factory backbone (06_AgentZone/05_Review_Loop.md). review.requested (Builder -> Reviewer) references a review request object: the change to review, the spec it implements, and the previous round's findings. It is data for the Reviewer, never its prompt. review.completed (Reviewer -> Builder) references the round's review_findings.v1 document. Both carry a claim check (claim_check.v1); code itself is pinned by head_sha and read from the repository, never copied into the event.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "event_type", "occurred_at", "producer", "change", "round", "object"],
+  "properties": {
+    "schema_version": { "const": "review_event.v1" },
+    "event_id": { "type": "string", "format": "uuid", "description": "Unique per event; the consumer's inbox key." },
+    "event_type": { "enum": ["review.requested", "review.completed"] },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "producer": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}$" },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "pr_number", "head_sha", "task_id", "spec_id", "spec_version"],
+      "properties": {
+        "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}$" },
+        "pr_number": { "type": "integer", "minimum": 1 },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "The exact commit reviewed; a push to the PR is a new round." },
+        "task_id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$" },
+        "spec_id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$" },
+        "spec_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "round": { "type": "integer", "minimum": 1, "maximum": 4, "description": "PR review rounds end at round 4 (06_AgentZone/01_Agent_Standards.md §7)." },
+    "object": { "$ref": "claim_check.v1.schema.json" },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "blocking_findings", "escalations"],
+      "properties": {
+        "status": { "enum": ["clean", "findings", "stalled", "gave_up"], "description": "The round's review_findings.v1 status." },
+        "blocking_findings": { "type": "integer", "minimum": 0, "description": "Only blocking findings (and deterministic DRY findings) start another round." },
+        "escalations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9:/_-]{1,62}$" },
+          "description": "Labels that require a person (e.g. a protected-class lens finding). The Reviewer sets them; it never notifies people directly."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "event_type": { "const": "review.completed" } }, "required": ["event_type"] },
+      "then": { "properties": { "outcome": true }, "required": ["outcome"] }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "review.requested" } }, "required": ["event_type"] },
+      "then": { "properties": { "outcome": false } }
+    }
+  ]
+}

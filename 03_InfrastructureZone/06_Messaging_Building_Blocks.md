@@ -36,11 +36,13 @@ moves between clouds without changing how it wires its messaging.
 ## 3️⃣ Block-Specific Rules
 
 - **Object store:** versioning on; object lock (write-once) for objects that are approved or
-  audited, such as specs; public access blocked; access logging on; lifecycle rules for drafts.
-  Consumers verify an object's SHA-256 against the event that referenced it (`ARCH-024`).
+  audited, such as specs, review requests, and findings; public access blocked; access logging on.
+  It is the factory's long-term history, not a cache: retention and object lock cover at least the
+  triage window, and lifecycle rules expire only drafts, never inside that window. Consumers
+  verify an object's SHA-256 against the event that referenced it (`ARCH-024`).
 - **Event stream:** retention long enough to replay a fixed consumer (at least 7 days); topics
-  per domain (`spec.events`, `workflow.events`, `delivery.events`, and the others); IAM
-  authentication and TLS only. Topic creation is part of the module, not done by hand.
+  per domain (`spec.events`, `workflow.events` for the review loop, `delivery.events`, and the
+  others); IAM authentication and TLS only. Topic creation is part of the module, not done by hand.
 - **Fan-out topic:** subscriptions use filter policies so each queue receives only the event types
   it consumes; per-key ordering (FIFO) only where a consumer needs it, keyed by the entity ID.
 - **Work queue:** a dead-letter queue after a bounded number of receives; a visibility timeout

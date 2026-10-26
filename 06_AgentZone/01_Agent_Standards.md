@@ -260,6 +260,8 @@ A recurring failure fingerprint marks a stalled fix; the next fix task reverts t
 
 1. Each round, the Reviewer re-runs rig-scan independently, rig-reason checks intent, and TIER_2
    joins only for IAM or state. They post **one combined `review.findings.v1` comment** per round.
+   The target design moves each round's request and findings onto the event backbone, with the
+   objects kept as the triage history (`06_AgentZone/05_Review_Loop.md`, not implemented yet).
 2. The Builder answers by pushing to the **same PR**.
 3. **Only blocking findings and deterministic DRY findings start another round.** Other advisory
    comments go to the human. A DRY fix may only touch files already in the PR.
