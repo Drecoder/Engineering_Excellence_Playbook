@@ -120,6 +120,10 @@ that stack is present.
    older pin pick up the change when they are updated from `main`.
 4. A change that adds a blocking check lists, in its description, which consumers it is expected
    to turn red and why, from a dry run.
+5. **Stacked factory changes run no gates** until they target `main`. Retarget a stacked pull
+   request to `main` *before* its base branch is deleted: GitHub retargets automatically only when
+   the base is deleted by the merge itself, and a manual delete closes the stacked pull request
+   (sovereign-vpc-gcp INC-005).
 
 ## 8️⃣ Who Can Call It
 
@@ -130,6 +134,52 @@ that stack is present.
 - **Status: open decision.** Either move the factory to a dedicated, public repo that holds only
   shared workflows (the option `07_Security_In_Depth.md` prefers, since it exposes nothing else), or
   make the public consumers private.
+
+## 9️⃣ Policy-Driven Gates
+
+**Status: design.** The contracts below are agreed; the factory does not read them yet. Today the
+checks and their thresholds are written into `gates.yml` (§5, §6).
+
+The factory becomes an engine that reads the CI policy as data and computes the gates for each
+change, instead of a workflow with the checks written into it.
+
+| Contract | Owned by | Holds |
+| :--- | :--- | :--- |
+| `schemas/ci_policy.v1.json` (schema `ci_policy.v1.schema.json`) | The playbook | Every check: tool and exact pin, category, when it applies, scope, what blocks, whether exclusions and exceptions apply, and the `SEC-*` policies it enforces |
+| `.ci/exceptions.v1.json` in each caller (schema `ci_exceptions.v1.schema.json`) | The caller, through reviewed pull requests | Need-based exceptions to blocking findings |
+| `gate_plan.v1` (schema `gate_plan.v1.schema.json`) | Written by the factory per change | The checks run and why, the scope, and the exceptions applied or rejected |
+
+- **Policy is data.** Adding a scanner, changing a pin, or moving a threshold is a reviewed change to
+  `ci_policy.v1.json`. The schema itself rejects policies that weaken the playbook's thresholds:
+  - pass/fail checks always block and can't be excepted;
+  - dependency scanners block on CRITICAL or KEV over the whole repository;
+  - secret scanning covers the whole repository, ignores `exclude-paths`, and can't be excepted;
+  - every factory tool has an exact version;
+  - the high-risk and fail-closed floors can't be turned off.
+- **One gate plan per change.** Before any check runs, the engine reads the policy, the changed
+  files and units, rig's `features.v1`, the plan JSON, and the caller's exceptions, then writes
+  `gate_plan.v1`. The plan is evidence: a span, a log line with `trace_id`, and an object kept with
+  the run, recording the policy version and its canonical-JSON digest.
+- **Scoped by need, with floors.**
+  - Pass/fail checks may run only on the changed units.
+  - Security categories (`SEC-*` policy, dependency vulnerabilities, misconfiguration, SAST,
+    secrets) always scan the whole repository.
+  - A high-risk change (IAM, state layout, `moved`, delete, replace, governance, or the CI factory
+    itself), decided by code from the plan JSON and paths, runs everything at full scope.
+- **Fails closed.** An unreadable policy or exceptions file, unavailable features or diff, or an
+  unclassifiable risk puts the plan in `full` mode. Dynamic gates can add checks; they never drop
+  one silently.
+- **Exceptions exist only while the need does.**
+  - **Raised only by a block:** an entry is added only after a check blocks on a specific finding.
+  - **Narrow:** it names one check, one finding, one file and one resource, plus the issue or pull
+    request that removes the need.
+  - **Time-boxed:** it expires within `exceptions.max_days` (30). Renewal is a new pull request,
+    never an edit in place.
+  - **Validated:** the engine applies an entry only to the exact finding and resource it names. An
+    expired, over-long, mismatched, or non-exceptable entry is rejected and recorded in the plan.
+  - **Never excepted:** pass/fail checks and secret scanning. Active exceptions are a metric.
+- **Callers don't change.** The engine keeps the factory's inputs (§3) and is still called by full
+  commit SHA; the policy reaches it vendored, like every playbook contract.
 
 ---
 

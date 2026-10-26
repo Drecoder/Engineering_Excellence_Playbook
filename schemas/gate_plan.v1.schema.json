@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gate_plan.v1.schema.json",
+  "title": "gate_plan.v1",
+  "description": "Status: design. The plan the central CI factory computes for one change before running any check: which checks run, at what scope, and why, and which exceptions were applied or rejected. It is evidence, emitted as a span, a structured log line with trace_id, and an object kept with the run, so why a check did or did not run can always be answered. Computed by code from ci_policy.v1, the change, rig's features.v1, the plan JSON, and the caller's ci_exceptions.v1; never by a model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "commit", "factory_commit", "policy", "trace_id", "created_at", "inputs", "mode", "checks", "exceptions"],
+  "properties": {
+    "schema_version": { "const": "gate_plan.v1" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "The caller commit under test." },
+    "factory_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "The factory commit the caller pinned." },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "sha256"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the policy's canonical JSON: sorted keys, no whitespace, ASCII."
+        }
+      }
+    },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stacks", "changed_units", "risk", "fail_closed_reasons"],
+      "properties": {
+        "stacks": { "type": "array", "uniqueItems": true, "items": { "enum": ["hcl", "ts", "py", "go"] } },
+        "changed_units": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]{1,512}$" },
+          "description": "Directories the change touches that are units of build (a Terragrunt unit, a package, a module), outside exclude-paths."
+        },
+        "risk": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tier", "reasons"],
+          "properties": {
+            "tier": { "enum": ["standard", "high"] },
+            "reasons": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "enum": ["iam", "state_layout", "moved", "delete", "replace", "governance", "ci_factory"] }
+            }
+          },
+          "if": { "properties": { "tier": { "const": "high" } } },
+          "then": { "properties": { "reasons": { "minItems": 1 } } },
+          "else": { "properties": { "reasons": { "maxItems": 0 } } }
+        },
+        "fail_closed_reasons": {
+          "type": "array",
+          "items": { "enum": ["policy_unreadable", "features_unavailable", "risk_unclassified", "exceptions_invalid", "diff_unavailable"] },
+          "description": "Inputs that could not be read; any entry forces mode full."
+        }
+      }
+    },
+    "mode": {
+      "enum": ["scoped", "full"],
+      "description": "scoped = pass/fail checks limited to changed_units; full = every applicable check at full scope."
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "scope", "blocks_on", "reason"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,40}$" },
+          "scope": { "enum": ["changed_units", "full_repo"] },
+          "blocks_on": { "enum": ["any_failure", "any_finding", "critical_or_kev", "critical", "error", "high_severity_high_confidence", "sec_checks", "never"] },
+          "reason": { "enum": ["stack_present", "always", "floor_full_repo", "high_risk", "fail_closed"] }
+        }
+      }
+    },
+    "exceptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "rejected"],
+      "properties": {
+        "applied": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "check", "finding_id", "resource", "expires"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^EXC-[0-9]{3,}$" },
+              "check": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,40}$" },
+              "finding_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{1,79}$" },
+              "resource": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "expires": { "type": "string", "format": "date" }
+            }
+          }
+        },
+        "rejected": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "reason"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^EXC-[0-9]{3,}$" },
+              "reason": { "enum": ["expired", "over_max_days", "check_not_exceptable", "unknown_check", "no_matching_finding", "resource_mismatch"] }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "inputs": { "properties": { "fail_closed_reasons": { "minItems": 1 } } } } },
+      "then": { "properties": { "mode": { "const": "full" } } }
+    },
+    {
+      "if": { "properties": { "inputs": { "properties": { "risk": { "properties": { "tier": { "const": "high" } } } } } } },
+      "then": { "properties": { "mode": { "const": "full" } } }
+    }
+  ]
+}

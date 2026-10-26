@@ -1,0 +1,33 @@
+{
+  "schema_version": "gate_plan.v1",
+  "repo": "Drecoder/sovereign-vpc-gcp",
+  "commit": "38cb5ace47dbbb893b17f2d32ad67e5fade89c90",
+  "factory_commit": "b62752ba5766d56eeb7777b6a892d7c680616976",
+  "policy": { "version": "1.0.0", "sha256": "37325c5f16569a061b9e9a1df3292be692b75b8462ae69c828b2f155830573bc" },
+  "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "created_at": "2026-10-26T07:27:04Z",
+  "inputs": {
+    "stacks": ["hcl"],
+    "changed_units": ["modules/network"],
+    "risk": { "tier": "standard", "reasons": [] },
+    "fail_closed_reasons": []
+  },
+  "mode": "scoped",
+  "checks": [
+    { "id": "terraform-fmt", "scope": "changed_units", "blocks_on": "any_failure", "reason": "stack_present" },
+    { "id": "terragrunt-fmt", "scope": "changed_units", "blocks_on": "any_failure", "reason": "stack_present" },
+    { "id": "tflint", "scope": "changed_units", "blocks_on": "any_failure", "reason": "stack_present" },
+    { "id": "terraform-validate", "scope": "changed_units", "blocks_on": "any_failure", "reason": "stack_present" },
+    { "id": "checkov-sec", "scope": "full_repo", "blocks_on": "sec_checks", "reason": "floor_full_repo" },
+    { "id": "checkov-other", "scope": "full_repo", "blocks_on": "never", "reason": "floor_full_repo" },
+    { "id": "gitleaks", "scope": "full_repo", "blocks_on": "any_finding", "reason": "always" },
+    { "id": "trivy-vuln", "scope": "full_repo", "blocks_on": "critical_or_kev", "reason": "always" },
+    { "id": "trivy-misconfig", "scope": "full_repo", "blocks_on": "critical", "reason": "always" }
+  ],
+  "exceptions": {
+    "applied": [
+      { "id": "EXC-001", "check": "trivy-misconfig", "finding_id": "GCP-0035", "resource": "google_compute_firewall.runner_egress", "expires": "2026-11-25" }
+    ],
+    "rejected": []
+  }
+}
