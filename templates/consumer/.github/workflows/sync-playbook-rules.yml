@@ -12,14 +12,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read # default; the sync job grants itself what it needs
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the chore/playbook-sync branch
+      pull-requests: write # open the sync PR a person reviews
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
-      # Pin to an exact release; Dependabot opens a PR when a new one is tagged.
-      - uses: Drecoder/Engineering_Excellence_Playbook@v1.0.0
+      # Pinned to a full commit SHA (never a tag or branch); a bump is a reviewed PR, and merging it
+      # runs this workflow, which opens the sync PR for the vendored rules at that commit.
+      - uses: Drecoder/Engineering_Excellence_Playbook@917bfe3e5f2441bade630403d3068867e1bbaa8a # main, 2026-10-26
