@@ -102,8 +102,8 @@ interrupts work.
   granting access exposes nothing else. Callers pass secrets explicitly, never `secrets: inherit`,
   and cloud trust policies keep pinning the caller repo, so calling a shared workflow never grants
   its home repo's identities.
-- Callers pin shared workflows to a release tag or commit SHA. Tracking a branch (`@main`) is
-  tolerated only until the central repo tags releases.
+- Callers pin shared workflows to a full commit SHA, never a tag or a branch. How the shared
+  gate workflow is built, called, and changed is `15_Central_CI.md`.
 - **Workflow files are code and are checked like code.** actionlint and zizmor find the workflow
   anti-patterns (`AP-GHA-*` in `schemas/antipatterns.v1.json`): untrusted input expanded into a
   script, actions not pinned to a commit SHA, broad job permissions, `pull_request_target`,
@@ -190,7 +190,7 @@ it is critical. No noise below that line.
 | :--- | :--- | :--- |
 | Format, lint errors, type check, compile (`terragrunt hcl fmt`, `tflint`, `tsc --noEmit`, `go vet`, Python compile) | Any failure (pass/fail, no severity) | The failure |
 | Dependency and image scanners (`npm audit`, `pip-audit`, `trivy`) | **CRITICAL** severity, or any vulnerability on the **CISA KEV** list regardless of severity | Only the blocking findings |
-| `govulncheck` | Any finding (it reports only vulnerabilities the code actually calls) | Only the blocking findings |
+| `govulncheck` | Of the vulnerabilities the code actually calls: **CRITICAL** severity, or a CISA KEV entry | Only the blocking findings |
 | IaC and dependency scanners (`trivy fs`: vulnerabilities and misconfigurations) | **CRITICAL** severity, or a CISA KEV entry | Only the blocking findings |
 | IaC scanners (`checkov`) | The `SEC-*` check list (hard-fail); all other checks soft-fail | Only the blocking findings |
 | Static analysis (`semgrep`: language, secrets, and security-audit rulesets) | `ERROR` severity, Semgrep's top level | Only the blocking findings |
@@ -200,12 +200,14 @@ it is critical. No noise below that line.
 
 - **KEV overrides severity.** A vulnerability that is being exploited in the wild blocks even when
   it is rated below critical. The gate reads a pinned, regularly refreshed copy of the KEV
-  catalog, not a live call.
+  catalog, not a live call. **Status: gap** — the shared gate fetches the live feed on each run
+  and fails closed when it cannot.
 - **Below-critical findings are counted, not shown.** They go to a dashboard metric
   (`gate_findings_total{severity}`), never to the pull request, so a growing backlog is visible
   without adding noise.
-- Tools without a severity filter (`pip-audit`) run through a thin wrapper that maps findings to
-  severity (OSV data) and applies this table. Open-source `checkov` has no severities, so it
+- Every vulnerability scanner (`trivy`, `npm audit`, `pip-audit`, `govulncheck`) runs through one
+  shared severity gate that maps findings to severity (the scanner's own, else OSV data), checks
+  every alias against KEV, and applies this table (`15_Central_CI.md` §6). Open-source `checkov` has no severities, so it
   gates on check IDs instead.
 - **Every pipeline runs every scanner that fits its stack.** The shared gate workflow runs them all;
   a scanner that exists only in a local benchmark or on one engineer's machine is a gap, not a

@@ -52,7 +52,7 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 Engineering_Excellence_Playbook/
 ├── AGENTS.md                # Enforceable standards for engineers, assistants, and agents
 ├── CLAUDE.md                # Shim: imports AGENTS.md for Claude Code
-├── 00_UniversalStandards/   # Lifecycle, DoD, security in depth, governors, distribution, refactors
+├── 00_UniversalStandards/   # Lifecycle, DoD, security in depth, governors, distribution, refactors, central CI
 ├── 01_FrontendZone/         # React patterns, clean code, performance
 ├── 02_BackendZone/          # API architecture, async processing, database health, telemetry
 ├── 03_InfrastructureZone/   # IaC core + GCP/AWS specifics, security & IAM, Kubernetes
