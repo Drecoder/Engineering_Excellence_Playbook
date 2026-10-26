@@ -26,7 +26,8 @@ authority) are different keys.
 ## 2️⃣ Lifecycle
 
 1. **Scoping.** Before work starts, the builder calls its scoping skill for the target lifecycle
-   stage and plans the evidence each criterion needs.
+   stage and plans the evidence each criterion needs. The same criteria drive the intake wizard's
+   questions (`06_AgentZone/03_Software_Factory_Intake.md`).
 2. **Building.** The builder produces the artifact; CI runs the checks and signs each evidence
    record over its canonical attestation payload.
 3. **Evaluation.** The builder submits the artifact and evidence to the authority. The authority

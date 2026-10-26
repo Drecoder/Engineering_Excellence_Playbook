@@ -62,6 +62,8 @@ How services are shaped (rationale in `02_BackendZone/05_Application_Architectur
   (inbox) and are safe to replay. Multi-service workflows are sagas with compensating actions, never
   distributed transactions.
 - **Every queue states its ordering and DLQ policy**, and carries trace context in message headers.
+- **Large payloads travel by claim check:** messages carry an object reference and its SHA-256;
+  consumers verify the digest before use and dead-letter a mismatch.
 - **Every remote call has a timeout**; retries only for idempotent operations, with backoff, jitter,
   and idempotency keys for writes.
 - **Never cache an authorization decision** longer than the credential it rests on.
@@ -261,6 +263,9 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   and dry-run its submission (advisory only); evaluation and release tokens come from the independent
   compliance authority, and the deploy boundary consumes each token once
   (`06_AgentZone/02_Compliance_Engine.md`).
+- **Work enters only as an approved spec.** The Builder starts from a `spec.approved` event on its
+  queue, fetches the spec object, and verifies its digest; the approval names one exact spec
+  version (`06_AgentZone/03_Software_Factory_Intake.md`).
 - **Plan, never apply.** Agents may run `terragrunt plan` / `validate` only. `apply` runs in a
   separate post-merge pipeline with its own scoped identity and is never exposed as an agent tool.
 - **Schemas at every boundary.** Agent inputs, outputs, and tool arguments are defined as

@@ -101,6 +101,10 @@ and "publish, then write" announces things that never happened.
 - **Multi-service workflows use sagas**, not distributed transactions: each step commits locally and
   publishes an event; each step has a defined **compensating action** that undoes it if a later step
   fails. Two-phase commit across services is not used (`ARCH-013`).
+- **Claim check for large payloads:** a message carries a reference to an object (its URI and
+  SHA-256), not the document. Consumers fetch the object and verify the digest before using it; a
+  missing or mismatched object is refused and dead-lettered (`ARCH-024`). The factory's intake path
+  works this way (`06_AgentZone/03_Software_Factory_Intake.md`).
 
 ---
 

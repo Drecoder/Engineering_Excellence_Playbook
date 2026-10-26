@@ -391,6 +391,24 @@
       "blocking": false,
       "applies_when": ["cache"],
       "lens": { "ask": "Does the service stay correct with the cache empty or down, and what protects a hot key from a stampede when it expires?" }
+    },
+    {
+      "id": "ARCH-024",
+      "section": "§5",
+      "title": "Large payloads travel by claim check, verified on use",
+      "intent": "Messages carry a reference to an object and its digest, not the document; consumers verify the digest before using the object.",
+      "blocking": true,
+      "applies_when": [
+        "queue_publish",
+        "queue_consume"
+      ],
+      "static_check": {
+        "stage": "specified",
+        "detects": "A message whose body embeds a document or file content instead of a reference (an object URI and its sha256), or a consumer that uses a fetched object without comparing its digest to the one in the message."
+      },
+      "lens": {
+        "ask": "If the referenced object is missing, replaced, or does not match its digest, does the consumer refuse it and dead-letter the message rather than act on it?"
+      }
     }
   ]
 }
