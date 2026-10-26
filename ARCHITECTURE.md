@@ -54,6 +54,7 @@ dashed outline is design, and red is refused.
 | CI gates | `00_UniversalStandards/15_Central_CI.md` | **Partial** |
 | Review lenses | `06_AgentZone/04_Review_Lenses.md` | **Built**; architecture lens in review |
 | Review over events | `06_AgentZone/05_Review_Loop.md` | **Design**: today Builder and Reviewer exchange work through the pull request |
+| Merge conflicts: detect, route, resolve, check | `06_AgentZone/06_Merge_Conflicts.md` | **Design**: today a person resolves them, or asks a coding agent to |
 | Merge | `AGENTS.md` → Agent Rules, Security Rules | **Built**: human approval via branch protection |
 | Evaluation, release token, deploy | `06_AgentZone/02_Compliance_Engine.md` | **Design** |
 | Apply | `03_InfrastructureZone/01_IaC_Standards.md` | **Built**: post-merge pipeline with its own identity; agents only plan |

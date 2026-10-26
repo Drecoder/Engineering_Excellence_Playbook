@@ -230,6 +230,11 @@ it:
 
 A recurring failure fingerprint marks a stalled fix; the next fix task reverts to the edge model.
 
+A pull request that conflicts with its base branch is routed the same way: rig reports and classifies
+the conflict (`merge_conflict.v1`), disjoint additions are resolved by rule, semantic conflicts go to
+the Builder, and protected paths go to a person; the resolution is always a merge commit
+(`06_AgentZone/06_Merge_Conflicts.md`, Status: design).
+
 ### Review lenses and evidence
 
 - The Reviewer reviews each unit through **lenses** (`blast`, `simple`, `chaos`, `benchmark`,
