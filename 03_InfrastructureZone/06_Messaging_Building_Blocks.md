@@ -37,9 +37,10 @@ moves between clouds without changing how it wires its messaging.
 
 - **Object store:** versioning on; object lock (write-once) for objects that are approved or
   audited, such as specs, review requests, and findings; public access blocked; access logging on.
-  It is the factory's long-term history, not a cache: retention and object lock cover at least the
-  triage window, and lifecycle rules expire only drafts, never inside that window. Consumers
-  verify an object's SHA-256 against the event that referenced it (`ARCH-024`).
+  It is the factory's long-term history, not a cache: the history is kept for at least the triage
+  window, hot or archived (§3a), and lifecycle rules delete only drafts and originals already
+  sealed into a verified bundle. Consumers verify an object's SHA-256 against the event that
+  referenced it (`ARCH-024`).
 - **Event stream:** retention long enough to replay a fixed consumer (at least 7 days); topics
   per domain (`spec.events`, `workflow.events` for the review loop, `delivery.events`, and the
   others); IAM authentication and TLS only. Topic creation is part of the module, not done by hand.
@@ -48,6 +49,40 @@ moves between clouds without changing how it wires its messaging.
 - **Work queue:** a dead-letter queue after a bounded number of receives; a visibility timeout
   longer than the consumer's processing time; the queue policy accepts messages only from its
   fan-out topic (`ARCH-014`).
+
+## 3️⃣a Object Store Tiering
+
+**Status: design.** Most stored objects are read again only during triage, so only recent
+deployments stay in standard storage.
+
+| Tier | Holds | Storage | Read back |
+| :--- | :--- | :--- | :--- |
+| **Hot** | Every object of a service's last *N* deployments (the rollback targets) | Standard | Milliseconds |
+| **Archive** | One sealed bundle per older deployment | An archive class (AWS Glacier Deep Archive or Glacier Instant Retrieval; GCP Archive; Azure Archive) | Hours for the deepest classes; restore before triage |
+
+- **The hot set is counted in deployments, not days.** Lifecycle rules only see object age, so the
+  deploy pipeline does the counting: when a deployment becomes current, the step marks the
+  deployment that fell out of the last *N* (for example by tagging its objects), and a lifecycle
+  rule on that mark moves it. A rollback target is therefore always hot.
+- **Bundle before archiving.** Specs, review requests, and findings are a few kilobytes each, and
+  archive classes charge per object (minimum billable sizes, per-object overhead, transition
+  requests); archiving them one by one can cost more than leaving them in standard storage. When
+  a deployment leaves the hot set, its objects are packed into one bundle with a manifest listing
+  every object's key, version, and SHA-256, and the bundle's own digest is recorded as an event.
+  Triage restores one bundle and still verifies every object in it.
+- **Lock the bundle for the triage window; lock originals only while hot.** Originals are
+  write-locked for the hot period, so they can be removed once their bundle is verified; the bundle
+  is write-locked for the full triage window. The manifest pins every original digest, so the
+  history stays tamper-evident while moving to cheaper storage.
+- **Transitions are not deletions.** Moving to an archive class keeps the object and its lock;
+  respect each class's minimum billed duration so nothing is moved twice inside it.
+
+**Open decisions:**
+
+- *N*, the hot count (2 or 3 deployments per service).
+- The triage window, which compliance may set (for example 1 or 7 years).
+- The archive class for bundles: the cheapest with a restore of hours, or a costlier one readable
+  at once.
 
 ## 4️⃣ Cost
 

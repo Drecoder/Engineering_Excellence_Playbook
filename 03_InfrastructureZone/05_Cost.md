@@ -37,6 +37,13 @@ Cost anti-patterns visible in Terraform are the `AP-COST-*` rules in `schemas/an
 - **Right-size from measurements**: requests and machine types follow USE metrics
   (`docs/USE_METHOD.md`), not guesses.
 
+## 4️⃣a Storage Is Tiered
+
+- History that is read only during triage does not stay in standard storage: only the last few
+  deployments are hot, and older ones are bundled and moved to archive storage
+  (`03_InfrastructureZone/06_Messaging_Building_Blocks.md` §3a).
+- Small objects are bundled before archiving; archiving them one by one can cost more than it saves.
+
 ## 5️⃣ Model Cost
 
 - Every model call increments a token and cost counter (`AGENTS.md` → Observability Rules); the

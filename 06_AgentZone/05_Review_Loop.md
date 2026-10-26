@@ -62,9 +62,11 @@ origin, each step pinned to an exact version:
    deep-dive findings.
 
 - **The object store is the history; the event stream is the delivery.** The stream keeps events
-  for days. The object store keeps every spec version, review request, and findings document as a
-  versioned, write-locked object for at least the triage window; lifecycle rules never delete
-  inside it. An archive of the event log (the data lake) keeps the sequence.
+  for days. The object store keeps every spec version, review request, and findings document for at
+  least the triage window: the last few deployments hot, older ones as one sealed, write-locked
+  bundle per deployment in archive storage, restored before triage
+  (`03_InfrastructureZone/06_Messaging_Building_Blocks.md` §3a). An archive of the event log (the
+  data lake) keeps the sequence.
 - **Prompts are reconstructable.** Next to each request and findings object, the store keeps the
   prompt file version, the lens rubrics, the model and rung, and references to the inputs, so the
   exact exchange can be rebuilt. Raw prompt text is not stored by default, because code and
