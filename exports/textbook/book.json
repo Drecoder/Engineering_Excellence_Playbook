@@ -714,6 +714,29 @@
             "What could go wrong if the Builder wrote the Reviewer's prompt?",
             "Kafka keeps events for seven days and an incident is found after three weeks. Where does triage look?"
           ]
+        },
+        {
+          "title": "Merge Conflicts (Design)",
+          "sources": [
+            "06_AgentZone/06_Merge_Conflicts.md"
+          ],
+          "objectives": [
+            "Split conflict work between a tool, the Builder, the Reviewer, and a person",
+            "Route a conflict hunk by rules: rule, model, or person",
+            "Explain why a resolution is always a merge commit",
+            "Check a resolution for dropped lines and semantic collisions"
+          ],
+          "takeaways": [
+            "rig finds and classifies conflicts with git merge-tree; no model decides the route.",
+            "Only disjoint additions resolve by rule; a protected file goes to a person even then.",
+            "The Builder writes the merge commit; the Reviewer only checks it; a person approves the merge.",
+            "The lens proves every added line survived or was removed on purpose."
+          ],
+          "questions": [
+            "Two changes each add a key to the same block of the CI factory's workflow. Why does a person resolve it?",
+            "Why is a rebase never the fix for a conflict on a reviewed branch?",
+            "Which half of the merge-resolution lens is code, and which needs judgment?"
+          ]
         }
       ]
     }

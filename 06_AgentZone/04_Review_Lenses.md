@@ -46,6 +46,7 @@ checked against it with the conformance vectors in
 | `chaos` | How does this fail under faults? | rig's playbook intent | Implicit state, retries, timeouts | Advisory |
 | `benchmark` | Is the cost (time, memory, money) acceptable? | rig's playbook intent | Complexity, hot paths | Advisory |
 | `doc` | Can the next person understand and operate it? | rig's playbook intent | None | Advisory |
+| `merge-resolution` (design) | Was anything either side added dropped, and is there a semantic collision? | `06_AgentZone/06_Merge_Conflicts.md` §3 | The dropped-line check against rig's `merge_conflict.v1` report | Advisory; a dropped line or a protected path escalates |
 
 The rubrics of the last five still live in rig's playbook prompts; moving each into a playbook file
 with the same structure as the architecture rules is open work, one lens per change.
