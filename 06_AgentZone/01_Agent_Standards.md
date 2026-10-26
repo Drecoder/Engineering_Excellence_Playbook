@@ -243,7 +243,8 @@ A recurring failure fingerprint marks a stalled fix; the next fix task reverts t
   "looks similar" findings stay advisory.
 - **Architecture:** the lens rubric is generated from `schemas/architecture_rules.v1.json`, only
   for the `ARCH-*` rules whose `applies_when` matches the unit's `features.v1` `structure.touches`;
-  rig's static and trace hits for those rules go in as known findings. Deterministic hits on
+  rig's static and trace hits for those rules, and catalog findings linked to them, go in as known
+  findings (`06_AgentZone/04_Review_Lenses.md`, which specifies the lens). Deterministic hits on
   blocking rules block; the lens's findings are advisory, except a protected class (`ARCH-009`
   irreversible, `ARCH-022` security), which escalates
   (`02_BackendZone/05_Application_Architecture.md` §10).

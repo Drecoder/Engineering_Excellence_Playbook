@@ -170,7 +170,7 @@ cannot drift apart. Each rule can have up to three checks:
 
 | Check | Run by | Sees | Outcome |
 | :--- | :--- | :--- | :--- |
-| **Static** | rig, on the diff | Code and IaC as written: a client call inside a transaction callback, a migration that adds and drops | A `features.v1` rule finding with `path:line`; blocks when the rule is blocking |
+| **Static** | rig, on the diff; or a verified catalog tool linked to the rule (squawk for `ARCH-008`/`009`, oasdiff and buf for `ARCH-004`, Bandit and go vet for `ARCH-017`) | Code and IaC as written: a client call inside a transaction callback, a migration that adds and drops | A `features.v1` rule finding with `path:line`, or an `antipattern_finding.v1`; rig's block when the rule is blocking, catalog findings stay advisory |
 | **Trace** | rig, on the traces of the targeted test run | What actually executed, through helpers, libraries, and injection: a `CLIENT` span under a `db.transaction` span, an orphaned consumer trace | A rule finding with the `trace_id` and `span_id` as evidence; blocks when the rule is blocking |
 | **Lens** | The Reviewer's `architecture` lens | What neither check can decide: whether a split's evidence holds, whether a saga's compensation is correct | An advisory finding, or an escalation for a protected class; never a block |
 

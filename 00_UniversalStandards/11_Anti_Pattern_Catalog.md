@@ -19,7 +19,7 @@ Each rule maps **one detector rule** to a stable ID, `AP-<STACK>-<NNN>`:
 | `stack`, `framework` | Go, TypeScript (Node.js, React, Angular), Python (Django, FastAPI), HCL (Terraform, Terragrunt), Docker, CI (GitHub Actions), contracts (OpenAPI, AsyncAPI, Protobuf), database (Postgres migrations, SQL), Kubernetes manifests, supply chain (scripts, lockfiles, pinning), shell scripts, observability (Prometheus rules), frontend accessibility, tests (Vitest, pytest), the AI agent layer, cost |
 | `severity`, `confidence` | The catalog's own impact scale and expected hit quality, not the tool's |
 | `detector` | The tool, its own rule ID exactly as reported, whether it is a custom rig check, and the mapping status |
-| `remediation`, `references`, `related` | The fix, the tool's documentation, and the `ARCH-*`/`SEC-*`/`GOV-*` rules it also violates |
+| `remediation`, `references`, `related` | The fix, the tool's documentation, and the `ARCH-*`/`SEC-*`/`GOV-*` rules it also violates. An `ARCH-*` entry links the rule to the architecture rule it enforces: its findings reach the Reviewer's architecture lens as known findings (`06_AgentZone/04_Review_Lenses.md` §3) |
 | `test_cases` | At least one positive case (must be reported) and one negative case (the fixed form, must not be); breaking-change rules add the previous version as `base` |
 | `enforcement` | `planned`, `advisory`, or `retired`; `blocks` is the constant `false` in v1 |
 | `benchmark` | `unmeasured`, or the measured counts and precision (§4) |
