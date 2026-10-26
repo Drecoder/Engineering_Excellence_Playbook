@@ -23,7 +23,7 @@ are in `13_Supply_Chain.md`.
     gates:
       uses: Drecoder/sovereign-vpc-gcp/.github/workflows/gates.yml@<full commit SHA>
       with:
-        exclude-paths: bench/corpus
+        fixture-paths: bench/corpus
   ```
 
 - **No per-repo or per-module CI,** no copied setup steps, and no caller-local actions. A local
@@ -56,8 +56,11 @@ same change.
 | Input | Default | Meaning |
 | :--- | :--- | :--- |
 | `runs-on` | `"ubuntu-latest"` | JSON `runs-on` value, e.g. a self-hosted runner label |
-| `exclude-paths` | empty | Space-separated directories holding frozen corpora or fixtures; skipped by every gate except secret scanning (§6) |
+| `fixture-paths` | empty | Space-separated directories of frozen code not meant to build here (copies of other repos, test corpora). Every scanner scans them; build gates skip them (§6) |
+| `exclude-paths` | empty | Space-separated directories hidden from every gate, scanners included, except secret scanning. Needs a reviewed reason; prefer `fixture-paths` (§6) |
 | `run-tests` | `true` | Run each stack's tests (`npm test --if-present`, pytest, `go test`); tests block |
+| `install-bubblewrap` | `false` | Install pinned bubblewrap before the TypeScript tests, for repos whose tests exercise a bubblewrap sandbox |
+| `single-job` | `false` | Run every gate as steps of one job instead of one job per stack, for runner pools that start a fresh VM per job (§5) |
 
 A caller that needs something the inputs cannot express asks for a new input in the factory; it
 does not add a step of its own.
@@ -79,8 +82,9 @@ does not add a step of its own.
 
 ## 5️⃣ What Runs
 
-A `detect` job lists tracked files outside `exclude-paths`, and each stack's job runs only when
-that stack is present.
+A `detect` step lists tracked files outside `exclude-paths`, and each stack's gates run only when
+that stack is present. Fixture code counts: a stack found only under `fixture-paths` still starts
+its job, so its scanners run, while its build steps report there is nothing to build.
 
 | Job | Runs when | Checks |
 | :--- | :--- | :--- |
@@ -91,6 +95,38 @@ that stack is present.
 | Secrets | Always | Gitleaks (`SEC-010`) |
 | Trivy | Always | `trivy fs`: vulnerabilities and misconfigurations |
 | Semgrep | TypeScript or Python present | python, typescript, javascript, secrets, and security-audit rulesets |
+
+### Job shape and runner pools
+
+- **Each gate's script is written once.** Every multi-line step body lives in one named script in
+  the workflow's `env` (`GATE_HCL_LINT`, `GATE_TRIVY`, …), and steps run it with
+  `eval "$GATE_…"`. Both job shapes below run the same scripts and the same pinned actions, so
+  neither can drift from the other.
+- **Per-stack jobs (the default)** run the gates in parallel, one job per stack. This suits
+  GitHub-hosted runners, where a job starts in seconds.
+- **One job (`single-job: true`)** runs every gate as steps of a single job. This suits a pool that
+  recycles a VM after every job, where each job pays a full recycle.
+  - **Every gate still runs:** each step runs under `!cancelled()`, so a failed gate does not hide
+    the rest, and any failed step fails the job.
+  - **Ordering:** HCL runs before `setup-python`, so Checkov gets the runner's own `python3`.
+  - **The cost is coupling.** The gates share one machine's `PATH` and `$RUNNER_TEMP`, so a gate
+    must never depend on another gate's tools or files.
+  - Callers on the private pool set it from the pool variable, e.g.
+    `single-job: ${{ vars.PLAN_RUNS_ON != '' }}`.
+- **Measured** on sovereign-vpc-gcp's one-VM plan pool, 2026-10-26:
+
+  | Shape | First job to plan done | VM recycles |
+  | :--- | :--- | :--- |
+  | Per-stack jobs (#18) | 55 min, for about 6 min of work | 5 |
+  | One job (#24) | 11.5 min (gates 5.6, recycle 3.6, plan 2.3) | 2 |
+
+  A recycle is about 3.6 min: about 1.5 min for the instance group to recreate the VM, about 1 min
+  to boot, and 68 s of startup script. The one-job shape costs nothing extra.
+- **The next steps cost money**, and are taken only when the wait justifies them:
+  - **A prebuilt runner image** (OS packages and the pinned runner baked in, no secrets, no
+    registration) saves about 1 min per recycle, for cents a month of image storage.
+  - **A second always-on plan VM** removes the wait when the queue is idle, for about $15 a month
+    on demand (an estimate from list prices).
 
 ## 6️⃣ Thresholds and Failure Behavior
 
@@ -105,9 +141,28 @@ that stack is present.
   CRITICAL-or-KEV line.
 - **The gate fails closed:** a scanner error, an empty or truncated report, or an unreachable OSV or
   KEV feed fails the check. A finding the gate could not classify never passes as clean.
-- **Exclusions skip frozen code, never secrets.** `exclude-paths` applies to detection, format,
-  lint, validate, Checkov, type checks, Trivy, Semgrep, Bandit, tests, and dependency discovery.
-  Gitleaks ignores it: a secret committed into a frozen corpus is still a leaked secret.
+- **Scanners see fixture code; only build gates skip it.** Under `fixture-paths`:
+  - **Skipped:** format, lint, validate, type checks, compile, and tests, because the code builds
+    in its own repo.
+  - **Still scanned:** Gitleaks, Trivy, Semgrep, Checkov, and Bandit.
+  - **A real finding in fixture code blocks** like any other, and gets fixed or a reviewed
+    exception. Example: a corpus copy of a firewall with a waived finding needs its own mirrored
+    exception, with the same owner and expiry.
+- **`exclude-paths` hides code from every gate except secret scanning,** so it needs a reviewed
+  reason in the caller. Gitleaks ignores it: a secret committed into a frozen corpus is still a
+  leaked secret.
+- **Every job is bounded.** Each factory job sets `timeout-minutes` at 3 to 5 times its longest
+  measured run, and the single job is bounded at 45 minutes. A hung tool fails the gate in minutes,
+  not after GitHub's 6-hour default.
+- **A timeout does not bound the queue.** `timeout-minutes` starts when a job starts. A job waiting
+  for a runner can stay queued for up to 24 hours. Queued-job age therefore needs its own alert
+  (AGENTS.md → Observability: the platform instruments itself).
+  - **Status: gap.** No queue alert exists yet. It is deferred until the repositories are public,
+    when the scheduled check runs on free GitHub-hosted minutes.
+- **A presence check must not read "nothing" by mistake.** Never test for files with
+  `cmd | grep -q .` under `set -o pipefail`. When `grep` exits early, it can kill `cmd` with
+  SIGPIPE, and the failed pipeline reads as "no files", which silently skips the gate. Use a
+  command substitution instead: `[ -z "$(cmd)" ]`.
 
 ## 7️⃣ Changing the Factory
 
@@ -188,6 +243,8 @@ change, instead of a workflow with the checks written into it.
     platform team, not the caller's team, and branch protection requires a code-owner review.
     Each entry names its approver (`approved_by`), and the engine checks through the API that this
     login approved the `approved_in` pull request and is a code owner of the file.
+  - **Status: gap.** No platform repository has branch protection today, so the code-owner review
+    is not enforced (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`).
   - **Excepting a finding is not weakening a rule.** No exception changes a threshold. An exception
     covers one known finding on one resource until it expires, and only in the categories the
     playbook already lets a reviewed exception cover (`SEC-*` policy, dependency vulnerabilities,
