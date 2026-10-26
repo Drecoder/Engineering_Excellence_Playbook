@@ -1,0 +1,70 @@
+{
+  "schema_version": "compliance_registry.v1",
+  "description": "Authoritative policy registry: the mandatory criteria per contract version and lifecycle stage, and the minimum evidence tier each one needs. Evidence tiers in ascending order: ABSENT < CLAIMED < OBSERVED < VERIFIED.",
+  "contracts": {
+    "6.0.0": {
+      "stages": {
+        "DESIGN_REVIEW": {
+          "criteria": [
+            {
+              "criterion_id": "DEC-001",
+              "title": "System Decoupling",
+              "mandatory": true,
+              "min_evidence_tier": "CLAIMED"
+            },
+            {
+              "criterion_id": "SEC-001",
+              "title": "Security",
+              "mandatory": true,
+              "min_evidence_tier": "CLAIMED"
+            }
+          ]
+        },
+        "IMPLEMENTATION_AUDIT": {
+          "criteria": [
+            {
+              "criterion_id": "DEC-001",
+              "title": "System Decoupling",
+              "mandatory": true,
+              "min_evidence_tier": "OBSERVED"
+            },
+            {
+              "criterion_id": "RES-001",
+              "title": "Resilience",
+              "mandatory": true,
+              "min_evidence_tier": "OBSERVED"
+            },
+            {
+              "criterion_id": "SEC-001",
+              "title": "Security",
+              "mandatory": true,
+              "min_evidence_tier": "OBSERVED"
+            }
+          ]
+        },
+        "PRODUCTION_READINESS": {
+          "criteria": [
+            {
+              "criterion_id": "DEC-001",
+              "title": "System Decoupling",
+              "mandatory": true,
+              "min_evidence_tier": "VERIFIED"
+            },
+            {
+              "criterion_id": "RES-001",
+              "title": "Resilience",
+              "mandatory": true,
+              "min_evidence_tier": "VERIFIED"
+            },
+            {
+              "criterion_id": "SEC-001",
+              "title": "Security",
+              "mandatory": true,
+              "min_evidence_tier": "VERIFIED"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -257,6 +257,10 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   input and return typed output. A tool holds no loop, decides nothing about what to do next, and
   never applies. Dependencies point one way — actor → tool, never the reverse. Actor logic found
   inside a tool is moved up into the caller (a sanctioned refactor), not left in place.
+- **The builder never authorizes its own release.** At scoping it may read the compliance criteria
+  and dry-run its submission (advisory only); evaluation and release tokens come from the independent
+  compliance authority, and the deploy boundary consumes each token once
+  (`06_AgentZone/02_Compliance_Engine.md`).
 - **Plan, never apply.** Agents may run `terragrunt plan` / `validate` only. `apply` runs in a
   separate post-merge pipeline with its own scoped identity and is never exposed as an agent tool.
 - **Schemas at every boundary.** Agent inputs, outputs, and tool arguments are defined as
