@@ -84,6 +84,25 @@ How work runs and how images are built (rationale in `00_UniversalStandards/12_C
   configuration from the environment, and are built once and promoted by digest.
 - **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
 
+## CI Rules
+
+One factory for every repository's gates (rationale in `00_UniversalStandards/15_Central_CI.md`).
+
+- **CI lives in one reusable workflow:** `Drecoder/sovereign-vpc-gcp/.github/workflows/gates.yml`.
+  A consumer has one caller file that calls it and passes inputs. No per-repo or per-module CI, no
+  copied setup steps, no caller-local actions (`./.github/actions/...`).
+- **Callers pin it to a full commit SHA,** never a tag or a branch, and repin through a reviewed
+  pull request. After a squash merge, callers repin to the merge commit.
+- **The factory is self-contained:** it installs its own pinned, checksum-verified toolchain, keeps
+  gate tools and project dependencies in separate environments, and reads nothing from the caller
+  but its code and configuration files.
+- **Inputs are a contract** (`runs-on`, `exclude-paths`, `run-tests`): never renamed, removed, or
+  repurposed without updating every caller. A caller that needs more asks for an input.
+- **Every vulnerability scanner goes through one severity gate** (CRITICAL or CISA KEV, failing
+  closed); `exclude-paths` skips frozen code in every gate except secret scanning.
+- **Fix CI failures in the factory,** and test a factory change through each consumer's repin
+  pull request before it merges.
+
 ## Supply Chain Rules
 
 Know what goes into every artifact and prove where it came from (rationale in
@@ -235,7 +254,7 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   account keys; trust policies pin repo, branch, and environment.
 - **CI least privilege:** workflows default to `permissions: contents: read` and grant more per
   job. Shared reusable workflows are reachable only by the owning user/org (never public), receive
-  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a tag or SHA.
+  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a full commit SHA.
 - **In transit:** TLS 1.2+ on every connection; service-to-service traffic (including telemetry)
   is authenticated with mTLS or signed tokens; webhooks are signature-verified.
 - **At rest:** storage is encrypted (customer-managed keys where classification requires) and
