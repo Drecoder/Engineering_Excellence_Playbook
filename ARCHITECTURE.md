@@ -9,34 +9,14 @@ and a standard disagree, the standard wins and this page is the bug.
 
 **Status legend:** **Built** runs today. **Partial** runs, with named gaps. **Design** is the
 agreed target, not implemented. **Open** is an undecided question.
+In the drawings (`docs/architecture/`), a solid outline is built, a corner tick is partial, a
+dashed outline is design, and red is refused.
 
 ---
 
 ## 1️⃣ Layers
 
-```text
-Engineering Excellence Playbook       what every rule and contract is
-  standards, AGENTS.md, schemas/       vendored into each repo as .playbook/ (pinned per repo)
-        │
-        ▼
-Genesis                               how each cloud enforces the guardrails
-  GOV-* org policies / SCPs,          vends every project and account into the hierarchy
-  hierarchy, vending
-        │
-        ▼
-Platform (sovereign-vpc-gcp, …)       shared infrastructure the factory and services run on
-  network, state, identity, runners,  plus the central CI factory every repo calls
-  observability, inference
-        │
-        ▼
-The factory                           actors that build and review; tools that analyse
-  Builder, Reviewer (actors)          rig, IaC engine, scanners (tools)
-  intake, compliance authority,
-  deployment guard
-        │
-        ▼
-Services                              built by the factory, inside all of the above
-```
+![System map: the playbook's rules and contracts are vendored into every repo at a full commit SHA; Genesis enforces guardrails in the cloud hierarchy and vends projects; the platform runs network, runners, observability, inference and the CI factory; the factory's agents run on the platform and build services.](docs/architecture/sheet-1-system-map.svg)
 
 - **The playbook defines; nothing below it invents rules.** Genesis implements the guardrails the
   baseline names (`00_UniversalStandards/08_Governance_Guardrails.md`); services never create,
@@ -65,30 +45,7 @@ Services                              built by the factory, inside all of the ab
 
 ## 3️⃣ The Path of a Change
 
-```text
- architect ──► intake wizard ──► deep dives (read-only, CLAIMED evidence)
-                    │
-                    ▼
-            grooming: Bronze → Silver → Gold ──► spec object (versioned, locked)
-                    │
-        spec.submitted ──► people review (Jira) ──► spec.approved
-                                                        │
-                                                        ▼
-                                  Builder: verify digest, scope compliance, build
-                                                        │
-                                       pull request ──► central CI gates
-                                                        │
-                           review.requested ◄──────────┤
-                                  │                     │
-                           Reviewer: lenses ──► review.completed (≤ 4 rounds)
-                                                        │
-                                   person approves the merge (branch protection)
-                                                        │
-                                   post-merge: CI signs evidence ──► compliance authority
-                                                        │            evaluates, signs token
-                                                        ▼
-                                   deployment guard: consume token once, deploy the digest
-```
+![Path of a change: intake to Builder, CI gates and Reviewer (looping for fix rounds), a person approves the merge, then the apply pipeline; the spec lives in an object store fetched by digest; signed CI evidence goes to an independent compliance authority whose single-use token the deployment guard consumes. Every box is its own identity.](docs/architecture/sheet-2-path-of-a-change.svg)
 
 | Stage | Standard | Status |
 | :--- | :--- | :--- |
@@ -149,6 +106,8 @@ Each boundary is its own identity, so no component can approve its own work.
 - **No secrets in context;** prompts are versioned files, and untrusted input is delimited as data.
 
 ## 7️⃣ CI and Supply Chain
+
+![CI factory: consumer repos call one gates.yml at a full commit SHA with inputs; it detects stacks, runs per-stack jobs and scanners, and routes every scanner report through a severity gate that blocks only CRITICAL or CISA KEV and fails closed, reading OSV, KEV and the caller's reviewed exceptions. Genesis cannot call it: public cannot call private.](docs/architecture/sheet-3-ci-factory.svg)
 
 - **One factory:** every repo's gates run in one reusable workflow, called by full commit SHA and
   configured through inputs; vulnerability scanners block only on CRITICAL or CISA KEV through one
