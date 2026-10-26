@@ -189,6 +189,29 @@
           ]
         },
         {
+          "title": "Central CI",
+          "sources": [
+            "00_UniversalStandards/15_Central_CI.md"
+          ],
+          "objectives": [
+            "Explain why gates live in one reusable workflow that callers configure only through inputs",
+            "Pin a shared workflow safely, including what a squash merge does to a pin",
+            "Describe the shared severity gate and how it fails closed",
+            "Roll out a change to the factory through consumer repin pull requests"
+          ],
+          "takeaways": [
+            "One factory holds every gate; a consumer's caller file only calls it by full commit SHA and passes inputs.",
+            "A caller-local action inside a reusable workflow resolves against the caller's checkout, so the factory installs everything itself.",
+            "Every vulnerability scanner reports in full, and one gate blocks only CRITICAL or CISA KEV findings, failing closed when it cannot classify.",
+            "Frozen code is excluded from every gate except secret scanning."
+          ],
+          "questions": [
+            "A consumer's HCL job fails because ./.github/actions/setup-iac is missing. Where is the bug, and why?",
+            "Callers pin a pull request's head SHA, and the pull request is squash-merged. What breaks, and what is the fix?",
+            "A pip dependency has a HIGH vulnerability that is on the KEV list. What does the gate do, and how does it know?"
+          ]
+        },
+        {
           "title": "Governance Guardrails",
           "sources": [
             "00_UniversalStandards/08_Governance_Guardrails.md"
