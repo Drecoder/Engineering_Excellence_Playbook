@@ -18,7 +18,12 @@ from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ci_reference import canonical_sha256, evaluate_exceptions, finding_is_excepted, plan_is_trusted  # noqa: E402
+from ci_reference import (
+    canonical_sha256,
+    evaluate_exceptions,
+    finding_is_excepted,
+    plan_is_trusted,
+)
 
 SCHEMAS = Path(__file__).resolve().parents[2] / "schemas"
 FORMATS = FormatChecker()
