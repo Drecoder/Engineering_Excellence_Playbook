@@ -61,7 +61,9 @@ The zone docs are **not** vendored: they explain the rules, and the rules link b
 ## 4️⃣ How It Flows
 
 1. A rule change merges to `main` in the playbook and is released as a tag (`vX.Y.Z`).
-2. Dependabot in each consumer opens a PR bumping `Drecoder/Engineering_Excellence_Playbook@vX.Y.Z`.
+2. Dependabot in each consumer opens a PR moving the pin to that release's **full commit SHA**:
+   `Drecoder/Engineering_Excellence_Playbook@<sha> # vX.Y.Z`. The tag is only the comment; the pin
+   is never a tag or a branch (`15_Central_CI.md` §4, `13_Supply_Chain.md`).
 3. Merging that bump triggers the consumer's sync workflow, which runs the playbook action.
 4. The action replaces `.playbook/` with the files from that exact ref and opens a sync PR.
 5. The consumer's own CI and review gate the sync PR. Merging it **adopts** the new rules.
@@ -112,8 +114,9 @@ playbook PR, not a local edit.
 
 ## 6️⃣ Releasing the Playbook
 
-- Tag releases on `main` as `vX.Y.Z`. Consumers pin exact versions, so a tag is a contract:
-  never move or delete a published tag.
+- Tag releases on `main` as `vX.Y.Z` to name them; consumers pin the tagged commit's full SHA,
+  with the tag as a comment. Never move or delete a published tag: Dependabot reads it to propose
+  the next SHA.
 - Version bumps follow the change type: **major** for a rule that can fail existing code,
   **minor** for new rules or schemas, **patch** for wording that changes no behavior.
 
