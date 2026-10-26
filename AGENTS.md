@@ -98,10 +98,20 @@ One factory for every repository's gates (rationale in `00_UniversalStandards/15
 - **The factory is self-contained:** it installs its own pinned, checksum-verified toolchain, keeps
   gate tools and project dependencies in separate environments, and reads nothing from the caller
   but its code and configuration files.
-- **Inputs are a contract** (`runs-on`, `exclude-paths`, `run-tests`): never renamed, removed, or
-  repurposed without updating every caller. A caller that needs more asks for an input.
+- **Inputs are a contract** (`runs-on`, `fixture-paths`, `exclude-paths`, `run-tests`,
+  `install-bubblewrap`, `single-job`): never renamed, removed, or repurposed without updating every
+  caller. A caller that needs more asks for an input.
 - **Every vulnerability scanner goes through one severity gate** (CRITICAL or CISA KEV, failing
-  closed); `exclude-paths` skips frozen code in every gate except secret scanning.
+  closed).
+- **Scanners see all code.** Frozen copies and fixtures skip only the build gates (format, lint,
+  type check, tests) through `fixture-paths`. Every scanner still scans them, and a real finding
+  there blocks like any other. `exclude-paths` hides code from every gate except secret scanning,
+  so it needs a reviewed reason.
+- **Every job is bounded** by `timeout-minutes`. A job's timeout does not cover time waiting in the
+  queue, so queued-job age needs its own alert.
+- **Write each gate's script once.** A gate's script is shared by every job shape. On a runner pool
+  that starts a fresh VM per job, the gates run as one job (`single-job`); on hosted runners they
+  run as parallel jobs per stack.
 - **Fix CI failures in the factory,** and test a factory change through each consumer's repin
   pull request before it merges.
 
