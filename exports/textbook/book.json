@@ -633,6 +633,10 @@
       "How much of a system a change can affect, approximated by the callers of the changed code."
     ],
     [
+      "Claim check",
+      "Messaging pattern where a message carries a reference to a stored object and its digest instead of the object itself."
+    ],
+    [
       "Cognitive complexity",
       "A measure of how hard code is to understand, counting breaks in linear flow with extra weight for nesting."
     ],
@@ -653,6 +657,10 @@
       "Evaluating a guardrail and logging violations without blocking them."
     ],
     [
+      "Egress",
+      "The domain events the factory publishes for consuming domains such as finance and operations."
+    ],
+    [
       "Error budget",
       "The amount of unreliability a service's objective allows; burn rate measures how fast it is spent."
     ],
@@ -671,6 +679,10 @@
     [
       "Guardrail (GOV)",
       "A control enforced by the cloud control plane, such as a GCP organization policy or AWS SCP."
+    ],
+    [
+      "Ingress",
+      "How work enters the factory: from questionnaire to an approved spec reaching the Builder."
     ],
     [
       "Jidoka",

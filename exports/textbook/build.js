@@ -53,6 +53,20 @@ for (const ch of chapters) for (const src of ch.sources) xref.set(path.basename(
 book.appendices.forEach((a, i) => a.source && xref.set(path.basename(a.source), `Appendix ${appendixLetter(i)}, ${a.title}`));
 const contractsLabel = `Appendix ${appendixLetter(book.appendices.findIndex((a) => a.contracts))}, Contracts`;
 
+// ---- every source must exist on this branch ----
+// book.json is tracked with the docs it lists: a change that adds a chapter's source adds the
+// chapter in the same commit, so any branch builds from its own files.
+const missingSources = [...chapters.flatMap((ch) => ch.sources), ...book.appendices.map((a) => a.source).filter(Boolean)]
+  .filter((src) => !fs.existsSync(path.join(ROOT, src)));
+if (missingSources.length) {
+  console.error(
+    `book.json lists ${missingSources.length} source(s) that do not exist on this branch:\n  ` +
+      missingSources.join("\n  ") +
+      "\nAdd a chapter to book.json in the same change that adds its source.",
+  );
+  process.exit(1);
+}
+
 /** Turn `path/to/doc.md` (optionally followed by §n) into a readable chapter reference. */
 function crossReference(html) {
   return html.replace(/<code>([^<]*?\.(md|json))<\/code>/g, (whole, p) => {
@@ -149,9 +163,14 @@ function renderToc() {
 }
 
 function sourceRevision() {
+  // A git worktree mounted into the container points at a host path git cannot follow; the host
+  // can pass the label instead (SOURCE_REVISION="branch @ sha").
+  if (process.env.SOURCE_REVISION) return process.env.SOURCE_REVISION;
+  const git = (...args) =>
+    execFileSync("git", ["-c", "safe.directory=*", "-C", ROOT, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   try {
-    const sha = execFileSync("git", ["-c", "safe.directory=*", "-C", ROOT, "rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim();
-    const branch = execFileSync("git", ["-c", "safe.directory=*", "-C", ROOT, "rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8" }).trim();
+    const sha = git("rev-parse", "--short", "HEAD");
+    const branch = git("rev-parse", "--abbrev-ref", "HEAD");
     return `${branch} @ ${sha}`;
   } catch {
     return "unknown revision";
