@@ -9,7 +9,10 @@ on every positive case and never on any negative case. Planned (custom rig) rule
         playbook-antipattern-toolchain python tests/antipatterns/verify_detectors.py [--write]
 
 --write records verified mappings in schemas/antipatterns.v1.json (status, tool_version,
-verified_on, verified_in, toolchain). It never downgrades a mapping and never changes enforcement.
+verified_on, verified_in, toolchain). It never downgrades a mapping and never changes enforcement,
+and it records nothing when any mapping failed. --out writes the catalog elsewhere (CI mounts the
+checkout read-only); --report also writes the results JSON to a file. CI runs this in
+.github/workflows/antipatterns.yml.
 """
 
 import argparse
@@ -376,6 +379,9 @@ def main():
     ap.add_argument("--write", action="store_true", help="record verified mappings in the catalog")
     ap.add_argument("--only", help="comma-separated AP-* IDs")
     ap.add_argument("--verified-in", default=os.environ.get("VERIFIED_IN", "local"), choices=["local", "ci"])
+    ap.add_argument("--out", type=Path, help="with --write: write the catalog here instead of in place "
+                    "(lets a non-root container write to a mounted output directory)")
+    ap.add_argument("--report", type=Path, help="also write the results JSON to this file")
     args = ap.parse_args()
 
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
@@ -402,10 +408,15 @@ def main():
                 "toolchain": image,
             }
 
-    if args.write:
-        CATALOG.write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     summary = {s: sum(1 for r in results if r["status"] == s) for s in ("verified", "failed", "no_runner", "planned")}
-    print(json.dumps({"summary": summary, "results": results}, indent=2))
+    report = json.dumps({"summary": summary, "toolchain": image or None, "verified_in": args.verified_in,
+                         "results": results}, indent=2)
+    if args.report:
+        args.report.write_text(report + "\n", encoding="utf-8")
+    # Record nothing when any mapping failed: a partial run is not a verification.
+    if args.write and not summary["failed"]:
+        (args.out or CATALOG).write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(report)
     return 1 if summary["failed"] else 0
 
 
