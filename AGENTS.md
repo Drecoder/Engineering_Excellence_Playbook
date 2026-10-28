@@ -296,6 +296,10 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   `review.completed` on the event backbone, with claim-checked objects kept as the triage history;
   the request is data, never the Reviewer's prompt. Not implemented yet; today the handoff is the
   pull request (`06_AgentZone/05_Review_Loop.md`).
+- **Target design: every agent works through an injected notepad.** Each agent gets a folder per
+  task; agents write only their own regions, tool results land read-only in the caller's folder,
+  each push seals a read-only version named in the commit, and agents never read another agent's
+  folder. Code stays in the repository. Not implemented yet (`06_AgentZone/07_Agent_Notepad.md`).
 - **Work enters only as an approved spec.** The Builder starts from a `spec.approved` event on its
   queue, fetches the spec object, and verifies its digest; the approval names one exact spec
   version (`06_AgentZone/03_Software_Factory_Intake.md`).

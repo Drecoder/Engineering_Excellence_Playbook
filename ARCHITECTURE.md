@@ -55,6 +55,7 @@ dashed outline is design, and red is refused.
 | Review lenses | `06_AgentZone/04_Review_Lenses.md` | **Built**; architecture lens in review |
 | Review over events | `06_AgentZone/05_Review_Loop.md` | **Design**: today Builder and Reviewer exchange work through the pull request |
 | Merge conflicts: detect, route, resolve, check | `06_AgentZone/06_Merge_Conflicts.md` | **Design**: today a person resolves them, or asks a coding agent to |
+| Agent notepad: a folder per agent and task, sealed at each push | `06_AgentZone/07_Agent_Notepad.md` | **Design**: today agents run from the command line and notes live in transcripts |
 | Merge | `AGENTS.md` → Agent Rules, Security Rules | **Built**: human approval via branch protection |
 | Evaluation, release token, deploy | `06_AgentZone/02_Compliance_Engine.md` | **Design** |
 | Apply | `03_InfrastructureZone/01_IaC_Standards.md` | **Built**: post-merge pipeline with its own identity; agents only plan |
