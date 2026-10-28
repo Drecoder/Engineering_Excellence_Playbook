@@ -1,8 +1,8 @@
 {
   "schema_version": "ci_policy.v1",
-  "policy_version": "1.0.0",
+  "policy_version": "1.1.0",
   "floors": {
-    "full_repo_categories": ["sec_policy", "dependency_vuln", "misconfig", "sast", "secrets"],
+    "full_repo_categories": ["sec_policy", "dependency_vuln", "misconfig", "sast", "secrets", "coverage", "license"],
     "high_risk_runs_all": true,
     "unknown_input_runs_all": true
   },
@@ -277,6 +277,50 @@
       "blocks_on": "error",
       "honors_exclude_paths": true,
       "exceptions_allowed": true,
+      "status": "pending"
+    },
+    {
+      "id": "pytest-coverage",
+      "category": "coverage",
+      "tool": { "name": "pytest-cov", "source": "factory", "version": "7.1.0" },
+      "applies_when": { "stacks": ["py"] },
+      "scope": "full_repo",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "pending"
+    },
+    {
+      "id": "vitest-coverage",
+      "category": "coverage",
+      "tool": { "name": "vitest-coverage", "source": "project" },
+      "applies_when": { "stacks": ["ts"] },
+      "scope": "full_repo",
+      "blocks_on": "any_failure",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "pending"
+    },
+    {
+      "id": "changed-line-coverage",
+      "category": "coverage",
+      "tool": { "name": "diff-cover", "source": "factory", "version": "11.0.0" },
+      "applies_when": { "stacks": ["ts", "py"] },
+      "scope": "full_repo",
+      "blocks_on": "never",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
+      "status": "pending"
+    },
+    {
+      "id": "license",
+      "category": "license",
+      "tool": { "name": "syft", "source": "factory", "version": "1.55.0", "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d" },
+      "applies_when": { "always": true },
+      "scope": "full_repo",
+      "blocks_on": "denied_license",
+      "honors_exclude_paths": true,
+      "exceptions_allowed": false,
       "status": "pending"
     }
   ]

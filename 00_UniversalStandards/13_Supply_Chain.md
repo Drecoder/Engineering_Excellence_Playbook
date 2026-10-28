@@ -46,7 +46,9 @@ a floating range resolving to something new at build time.
   dependencies (from the SBOM) against it; a denied license blocks like a CRITICAL finding, a
   review-required one escalates to a person.
 - The policy and its exceptions live in a reviewed file with an owner and an expiry, like every
-  other exception.
+  other exception: `schemas/license_policy.v1.json`. Every consumer evaluates SPDX expressions the
+  same way (an OR takes the best term, an AND the worst) and reproduces
+  `schemas/examples/license/license_vectors.json`.
 
 ## 5️⃣ Vulnerabilities
 

@@ -24,7 +24,9 @@ done. This standard covers how good that evidence is. File-level test anti-patte
   test reaching them are reported, and the Reviewer's features record them (`features.v1`
   `structure.untested`).
 - A repository sets a coverage floor and the pipeline holds it; coverage is never raised by tests
-  that assert nothing, which is why `AP-TEST-002` exists.
+  that assert nothing, which is why `AP-TEST-002` exists. The floors are committed as
+  `.ci/quality.v1.json` (`schemas/quality.v1.schema.json`): the total-coverage floor blocks, the
+  changed-line target is reported, and a floor is lowered only through a reviewed pull request.
 
 ## 3️⃣ Mutation Testing: Do the Tests Notice?
 
