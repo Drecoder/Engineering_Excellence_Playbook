@@ -19,8 +19,8 @@ questions, the reasoning, the tool results, the findings, and the decisions.
 
 The contracts are in `schemas/`: `notepad_op.v1` (every operation on the service),
 `notepad_manifest.v1` (a sealed version, hash-chained, with vectors in
-`schemas/examples/notepad/`), `review_disposition.v1` (a person's decisions on a round), and
-`project.v1` (a project's bindings).
+`schemas/examples/notepad/`), `notepad_channels.v1` (which region each file belongs to),
+`review_disposition.v1` (a person's decisions on a round), and `project.v1` (a project's bindings).
 
 ---
 
@@ -76,7 +76,8 @@ across agents by path.
 
 Each file in a task folder belongs to a **channel type** that declares who owns which region. The
 service enforces the declaration at write time; central CI checks the same declaration on any change
-a person pushes. One declaration feeds both, from `schemas/`.
+a person pushes. One declaration feeds both: `schemas/notepad_channels.v1.json`, which lists every
+file a task folder may hold with its region and format; a path it does not declare is rejected.
 
 | Region | Owner | Example |
 | :--- | :--- | :--- |

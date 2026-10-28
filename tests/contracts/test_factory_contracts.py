@@ -287,5 +287,59 @@ class ReleaseTokens(unittest.TestCase):
         self.assertEqual(TOKEN_EX["exp"] - TOKEN_EX["iat"], TOKEN_VECTORS["max_lifetime_seconds"])
 
 
+class Channels(unittest.TestCase):
+    """notepad_channels.v1: which region each file of a task folder belongs to."""
+
+    @classmethod
+    def setUpClass(cls):
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from notepad_reference import classify, overlaps
+        cls.classify, cls.overlaps = staticmethod(classify), staticmethod(overlaps)
+        cls.schema = validator("notepad_channels.v1.schema.json")
+        cls.channels = load("notepad_channels.v1.json")
+        cls.vectors = load("examples/notepad/channel_vectors.json")
+
+    def test_declarations_are_valid_and_do_not_overlap(self):
+        self.assertEqual([e.message for e in self.schema.iter_errors(self.channels)], [])
+        self.assertEqual(self.overlaps(self.channels), [])
+
+    def test_vectors(self):
+        self.assertTrue(self.vectors["cases"])
+        for case in self.vectors["cases"]:
+            with self.subTest(case["path"]):
+                expected = None if case["channel"] is None else (case["channel"], case["region"])
+                self.assertEqual(self.classify(case["path"], self.channels), expected)
+
+    def test_every_declared_path_is_a_valid_manifest_path(self):
+        path_check = Draft202012Validator(load("notepad_manifest.v1.schema.json")["$defs"]["path"])
+        for case in self.vectors["cases"]:
+            if case["channel"] is not None:
+                with self.subTest(case["path"]):
+                    self.assertFalse(rejected(path_check, case["path"]))
+
+    def test_rejections(self):
+        def first_file(d):
+            return d["channels"][0]["files"][0]
+        cases = {
+            "a recursive wildcard": lambda d: first_file(d).update(pattern="**/*.md"),
+            "a wildcard in the extension": lambda d: first_file(d).update(pattern="thought-log.*"),
+            "two directory levels": lambda d: first_file(d).update(pattern="a/b/c.md"),
+            "a traversal pattern": lambda d: first_file(d).update(pattern="../x.md"),
+            "a format that disagrees with the extension": lambda d: first_file(d).update(format="json"),
+            "an unknown region": lambda d: first_file(d).update(region="shared"),
+            "an oversized file limit": lambda d: first_file(d).update(max_bytes=10_000_000),
+        }
+        for name, fn in cases.items():
+            with self.subTest(name):
+                self.assertTrue(rejected(self.schema, mutated(self.channels, fn)))
+
+    def test_an_overlapping_declaration_is_a_defect(self):
+        doc = mutated(self.channels, lambda d: d["channels"][1]["files"].append(
+            {"pattern": "answers/q-001.md", "region": "agent_append", "format": "markdown", "max_bytes": 10}))
+        self.assertFalse(rejected(self.schema, doc))
+        self.assertEqual(self.overlaps(doc), [("answers/*.md", "answers/q-001.md")])
+
+
 if __name__ == "__main__":
     unittest.main()
