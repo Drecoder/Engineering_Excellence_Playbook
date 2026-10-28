@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_request.v1.schema.json",
+  "title": "review_request.v1",
+  "description": "The object a review.requested event claim-checks (06_AgentZone/05_Review_Loop.md §1): what the Reviewer is asked to review. It is data for the Reviewer, never its prompt; the Reviewer builds its own prompt from its versioned prompt files and the lens rubrics, with this object delimited as untrusted input. Code is pinned by head_sha and read from the repository, never copied here. Earlier rounds' objects are referenced by claim check and verified by digest before use.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "change", "round", "notepad_manifest", "previous_findings", "dispositions", "summary"],
+  "properties": {
+    "schema_version": { "const": "review_request.v1" },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "pr_number", "base_sha", "head_sha", "task_id", "spec_id", "spec_version"],
+      "properties": {
+        "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" },
+        "pr_number": { "type": "integer", "minimum": 1 },
+        "base_sha": { "$ref": "#/$defs/sha" },
+        "head_sha": { "$ref": "#/$defs/sha" },
+        "task_id": { "$ref": "notepad_manifest.v1.schema.json#/$defs/id" },
+        "spec_id": { "$ref": "notepad_manifest.v1.schema.json#/$defs/id" },
+        "spec_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "round": { "type": "integer", "minimum": 1, "maximum": 4 },
+    "notepad_manifest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}(?!\n)$", "description": "The Builder's sealed version for head_sha, the same digest as the commit's Notepad-Manifest trailer." },
+    "previous_findings": {
+      "oneOf": [{ "type": "null" }, { "$ref": "claim_check.v1.schema.json" }],
+      "description": "The previous round's review_findings.v1; null only in round 1."
+    },
+    "dispositions": {
+      "oneOf": [{ "type": "null" }, { "$ref": "claim_check.v1.schema.json" }],
+      "description": "The person's review_disposition.v1 for the previous round, when one was submitted."
+    },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 8000, "description": "The Builder's description of the change. Untrusted text." },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fingerprint", "status"],
+        "properties": {
+          "fingerprint": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?!\n)$" },
+          "status": { "enum": ["fixed", "disputed"] },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 4000 }
+        },
+        "allOf": [{ "if": { "properties": { "status": { "const": "disputed" } }, "required": ["status"] }, "then": { "required": ["reason"] } }]
+      },
+      "description": "The Builder's answer to each previous blocking fingerprint. Claims, checked by the Reviewer against the code."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "round": { "const": 1 } }, "required": ["round"] },
+      "then": { "properties": { "previous_findings": { "type": "null" }, "dispositions": { "type": "null" }, "answers": false } },
+      "else": { "properties": { "previous_findings": { "$ref": "claim_check.v1.schema.json" } }, "required": ["answers"] }
+    }
+  ],
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}(?!\n)$" }
+  }
+}

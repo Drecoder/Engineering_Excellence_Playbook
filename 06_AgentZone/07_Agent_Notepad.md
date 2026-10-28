@@ -17,6 +17,11 @@ Code never lives in the notepad. Agents change code the way a coding assistant d
 checkout, commit, and push to the repository. The notepad holds everything around the code: the
 questions, the reasoning, the tool results, the findings, and the decisions.
 
+The contracts are in `schemas/`: `notepad_op.v1` (every operation on the service),
+`notepad_manifest.v1` (a sealed version, hash-chained, with vectors in
+`schemas/examples/notepad/`), `review_disposition.v1` (a person's decisions on a round), and
+`project.v1` (a project's bindings).
+
 ---
 
 ## 1️⃣ Layout
@@ -63,8 +68,9 @@ across agents by path.
   deletion until retention ends, whatever IAM says.
 - **A hash chain.** Each manifest names the one before it and the inputs it answered, so a missing or
   altered version is visible.
-- **Failed pushes are sealed too**, marked `gates: failed`, for triage. They are never indexed, so a
-  failed attempt is never retrieved as an example.
+- **Failed pushes are sealed too**, for triage. A seal happens before the push, so the manifest
+  never records a gate verdict; indexing happens only at merge (§7), so a failed attempt is never
+  retrieved as an example.
 
 ## 3️⃣ Ownership by Region
 
@@ -105,7 +111,7 @@ An agent's tool calls are the agent's actions (`01_Agent_Standards.md` §1a). Th
 | :--- | :--- | :--- |
 | 1 | Builder | Seals `v1` and pushes; once the gates pass, `review.requested` claim-checks the push |
 | 2 | Reviewer | Works in its own folder; seals its findings (`review_findings.v1`) when it publishes `review.completed`. The pull request comments are rendered from that object, each carrying its fingerprint |
-| 3 | A person | Records a disposition for each fingerprint (agree, disagree with a reason, or a comment) and adds suggestions, in the human-owned region; sealed on submit (`review_disposition.v1`, to be defined) |
+| 3 | A person | Records a disposition for each fingerprint (agree, disagree with a reason, or a comment) and adds suggestions, in the human-owned region; sealed on submit (`review_disposition.v1`) |
 | 4 | Service | Opens the Builder's `v2` working copy with the sealed findings and dispositions as read-only inputs. The Builder never reads the Reviewer's folder |
 | 5 | Builder | Answers each fingerprint (fixed, or disputed with a reason), seals `v2`, and pushes; the next round starts |
 
@@ -179,7 +185,7 @@ Four memory states, each with its own writer, lifetime, and trust:
 ## 8️⃣ Projects Are Injected
 
 The factory core is generic. A project is a set of bindings, read from its configuration
-(`project.v1`, to be defined) by a composition root that validates it and hands each agent its
+(`project.v1`) by a composition root that validates it and hands each agent its
 scoped handles:
 
 | Interface | Bound per project |
