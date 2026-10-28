@@ -13,6 +13,11 @@ replaces the command line as the way to work with an agent: a person or an event
 agent's folder, and the agent answers there. The first goal is plain: keep work on track, so every
 question, decision, and result has one cataloged place instead of hundreds of unsaved notes.
 
+**The notepad is the factory's working memory.** What a task knows lives in its sealed record, not
+in a growing chat or a pasted handoff: each step starts from that record within an explicit context
+budget, so a long-running effort costs what its current step needs, and a decision, once made, stays
+made. People and agents read and write the same record, each in their own region.
+
 Code never lives in the notepad. Agents change code the way a coding assistant does: edit files in a
 checkout, commit, and push to the repository. The notepad holds everything around the code: the
 questions, the reasoning, the tool results, the findings, and the decisions.
@@ -217,7 +222,9 @@ disposition, conflict resolutions, the merge, the release token, and any inciden
 
 ## 🔟 First Slice
 
-Build the notebook first; the rest grows on it.
+Build the notebook first; the rest grows on it. It is the first feature of PI-1
+(`docs/PROGRAM_INCREMENTS.md`): every later feature is cheaper to build and better recorded once
+the working memory exists.
 
 1. The notepad service with one storage backend, serving the Builder, with the layout of §1 and the
    project ID and key from day one.
