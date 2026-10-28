@@ -1,0 +1,77 @@
+{
+  "description": "Attestation payload vectors for compliance_submission.v6. The attester (CI) signs, and the compliance authority verifies, the canonical JSON (compact, key-sorted, ASCII) of the 11 security-relevant evidence fields: every field except attestation_signature, with monitored_paths sorted by code point and timestamp_utc exactly as submitted. Every implementation must produce exactly attestation_payload, and payload_sha256 over its ASCII bytes, for each evidence record; and must reject every entry of invalid_timestamps.",
+  "vectors": [
+    {
+      "note": "Seconds precision; monitored paths arrive unsorted and are signed sorted.",
+      "evidence": {
+        "evidence_type": "SCAN_REPORT",
+        "check_version": "1.4.2",
+        "verification_result": "PASSED",
+        "evidence_tier": "VERIFIED",
+        "evidence_presence": true,
+        "attestation_signature": "c2lnbmF0dXJl",
+        "criterion_id": "SEC-001",
+        "evidence_reference": "s3://evidence/run-881/trivy.json",
+        "bound_artifact_identity": "{\"artifact_type\":\"GIT_SHA\",\"environment\":\"production\",\"git_sha\":\"3f66082a1b2c3d4e5f60718293a4b5c6d7e8f901\",\"repository\":\"drecoder/genesis\"}",
+        "test_run_identifier": "gha-881",
+        "timestamp_utc": "2026-10-28T10:00:00Z",
+        "monitored_paths": [
+          "src/z.py",
+          "Dockerfile",
+          "src/a.py"
+        ]
+      },
+      "attestation_payload": "{\"bound_artifact_identity\":\"{\\\"artifact_type\\\":\\\"GIT_SHA\\\",\\\"environment\\\":\\\"production\\\",\\\"git_sha\\\":\\\"3f66082a1b2c3d4e5f60718293a4b5c6d7e8f901\\\",\\\"repository\\\":\\\"drecoder/genesis\\\"}\",\"check_version\":\"1.4.2\",\"criterion_id\":\"SEC-001\",\"evidence_presence\":true,\"evidence_reference\":\"s3://evidence/run-881/trivy.json\",\"evidence_tier\":\"VERIFIED\",\"evidence_type\":\"SCAN_REPORT\",\"monitored_paths\":[\"Dockerfile\",\"src/a.py\",\"src/z.py\"],\"test_run_identifier\":\"gha-881\",\"timestamp_utc\":\"2026-10-28T10:00:00Z\",\"verification_result\":\"PASSED\"}",
+      "payload_sha256": "sha256:1799c777f4e721841bfd03008a20627e66a18bc456435abf5c25dbd53baeb0d7"
+    },
+    {
+      "note": "Fractional seconds are signed exactly as submitted: one digit stays one digit.",
+      "evidence": {
+        "evidence_type": "CHAOS_EXPERIMENT",
+        "check_version": "1.4.2",
+        "verification_result": "PASSED",
+        "evidence_tier": "VERIFIED",
+        "evidence_presence": true,
+        "attestation_signature": "c2lnbmF0dXJl",
+        "criterion_id": "RES-001",
+        "evidence_reference": "s3://evidence/run-882/chaos.json",
+        "bound_artifact_identity": "{\"artifact_type\":\"CONTAINER_DIGEST\",\"container_digest\":\"sha256:abababababababababababababababababababababababababababababababab\",\"environment\":\"staging\",\"repository\":\"drecoder/reviewer\"}",
+        "test_run_identifier": "gha-882",
+        "timestamp_utc": "2026-10-28T10:00:00.5Z",
+        "monitored_paths": [
+          "deploy/"
+        ]
+      },
+      "attestation_payload": "{\"bound_artifact_identity\":\"{\\\"artifact_type\\\":\\\"CONTAINER_DIGEST\\\",\\\"container_digest\\\":\\\"sha256:abababababababababababababababababababababababababababababababab\\\",\\\"environment\\\":\\\"staging\\\",\\\"repository\\\":\\\"drecoder/reviewer\\\"}\",\"check_version\":\"1.4.2\",\"criterion_id\":\"RES-001\",\"evidence_presence\":true,\"evidence_reference\":\"s3://evidence/run-882/chaos.json\",\"evidence_tier\":\"VERIFIED\",\"evidence_type\":\"CHAOS_EXPERIMENT\",\"monitored_paths\":[\"deploy/\"],\"test_run_identifier\":\"gha-882\",\"timestamp_utc\":\"2026-10-28T10:00:00.5Z\",\"verification_result\":\"PASSED\"}",
+      "payload_sha256": "sha256:c0fb55b50e78d33b49745275a795e2c957d893391fd3c7f1df30b6bcd0245463"
+    },
+    {
+      "note": "Non-ASCII text is escaped (ensure_ascii); an empty monitored_paths is signed as []; booleans and tiers are signed.",
+      "evidence": {
+        "evidence_type": "DESIGN_REVIEW",
+        "check_version": "1.4.2",
+        "verification_result": "FAILED",
+        "evidence_tier": "OBSERVED",
+        "evidence_presence": true,
+        "attestation_signature": "c2lnbmF0dXJl",
+        "criterion_id": "DEC-001",
+        "evidence_reference": "design/r\u00e9vision-3.md",
+        "bound_artifact_identity": "{\"artifact_type\":\"TERRAFORM_PLAN\",\"environment\":\"dev\",\"plan_digest\":\"sha256:0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f\",\"repository\":\"drecoder/genesis\",\"state_version_id\":\"sv-8Kq2\",\"workspace\":\"live-dev-gcp-network\"}",
+        "test_run_identifier": "gha-883",
+        "timestamp_utc": "2026-10-28T09:59:59.123456Z",
+        "monitored_paths": []
+      },
+      "attestation_payload": "{\"bound_artifact_identity\":\"{\\\"artifact_type\\\":\\\"TERRAFORM_PLAN\\\",\\\"environment\\\":\\\"dev\\\",\\\"plan_digest\\\":\\\"sha256:0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f\\\",\\\"repository\\\":\\\"drecoder/genesis\\\",\\\"state_version_id\\\":\\\"sv-8Kq2\\\",\\\"workspace\\\":\\\"live-dev-gcp-network\\\"}\",\"check_version\":\"1.4.2\",\"criterion_id\":\"DEC-001\",\"evidence_presence\":true,\"evidence_reference\":\"design/r\\u00e9vision-3.md\",\"evidence_tier\":\"OBSERVED\",\"evidence_type\":\"DESIGN_REVIEW\",\"monitored_paths\":[],\"test_run_identifier\":\"gha-883\",\"timestamp_utc\":\"2026-10-28T09:59:59.123456Z\",\"verification_result\":\"FAILED\"}",
+      "payload_sha256": "sha256:75683a2b6f6f30d19407c8d89d92dc9e1310c894264cd80d8463c8ba5d47caa1"
+    }
+  ],
+  "invalid_timestamps": [
+    "2026-10-28T12:00:00+02:00",
+    "2026-10-28T10:00:00+00:00",
+    "2026-10-28T10:00:00",
+    "2026-10-28t10:00:00z",
+    "2026-10-28T10:00:00.1234567Z",
+    "2026-10-28T10:00Z",
+    "2026-02-30T10:00:00Z"
+  ]
+}

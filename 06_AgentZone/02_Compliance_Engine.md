@@ -6,8 +6,9 @@ The compliance engine decides whether an artifact may be released, from evidence
 submits. It is split across components with separate identities, because the component that wants
 a release cannot be the one that grants it. Contracts: `schemas/compliance_submission.v6.schema.json`
 (the submission), `schemas/compliance_registry.v1.json` (the criteria), and
-`schemas/examples/compliance/canonical_identity_vectors.json` (the artifact identity every
-implementation must reproduce).
+`schemas/examples/compliance/canonical_identity_vectors.json` and
+`attestation_payload_vectors.json` (the artifact identity and the signed evidence bytes every
+implementation must reproduce; checked by `tests/contracts/test_compliance_contracts.py`).
 
 ---
 
@@ -46,6 +47,17 @@ authority) are different keys.
   playbook shares the spec and test vectors, not code (`00_UniversalStandards/09_Reuse_and_DRY.md`).
 - **Canonical identity** is the compact, key-sorted, ASCII JSON of every artifact field; tokens
   carry its SHA-256 as `artifact_digest`.
+- **Attestation payload** is the same canonical JSON over the 11 evidence fields other than
+  `attestation_signature`, with `monitored_paths` sorted and `timestamp_utc` exactly as submitted
+  (UTC with a literal `Z`, at most microseconds), never parsed and re-serialized. Implementations
+  reproduce `schemas/examples/compliance/attestation_payload_vectors.json`.
+- **Freshness** is judged against the authority's clock at evaluation (`evaluated_at`), never the
+  builder's: evidence is fresh when its `timestamp_utc` is at most 24 hours old and at most 5
+  minutes in the future (clock skew). Anything outside that window is stale, and its criterion is
+  `REMEDIATE`.
+- **Patterns are full matches.** Python's `jsonschema` lets `$` match before a trailing newline, so a
+  Python consumer also validates into typed models that match whole strings; the schema alone is
+  not enough there.
 - **Fail closed** on a missing key, an unknown criterion, a duplicate criterion, a non-UTC clock, an
   invalid registry, or any verification error.
 
