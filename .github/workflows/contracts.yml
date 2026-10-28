@@ -1,0 +1,47 @@
+# Runs the contract tests (tests/contracts) in the pinned toolchain image, the same image they run
+# in locally: it pins rfc3339-validator, without which jsonschema silently skips date-time checks.
+name: Contract tests
+
+on:
+  pull_request:
+    paths:
+      - "schemas/**"
+      - "tests/contracts/**"
+      - "tests/antipatterns/toolchain/**"
+      - ".github/workflows/contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "schemas/**"
+      - "tests/contracts/**"
+      - "tests/antipatterns/toolchain/**"
+      - ".github/workflows/contracts.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: playbook-antipattern-toolchain
+
+jobs:
+  test:
+    name: Contract tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the toolchain image
+        run: docker build --pull -t "$IMAGE:ci" tests/antipatterns/toolchain
+
+      - name: Contract tests
+        run: |
+          echo "image: $IMAGE@$(docker image inspect "$IMAGE:ci" --format '{{.Id}}')"
+          docker run --rm -v "$PWD:/work:ro" -e PYTHONDONTWRITEBYTECODE=1 "$IMAGE:ci" \
+            python -m unittest discover -s tests/contracts -v
