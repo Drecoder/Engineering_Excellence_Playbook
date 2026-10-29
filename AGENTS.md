@@ -204,6 +204,11 @@ Telemetry ships with the first line of code, not after the feature works (see
 - **Every failure and near miss gets an incident record** in the affected repo's `docs/incidents/`,
   in the post-mortem format (`00_UniversalStandards/03_Post_Mortem_Template.md`), with checkable
   evidence pointers (run IDs, log queries, trace IDs, PRs).
+- **Every finding is journaled.** A defect, a gap between a written rule and what runs, or a check
+  shown to work gets a dated entry in the proof journal (`docs/POC_JOURNAL.md`): the rule that
+  applied, how it was found, the evidence, what changed, and its status. Entries are added, never
+  rewritten. Each program increment's re-grade and case study read from it. When the notepad runs,
+  the journal moves into its filing system as sealed records.
 
 ## Governance Rules
 
