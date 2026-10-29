@@ -102,7 +102,7 @@ def summary(result: dict) -> str:
         "| :--- | :--- |",
         f"| Findings | {m['findings']} ({m['open']} open: {sev}) |",
         f"| Control classes proven to fail on their defect | {m['controls_proven']} of {m['controls_total']} ({pct(m['controls_proven'], m['controls_total'])}) |",
-        f"| Findings caught by a control, not a person | {m['detected_by_control']} of {m['findings']} ({pct(m['detected_by_control'], m['findings'])}) |",
+        f"| Findings recorded as caught by a control (attribution set by hand, not verified) | {m['detected_by_control']} of {m['findings']} ({pct(m['detected_by_control'], m['findings'])}) |",
         f"| Mean days from found to closed | {m['mean_days_to_close']} |",
         f"| Overdue | {m['overdue']} |",
         f"| Production ready | {'yes' if result['production_ready'] else 'no'} |",

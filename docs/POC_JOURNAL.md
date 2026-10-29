@@ -393,3 +393,30 @@ journal entries are unchanged.
   proven, production ready: no.
 - **Evidence:** #42, #44, #38; the runs above.
 - **Status:** proven.
+
+## 2026-10-29: The control-catch metric measures a recorded attribution
+
+- **Rule:** a claim counts only as far as its evidence goes: the playbook's principle that a rule
+  counts only when it is enforced and running (`docs/PROGRAM_INCREMENTS.md`), applied to a metric.
+- **Problem:** the register reports the share of findings "caught by a control rather than a
+  person" (6 of 18 on `main`). That number counts the register's `detected_by` field, which is set
+  by hand for each finding; nothing checks it against the entry's detection evidence. It measures
+  recorded attribution, not verified detection effectiveness.
+- **Detection:** review of PR #46's wording before merge.
+- **Root cause:** the metric was defined from a field that is easy to record and hard to verify,
+  and the wording described what the field means rather than how it is set.
+- **Correction:** the README and the journal's preamble now say the share is "recorded as caught by
+  a control", an attribution recorded by hand (#46, `f7f9410`); the run summary's label says the
+  same; F-0017's register row carries the limitation as a residual. F-0017's own entry keeps its original wording, as the append-only rule
+  requires.
+- **Preventive action (planned, not implemented):** a finding attributed to a control will have to
+  name the control (its id in the register's control list), the run that reported it, and the line
+  in that run's output that reports this defect. The register check will look the run up and refuse
+  the attribution unless that run failed in that control's job and its output contains the line.
+  Even then, it shows that the control reported this defect in that run, not that the control
+  catches every instance; that is what each control's designed-to-fail proof is for. Until this is
+  implemented and tested, the share stays labelled as an unverified attribution.
+- **Verification:** pending: the preventive action, once implemented, needs a case that must fail
+  (a control attribution with no run, or with a run that did not fail) and one that must pass.
+- **Evidence:** #46; the register check's output on `main`.
+- **Status:** open until the preventive action is implemented and that verification passes.

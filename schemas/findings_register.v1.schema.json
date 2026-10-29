@@ -35,7 +35,7 @@
         "severity": { "enum": ["critical", "high", "medium", "low"] },
         "detected_by": {
           "enum": ["control", "person"],
-          "description": "control: a check, scanner, or test reported it; person: someone looking found it. The share found by controls is a control-effectiveness metric."
+          "description": "control: a check, scanner, or test reported it; person: someone looking found it. Set by hand and not yet verified against evidence: the share recorded as found by controls is reported as an attribution, not as verified detection effectiveness."
         },
         "found": { "type": "string", "format": "date" },
         "due": { "type": "string", "format": "date" },
