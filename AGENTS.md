@@ -210,6 +210,18 @@ Telemetry ships with the first line of code, not after the feature works (see
   action, verification, evidence, and status. Entries are added, never rewritten. Each program
   increment's re-grade and case study read from it. When the notepad runs, the journal moves into
   its filing system as sealed records.
+- **Every finding is ranked, timed, and tracked to closure** in the CAPA register
+  (`docs/FINDINGS_REGISTER.json`, contract `findings_register.v1`): a category, a severity on the
+  contract's written rubric, a due date, status, closure date, and verification. Remediation
+  deadlines are mandatory: critical 7 days, high 30, medium 90, low 180 from the day it was found.
+  CI refuses a later due date, and an overdue open finding fails the daily run.
+- **Control effectiveness is measured, not assumed.** Every run reports the share of control
+  classes proven to fail on their defect, the share of findings caught by a control rather than a
+  person, open findings by severity, and days to close. A control counts as proven only with a
+  designed-to-fail case.
+- **Governance closes before production.** No production operation while any critical or high
+  finding in the security or governance category is open: the register reports production
+  readiness, and the deployment guard is to refuse a production deploy while it is false.
 
 ## Governance Rules
 

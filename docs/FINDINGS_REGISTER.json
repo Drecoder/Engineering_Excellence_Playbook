@@ -1,0 +1,275 @@
+{
+  "schema_version": "findings_register.v1",
+  "findings": [
+    {
+      "id": "F-0001",
+      "journal": "## 2026-10-28: The prototype never produced any audio",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2027-01-26",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "coqui-tts fd4d39c, 57e51ba; reports/phase1-equivalence-20261028T061544Z.json passes"
+    },
+    {
+      "id": "F-0002",
+      "journal": "## 2026-10-28: A model loader that writes broke on a read-only root",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2027-01-26",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "coqui-tts 57e51ba; hardened run: 4 of 4 slides, exit 0"
+    },
+    {
+      "id": "F-0003",
+      "journal": "## 2026-10-28: A CRITICAL CVE in the speech engine's runtime",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2026-11-04",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "coqui-tts 4ce148f; Trivy no longer reports CVE-2025-32434"
+    },
+    {
+      "id": "F-0004",
+      "journal": "## 2026-10-28: The license gate found no licenses",
+      "category": "supply-chain",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2026-11-27",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "sovereign-vpc-gcp #31 e323a06; agent-notepad: 130 packages, all licensed"
+    },
+    {
+      "id": "F-0005",
+      "journal": "## 2026-10-28: The license gate carried a copy of the contract",
+      "category": "reuse",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2027-04-26",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "sovereign-vpc-gcp #31 8a6a506; same verdicts, denied-license fixture still blocks"
+    },
+    {
+      "id": "F-0006",
+      "journal": "## 2026-10-28: Telemetry code copied across services",
+      "category": "reuse",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2027-04-26",
+      "status": "open"
+    },
+    {
+      "id": "F-0007",
+      "journal": "## 2026-10-28: An image scan that ran out of disk passed for the expected CVE block",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2026-11-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "coqui-tts INC-001; run 40808933067; disk preflight cases on a real runner, sovereign-vpc-gcp #35"
+    },
+    {
+      "id": "F-0008",
+      "journal": "## 2026-10-28: The central gate type-checked tests before installing pytest",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2027-01-26",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "sovereign-vpc-gcp INC-007; fixture fails on the old gate (run 40808542665), passes on the fixed one (run 40808502279)"
+    },
+    {
+      "id": "F-0009",
+      "journal": "## 2026-10-29: A CRITICAL CVE removed at its source, not excepted",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "control",
+      "found": "2026-10-29",
+      "due": "2026-11-05",
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "coqui-tts 749889f; reports/phase1-equivalence-20261029T022705Z.json; image findings 749 to 214, CRITICAL 0",
+      "residual": "the source-built ffmpeg is watched by version only (F-0015)"
+    },
+    {
+      "id": "F-0010",
+      "journal": "## 2026-10-29: The central gate's checks proven to fail",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "sovereign-vpc-gcp #34, #35, #37",
+      "residual": "8 of the gate's control classes are not yet proven (see controls)"
+    },
+    {
+      "id": "F-0011",
+      "journal": "## 2026-10-29: A public repository could not call the private gate",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "control",
+      "found": "2026-10-29",
+      "due": "2026-11-28",
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "Genesis #3: the gate now runs on Genesis (run 40887705962)"
+    },
+    {
+      "id": "F-0012",
+      "journal": "## 2026-10-29: A cloud project outside the organization",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2026-11-28",
+      "status": "open"
+    },
+    {
+      "id": "F-0013",
+      "journal": "## 2026-10-29: A long-lived administrator key on a standalone AWS account",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2026-11-05",
+      "status": "open"
+    },
+    {
+      "id": "F-0014",
+      "journal": "## 2026-10-29: The journal's append-only rule was not enforced",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "journal check: run 40904223442 passes; #43 (an edited entry) fails, run 40904315387",
+      "residual": "immutability against an administrator waits for the notepad's hash-chained records"
+    },
+    {
+      "id": "F-0015",
+      "journal": "## 2026-10-29: The source-built ffmpeg is watched by version only",
+      "category": "supply-chain",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "open"
+    },
+    {
+      "id": "F-0016",
+      "journal": "## 2026-10-29: INC-002's prevention was only an alert",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2026-11-28",
+      "status": "open"
+    },
+    {
+      "id": "F-0017",
+      "journal": "## 2026-10-29: Findings had no risk ranking or deadline",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "CI run 40905982806 (register check and metrics); 29 tests, four mutants caught; contract tests pass",
+      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run"
+    }
+  ],
+  "controls": [
+    {
+      "id": "C-001",
+      "name": "Python: tests type-checked before pytest is installed",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #34"
+    },
+    {
+      "id": "C-002",
+      "name": "Image: a CRITICAL finding in the runtime image blocks",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #37"
+    },
+    {
+      "id": "C-003",
+      "name": "Image rule: every service ships an image or declares why not",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #36, image-declared cases"
+    },
+    {
+      "id": "C-004",
+      "name": "Disk preflight: an unmeetable need fails at once",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #35"
+    },
+    {
+      "id": "C-005",
+      "name": "Journal: an edited, deleted, or reordered entry is refused",
+      "proven": true,
+      "evidence": "#43, run 40904315387"
+    },
+    {
+      "id": "C-006",
+      "name": "TypeScript path of the gate",
+      "proven": false
+    },
+    {
+      "id": "C-007",
+      "name": "Go path of the gate",
+      "proven": false
+    },
+    {
+      "id": "C-008",
+      "name": "Coverage floor blocks below the floor",
+      "proven": false
+    },
+    {
+      "id": "C-009",
+      "name": "License gate refuses a denied license, inside the self-test",
+      "proven": false
+    },
+    {
+      "id": "C-010",
+      "name": "Gitleaks refuses a committed secret",
+      "proven": false
+    },
+    {
+      "id": "C-011",
+      "name": "trivy fs blocks a CRITICAL dependency",
+      "proven": false
+    },
+    {
+      "id": "C-012",
+      "name": "Semgrep blocks an ERROR finding",
+      "proven": false
+    },
+    {
+      "id": "C-013",
+      "name": "HCL checks and SEC-* policies block",
+      "proven": false
+    }
+  ]
+}

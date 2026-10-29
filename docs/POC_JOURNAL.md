@@ -32,6 +32,28 @@ the first seven entries were restated in this format; their facts did not change
 This file is the journal until the notepad runs (`06_AgentZone/07_Agent_Notepad.md`); then the
 journal moves into the notepad's filing system, where each entry is a sealed, hash-chained record.
 
+## The CAPA register: risk, deadlines, and closure
+
+The journal is the immutable record; the **[CAPA register](FINDINGS_REGISTER.json)** is each
+finding's living status: one row per entry, with its category, severity, due date, status, closure
+date, and verification (contract `schemas/findings_register.v1.schema.json`). CI checks both on
+every pull request and every day.
+
+| Severity | Means | Deadline |
+| :--- | :--- | :--- |
+| **Critical** | An exploitable security exposure, or a control that admits what it must refuse | 7 days |
+| **High** | A control that silently does not run or checks nothing, or a governance gap that removes a guardrail | 30 days |
+| **Medium** | A defect or a missing proof, with a working control around it | 90 days |
+| **Low** | Maintainability or reuse | 180 days |
+
+- **Deadlines are mandatory.** A due date past its severity's deadline is refused, and an open
+  finding past its due date fails the daily run.
+- **Control effectiveness is measured.** Every run's summary reports the share of control classes
+  proven to fail on their defect, the share of findings caught by a control rather than a person,
+  open findings by severity, and days to close.
+- **Governance closes before production.** Production readiness is false while any critical or
+  high security or governance finding is open; no production operation until it is true.
+
 ---
 
 ## 2026-10-28: The prototype never produced any audio
@@ -298,3 +320,32 @@ journal moves into the notepad's filing system, where each entry is a sealed, ha
 - **Verification:** pending; the organization does not exist yet.
 - **Evidence:** INC-002.
 - **Status:** open.
+
+## 2026-10-29: Findings had no risk ranking or deadline
+
+- **Rule:** a finding is closed by verified correction and prevention (CAPA); regulated quality
+  systems also require risk ranking, remediation timelines, measured control effectiveness, and
+  governance closure before production.
+- **Problem:** six findings were open with no severity and no deadline, nothing measured whether
+  the controls work, and nothing stopped production operation with a critical finding open.
+- **Detection:** an external review placing the journal against regulated-industry practice.
+- **Root cause:** the CAPA format recorded each finding's content but not its risk or its time, and
+  the journal, being append-only, cannot carry a status that changes.
+- **Correction:** the CAPA register (`docs/FINDINGS_REGISTER.json`, contract
+  `findings_register.v1`): one row per journal entry, with a category, a severity on a written
+  rubric, a due date, status, closure, and verification, plus the gate's control classes and
+  whether each is proven.
+- **Preventive action:** CI checks that every journal entry has a row and every due date is within
+  its severity's deadline (critical 7 days, high 30, medium 90, low 180); an overdue open finding
+  warns on pull requests and fails the daily run; every run reports the control-effectiveness
+  metrics and production readiness, which is false while any critical or high security or
+  governance finding is open.
+- **Verification:** 29 tests pass, and four broken versions of the rules (no deadline check,
+  always ready, overdue never fails, no row check) each fail them; the contract tests pass with
+  the toolchain's pins. CI run 40905982806 reports 17 findings, 6 open, 5 of 13 control classes
+  proven, 6 of 17 findings caught by a control, and production ready: no (the AWS key, the cloud
+  project, INC-002's prevention). The daily failure on an overdue finding is proven by test, not
+  yet by a real overdue run.
+- **Evidence:** `docs/FINDINGS_REGISTER.json`, `tests/journal/register.py`,
+  `schemas/findings_register.v1.schema.json`.
+- **Status:** fixed.

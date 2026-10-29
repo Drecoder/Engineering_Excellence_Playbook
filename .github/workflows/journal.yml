@@ -6,12 +6,19 @@
 # direct push that rewrites the journal still turns red. It does not make the journal immutable:
 # anyone who can bypass branch protection or edit this workflow can still rewrite history. That
 # guarantee waits for the notepad's hash-chained, sealed records.
+#
+# It also checks the CAPA register (docs/FINDINGS_REGISTER.json): a row per journal entry, every due
+# date within its severity's deadline, and the control-effectiveness metrics and production
+# readiness in the run summary. An overdue open finding warns on a pull request and fails the daily
+# run, so a deadline cannot pass silently.
 name: Journal append-only
 
 on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "23 7 * * *"
 
 permissions:
   contents: read
@@ -57,3 +64,9 @@ jobs:
           docker run --rm -v "$PWD:/work:ro" -v "$RUNNER_TEMP/journal:/base:ro" -w /work \
             -e PYTHONDONTWRITEBYTECODE=1 "$PYTHON_IMAGE" \
             python tests/journal/journal_append_only.py /base/base.md "$JOURNAL"
+
+      - name: CAPA register (rows, deadlines, metrics, production readiness)
+        env:
+          MODE: ${{ github.event_name == 'schedule' && 'scheduled' || 'pr' }}
+        run: |
+          docker run --rm -v "$PWD:/work:ro" -v "$GITHUB_STEP_SUMMARY:/summary.md" -w /work             -e PYTHONDONTWRITEBYTECODE=1 -e GITHUB_STEP_SUMMARY=/summary.md "$PYTHON_IMAGE"             python tests/journal/register.py "$JOURNAL" docs/FINDINGS_REGISTER.json --mode "$MODE"
