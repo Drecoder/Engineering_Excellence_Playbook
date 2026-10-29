@@ -237,3 +237,62 @@ journal moves into the notepad's filing system, where each entry is a sealed, ha
 - **Verification:** pending.
 - **Evidence:** INC-002.
 - **Status:** open.
+
+## 2026-10-29: The journal's append-only rule was not enforced
+
+- **Rule:** every finding is journaled, and entries are added, never rewritten (`AGENTS.md` →
+  Observability Rules).
+- **Problem:** the rule was a sentence. Any pull request could edit, delete, or reorder entries, and
+  nothing would notice.
+- **Detection:** an external review of the journal.
+- **Root cause:** the rule was written before any check for it existed, and the notepad's sealed
+  records, which would enforce it, are not running yet.
+- **Correction:** a check that compares the journal before and after every change: base entries
+  must stay byte for byte, in order, and new ones may only follow them
+  (`tests/journal/journal_append_only.py`).
+- **Preventive action:** it runs on every pull request and every push to `main`, in a Python image
+  pinned by digest (`.github/workflows/journal.yml`), with a fixture for each allowed and each
+  forbidden change.
+- **Verification:** 14 tests pass; a checker broken to allow everything fails 6 of them; the real
+  journal passes against itself, and this entry's own pull request passes it.
+- **Limitation:** this enforces the rule for changes that go through pull requests. It does not make
+  the journal immutable: anyone who can bypass branch protection or edit the workflow can still
+  rewrite history, and until branch protection is on, a direct push is only detected (the run on
+  `main` turns red), not prevented. Immutability waits for the notepad's hash-chained records.
+- **Evidence:** `.github/workflows/journal.yml`, `tests/journal/`.
+- **Status:** enforced on pull requests; immutability open.
+
+## 2026-10-29: The source-built ffmpeg is watched by version only
+
+- **Rule:** a component built from source is invisible to scanners, so it is pinned by checksum and
+  tracked against its upstream security channel (`AGENTS.md` → Supply Chain Rules).
+- **Problem:** the daily check compares the version with Debian's security release, and nothing
+  else. It would miss an advisory against FFmpeg 7.1.5 that Debian has not shipped, a change in our
+  build configuration, and the built binary itself. The 16 byte-identical MP3s prove the output is
+  equivalent for those inputs, not that the build is equally secure.
+- **Detection:** an external review.
+- **Root cause:** the check was designed to replace Debian's package tracking, and Debian's version
+  is only one signal of it.
+- **Correction:** none yet.
+- **Preventive action:** the daily run also looks up advisories for FFmpeg at the pinned version,
+  and CI records and verifies the build's configure flags and the binary's checksum.
+- **Verification:** pending.
+- **Evidence:** coqui-tts `.github/workflows/ffmpeg-current.yml`, `749889f`.
+- **Status:** open.
+
+## 2026-10-29: INC-002's prevention was only an alert
+
+- **Rule:** a preventive action prevents; detection alone is not prevention (CAPA). Never static
+  keys (`AGENTS.md` → Security Rules).
+- **Problem:** INC-002's preventive action was a set of AWS Config rules. They report a long-lived
+  key; they neither remove it nor limit what it can do.
+- **Detection:** an external review.
+- **Root cause:** the prevention was written as detection.
+- **Correction:** INC-002 now names enforcement: once the account is in an organization, a service
+  control policy that denies creating IAM users and access keys, with one documented break-glass
+  path; the Config rules stay, as detection.
+- **Preventive action:** each preventive action in an incident record states whether it prevents
+  or detects.
+- **Verification:** pending; the organization does not exist yet.
+- **Evidence:** INC-002.
+- **Status:** open.

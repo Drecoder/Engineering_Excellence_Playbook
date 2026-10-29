@@ -53,5 +53,5 @@
 | Finish the organization: a management account, this account invited, IAM Identity Center with MFA; switch the CLI to `aws sso login` | Drecoder | 2026-11-05 | Open |
 | Deactivate the access key, confirm nothing breaks (its last use was CloudFormation), then delete it and the user's `admin` group membership | Drecoder | After SSO works | Open |
 | Inspect the account's second IAM user the same way | Drecoder | 2026-11-05 | Open |
-| **Add the missing signal:** AWS Config rules `access-keys-rotated`, `iam-user-mfa-enabled`, and `iam-user-unused-credentials-check`, with findings routed as alerts | platform | With the organization | Open |
-| Apply the governance baseline's service control policies to the account once it is in the organization (Genesis) | platform | With the organization | Open |
+| **Prevent (enforcement):** a service control policy on the account, once it is in the organization, that denies creating IAM users and access keys, with one documented break-glass path; applied by Genesis from the governance baseline | platform | With the organization | Open |
+| **Detect (the missing signal):** AWS Config rules `access-keys-rotated`, `iam-user-mfa-enabled`, and `iam-user-unused-credentials-check`, with findings routed as alerts. Detection only: an alert neither removes a key nor limits it | platform | With the organization | Open |
