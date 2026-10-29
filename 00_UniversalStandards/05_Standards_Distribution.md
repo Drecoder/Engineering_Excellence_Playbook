@@ -29,8 +29,10 @@ of an absolute path are a convenience only.
 
 ## 2️⃣ Design: Dependency Inversion
 
-The playbook **publishes**; consumers **declare a dependency**. Nothing in the playbook lists
-consumer repos.
+The playbook **publishes**; consumers **declare a dependency**. The playbook depends on no
+consumer repo: it never reads, imports, or pins one. It describes the software factory's own
+repositories (`07_SoftwareFactory/01_Software_Factory.md`) because the factory is part of how we
+build; any other consumer stays unlisted.
 
 | Concern | Owned by |
 | :--- | :--- |

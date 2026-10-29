@@ -59,6 +59,8 @@ Engineering_Excellence_Playbook/
 ├── 04_OperationalRunbooks/  # Rollbacks, incident response, alert thresholds
 ├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
 ├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks
+├── 07_SoftwareFactory/      # Capstone: the factory's repositories and how they work together
+├── ARCHITECTURE.md          # Platform map: layers, path of a change, trust boundaries, status
 ├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
 ├── metrics/promql/          # Master Metric Index (PromQL constants)
 ├── templates/consumer/      # Files a consumer repo copies to depend on the playbook
@@ -77,4 +79,5 @@ Engineering_Excellence_Playbook/
 4. Reference **OperationalRunbooks** for reactive flows (rollbacks, monitoring).
 5. Consult **Metadata** for high-level decision frameworks (Red/Green logic, Two Sides of the Coin, least privilege).
 6. Use **AgentZone** when building or changing an AI agent (contracts, guardrails, risk routing).
-7. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.
+7. Finish with **SoftwareFactory**, the capstone — the workshop where every zone's rules are used together.
+8. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.

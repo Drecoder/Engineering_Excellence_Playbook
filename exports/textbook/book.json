@@ -739,6 +739,35 @@
           ]
         }
       ]
+    },
+    {
+      "title": "Capstone: The Software Factory",
+      "intro": "The workshop where every earlier part is used at once: the factory's repositories, what each one does, and how they hand work to one another.",
+      "chapters": [
+        {
+          "title": "The Software Factory",
+          "sources": [
+            "07_SoftwareFactory/01_Software_Factory.md"
+          ],
+          "objectives": [
+            "Map each zone of the playbook to the bench in the factory that applies it",
+            "Name each factory repository, its kind (rules, infrastructure, actor, tool, service), and what it takes in and puts out",
+            "Trace a change from approved spec to deployed digest across the benches",
+            "Explain why the playbook describes the factory but depends on none of its repositories"
+          ],
+          "takeaways": [
+            "The playbook says how we build; the factory is the workshop where it is done, for anything.",
+            "Every bench is its own identity, and none approves its own work.",
+            "Contracts live only in the playbook; benches vendor them and never redefine them.",
+            "The factory is held to its own rules: a bench that cannot meet the playbook is not built."
+          ],
+          "questions": [
+            "Which bench would you change to add a new kind of evidence to a release, and which contracts move with it?",
+            "Genesis is public and the CI factory is private. What does that cost, and what are the ways out?",
+            "Most handoffs are still pull requests or in-process calls. Which one would you move onto the event backbone first, and why?"
+          ]
+        }
+      ]
     }
   ],
   "appendices": [
