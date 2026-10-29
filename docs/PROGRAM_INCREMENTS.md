@@ -181,12 +181,6 @@ Recorded here until decided, each by a reviewed change to this document:
 
 - **PI length:** two weeks while most work is hand-built, or four to six weeks once the agent loop
   and pilot users take part.
-- **Approver identity:** GitHub forbids approving your own pull request, and with one maintainer
-  every change is authored by that maintainer, so "require an approving review" cannot be met
-  (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`). The factory's developers are its
-  agents; the person is the approver. Recommended: each agent authors under its own identity (a
-  GitHub App, free: the Builder, and the coding assistant for hand-built work), and the person
-  approves and merges, as the factory's design intends.
 
 ## Decided
 
@@ -194,6 +188,11 @@ Each was decided by the reviewed change that moved it here.
 
 - **Branch protection route (2026-10-29): a paid plan.** GitHub Pro; every factory repository
   stays private, and only the playbook is public.
+- **Approver identity (2026-10-29): each agent is its own GitHub App, keys in Cloud KMS.** The
+  agents are the factory's developers and the person approves; GitHub forbids self-approval, so
+  the Builder, Reviewer, and Assistant act as their own Apps, and `main` requires the person's
+  code-owner review. Each App's private key is non-exportable in Cloud KMS and signs only through
+  the agent's federated identity (`06_AgentZone/01_Agent_Standards.md` §8).
 - **Branch protection timing (2026-10-29): full protection in one step, once the agents' Apps
   exist.** A required review, the gate checks, no bypass for admins, and no force-push or deletion,
   all at once. No partial baseline first: while changes are still authored as the person, a review
