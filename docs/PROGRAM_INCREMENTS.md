@@ -157,6 +157,13 @@ not worked around, excepted, or archived: the agent loop takes them as its work 
 gate green through the same specs, pull requests, and human-approved merges as any change. The
 bootstrap slice's pull requests merge once that gate is green.
 
+**Two traces, because Genesis ships no image.** The Genesis run proves the loop and the
+infrastructure path: spec, Builder, Reviewer, gate, a human-approved merge, then plan and apply. It
+cannot prove artifact provenance or deployment admission, because Genesis builds no artifact. The
+release path (a published digest with its SBOM, signature, and provenance, the compliance decision
+bound to it, and an admitted deploy) is proven by a second trace on a service that ships an image.
+P0 needs both, each with its failed and successful runs and the exact digests.
+
 ### P1: the economics, measured
 
 The objective is the cost of a safely accepted change, not token usage. On comparable tasks with the
