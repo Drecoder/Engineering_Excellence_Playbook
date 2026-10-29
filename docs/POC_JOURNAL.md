@@ -340,7 +340,12 @@ every pull request and every day.
   warns on pull requests and fails the daily run; every run reports the control-effectiveness
   metrics and production readiness, which is false while any critical or high security or
   governance finding is open.
-- **Verification:** pending this change's own runs.
+- **Verification:** 29 tests pass, and four broken versions of the rules (no deadline check,
+  always ready, overdue never fails, no row check) each fail them; the contract tests pass with
+  the toolchain's pins. CI run 40905982806 reports 17 findings, 6 open, 5 of 13 control classes
+  proven, 6 of 17 findings caught by a control, and production ready: no (the AWS key, the cloud
+  project, INC-002's prevention). The daily failure on an overdue finding is proven by test, not
+  yet by a real overdue run.
 - **Evidence:** `docs/FINDINGS_REGISTER.json`, `tests/journal/register.py`,
   `schemas/findings_register.v1.schema.json`.
-- **Status:** open until its runs are recorded.
+- **Status:** fixed.

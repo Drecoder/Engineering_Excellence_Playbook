@@ -194,22 +194,82 @@
       "detected_by": "person",
       "found": "2026-10-29",
       "due": "2027-01-27",
-      "status": "open"
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "CI run 40905982806 (register check and metrics); 29 tests, four mutants caught; contract tests pass",
+      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run"
     }
   ],
   "controls": [
-    { "id": "C-001", "name": "Python: tests type-checked before pytest is installed", "proven": true, "evidence": "sovereign-vpc-gcp #34" },
-    { "id": "C-002", "name": "Image: a CRITICAL finding in the runtime image blocks", "proven": true, "evidence": "sovereign-vpc-gcp #37" },
-    { "id": "C-003", "name": "Image rule: every service ships an image or declares why not", "proven": true, "evidence": "sovereign-vpc-gcp #36, image-declared cases" },
-    { "id": "C-004", "name": "Disk preflight: an unmeetable need fails at once", "proven": true, "evidence": "sovereign-vpc-gcp #35" },
-    { "id": "C-005", "name": "Journal: an edited, deleted, or reordered entry is refused", "proven": true, "evidence": "#43, run 40904315387" },
-    { "id": "C-006", "name": "TypeScript path of the gate", "proven": false },
-    { "id": "C-007", "name": "Go path of the gate", "proven": false },
-    { "id": "C-008", "name": "Coverage floor blocks below the floor", "proven": false },
-    { "id": "C-009", "name": "License gate refuses a denied license, inside the self-test", "proven": false },
-    { "id": "C-010", "name": "Gitleaks refuses a committed secret", "proven": false },
-    { "id": "C-011", "name": "trivy fs blocks a CRITICAL dependency", "proven": false },
-    { "id": "C-012", "name": "Semgrep blocks an ERROR finding", "proven": false },
-    { "id": "C-013", "name": "HCL checks and SEC-* policies block", "proven": false }
+    {
+      "id": "C-001",
+      "name": "Python: tests type-checked before pytest is installed",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #34"
+    },
+    {
+      "id": "C-002",
+      "name": "Image: a CRITICAL finding in the runtime image blocks",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #37"
+    },
+    {
+      "id": "C-003",
+      "name": "Image rule: every service ships an image or declares why not",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #36, image-declared cases"
+    },
+    {
+      "id": "C-004",
+      "name": "Disk preflight: an unmeetable need fails at once",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #35"
+    },
+    {
+      "id": "C-005",
+      "name": "Journal: an edited, deleted, or reordered entry is refused",
+      "proven": true,
+      "evidence": "#43, run 40904315387"
+    },
+    {
+      "id": "C-006",
+      "name": "TypeScript path of the gate",
+      "proven": false
+    },
+    {
+      "id": "C-007",
+      "name": "Go path of the gate",
+      "proven": false
+    },
+    {
+      "id": "C-008",
+      "name": "Coverage floor blocks below the floor",
+      "proven": false
+    },
+    {
+      "id": "C-009",
+      "name": "License gate refuses a denied license, inside the self-test",
+      "proven": false
+    },
+    {
+      "id": "C-010",
+      "name": "Gitleaks refuses a committed secret",
+      "proven": false
+    },
+    {
+      "id": "C-011",
+      "name": "trivy fs blocks a CRITICAL dependency",
+      "proven": false
+    },
+    {
+      "id": "C-012",
+      "name": "Semgrep blocks an ERROR finding",
+      "proven": false
+    },
+    {
+      "id": "C-013",
+      "name": "HCL checks and SEC-* policies block",
+      "proven": false
+    }
   ]
 }
