@@ -5,7 +5,9 @@ review inside guardrails, an independent authority decides what ships, and every
 
 This is the map. It shows how the pieces fit and what state each one is in; the rules for each
 piece live in the standard it links to, and `AGENTS.md` is the enforceable subset. Where this page
-and a standard disagree, the standard wins and this page is the bug.
+and a standard disagree, the standard wins and this page is the bug. The factory's repositories and
+how they work with one another are the playbook's capstone,
+`07_SoftwareFactory/01_Software_Factory.md`.
 
 **Status legend:** **Built** runs today. **Partial** runs, with named gaps. **Design** is the
 agreed target, not implemented. **Open** is an undecided question.
@@ -40,7 +42,8 @@ dashed outline is design, and red is refused.
 | Builder | `aws-builder-agent` | Actor: turns an approved task into a pull request | **Built** (PR-driven); compliance scoping skill **Design** |
 | Reviewer | `gcp-reviewer-agent` | Actor: reviews a pull request through lenses | **Built** (PR-driven); Vertex inference in review |
 | Intake (wizard, deep dives, grooming) | — | Requirement → approved spec | **Design** |
-| Compliance authority and deployment guard | — | Decide and sign releases; consume tokens at deploy | **Design** |
+| Compliance authority and deployment guard | `compliance-authority` | Decide and sign releases; consume tokens at deploy | **Partial**: CLI with local stores and keys; no network API, not in the deploy path |
+| Agent notepad | `agent-notepad` | Working memory for every agent and task | **Partial**: library with in-memory and local file backends |
 | Messaging backbone | Genesis modules (AWS first) | Object store, event stream, bridge, fan-out, work queues | **Design**: module specs pending for the agent loop |
 
 ## 3️⃣ The Path of a Change
@@ -55,9 +58,9 @@ dashed outline is design, and red is refused.
 | Review lenses | `06_AgentZone/04_Review_Lenses.md` | **Built**; architecture lens in review |
 | Review over events | `06_AgentZone/05_Review_Loop.md` | **Design**: today Builder and Reviewer exchange work through the pull request |
 | Merge conflicts: detect, route, resolve, check | `06_AgentZone/06_Merge_Conflicts.md` | **Design**: today a person resolves them, or asks a coding agent to |
-| Agent notepad: a folder per agent and task, sealed at each push | `06_AgentZone/07_Agent_Notepad.md` | **Design**: today agents run from the command line and notes live in transcripts |
+| Agent notepad: a folder per agent and task, sealed at each push | `06_AgentZone/07_Agent_Notepad.md` | **Partial**: the service core is built as a library; agents do not use it yet |
 | Merge | `AGENTS.md` → Agent Rules, Security Rules | **Built**: human approval via branch protection |
-| Evaluation, release token, deploy | `06_AgentZone/02_Compliance_Engine.md` | **Design** |
+| Evaluation, release token, deploy | `06_AgentZone/02_Compliance_Engine.md` | **Partial**: authority and guard built as a CLI; not yet in the deploy path |
 | Apply | `03_InfrastructureZone/01_IaC_Standards.md` | **Built**: post-merge pipeline with its own identity; agents only plan |
 
 ## 4️⃣ Trust Boundaries

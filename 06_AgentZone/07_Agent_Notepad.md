@@ -3,9 +3,10 @@
 *One place for every piece of work: each agent gets a notebook, each task a folder, and every push
 saves a read-only page.*
 
-**Status: design.** This is the agreed target; it is not implemented yet. Today agents run as
-command-line tools that take a spec in and return a result, and working notes live in chat
-transcripts, open tabs, and loose files that are never saved or cataloged.
+**Status: partial.** The service core is built as a library with in-memory and local file backends
+(`agent-notepad`); the network boundary, cloud storage, and question transitions are not. Agents do
+not use it yet: they run as command-line tools that take a spec in and return a result, and working
+notes live in chat transcripts, open tabs, and loose files that are never saved or cataloged.
 
 The notepad is a service that gives every agent on the platform its own folder, through the same
 injected interface (`Notepad`), the way the model is injected (`01_Agent_Standards.md` §4). It
