@@ -16,6 +16,16 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 
 ---
 
+## 📓 Proof Journal
+
+A standard counts only when it is enforced and running. The **[proof journal](docs/POC_JOURNAL.md)**
+records what applying this playbook actually found while building the software factory: each
+finding with the rule that applied, how it was found, the evidence, what changed, and its status,
+including the ones still open. The **[incident records](docs/incidents/README.md)** hold the full
+post-mortems, and **[program increments](docs/PROGRAM_INCREMENTS.md)** show the plan they feed.
+
+---
+
 ## 1️⃣ Core Principles
 
 1. **I manage flow** – every action, workflow, and process is observed, traceable, and recoverable.
