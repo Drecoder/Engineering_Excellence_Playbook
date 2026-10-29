@@ -30,7 +30,9 @@ Every zone of the playbook lands on a bench in the factory.
 
 ## 2️⃣ The Benches
 
-All repositories are under `Drecoder`. The playbook and Genesis are public; the others are private.
+All repositories are under `Drecoder`. The playbook is public: it is the public face of the work.
+Every factory repository is private, and one private repository can call another's reusable
+workflow, so all of them can call the private central gate.
 
 | Repository | Bench | Kind | Takes in | Puts out |
 | :--- | :--- | :--- | :--- | :--- |
@@ -52,7 +54,7 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 | From | To | Through | Status |
 | :--- | :--- | :--- | :--- |
 | Playbook | Every repository | `.playbook/`, synced by the playbook's action and checked byte-for-byte in CI | **Partial**: the Builder, notepad, and authority sync; the Reviewer and rig vendor without the sync workflow; Genesis and `sovereign-vpc-gcp` do not vendor |
-| Every repository | `sovereign-vpc-gcp` | `gates.yml`, called by full commit SHA | **Partial**: Genesis is public and cannot call the private factory |
+| Every repository | `sovereign-vpc-gcp` | `gates.yml`, called by full commit SHA | **Partial**: every factory repository calls it; Genesis since 2026-10-29, red on its legacy code |
 | Genesis | Platform and services | Governed projects, guardrails, messaging and storage modules | **Partial**: the bootstrap slice and modules are pending for the agent loop |
 | Intake | Builder | `spec.approved` on the Builder's queue; the spec is fetched by digest | **Design** |
 | Builder | Notepad | The injected `Notepad` interface; a seal at each push | **Partial**: a library with local backends, no network boundary |
