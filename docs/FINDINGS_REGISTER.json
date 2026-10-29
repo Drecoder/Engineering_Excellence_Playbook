@@ -163,7 +163,7 @@
       "due": "2027-01-27",
       "status": "proven",
       "closed": "2026-10-29",
-      "verification": "journal check: run 40904223442 passes; #43 (an edited entry) fails, run 40904315387",
+      "verification": "journal check on main: run 40906894231 at f2d8897; #43 (an edited entry) fails, run 40904315387",
       "residual": "immutability against an administrator waits for the notepad's hash-chained records"
     },
     {
@@ -196,8 +196,20 @@
       "due": "2027-01-27",
       "status": "fixed",
       "closed": "2026-10-29",
-      "verification": "CI run 40905982806 (register check and metrics); 29 tests, four mutants caught; contract tests pass",
+      "verification": "on main: run 40907358453 at c256d28 (register check and metrics), contract tests run 40907358223; 29 tests, four mutants caught",
       "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run"
+    },
+    {
+      "id": "F-0018",
+      "journal": "## 2026-10-29: The journal's controls run on main, and earlier findings were ranked",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "runs on main: 40906894231 (f2d8897), 40907358453 and 40907358223 (c256d28), 40907978656 (4c7d901)"
     }
   ],
   "controls": [
