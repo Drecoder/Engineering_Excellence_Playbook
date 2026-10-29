@@ -24,6 +24,18 @@ finding written up as a compact post-mortem in CAPA form (Corrective and Prevent
 rule, the problem, how it was found, the root cause, the correction, the preventive action, and the
 verification, including the findings still open.
 
+It is one living document with three roles, all feeding the same loop from standard to evidence and
+back:
+
+- **Engineering artifact:** the evidence-linked history of findings, fixes, and open work, so the
+  project's actual state is readable without reconstructing it from Git.
+- **Learning resource:** causal knowledge (what failed, why, how it was caught, how the fix was
+  verified) that a learning system can teach from.
+- **Feedback mechanism:** prior experience the factory's agents and future decisions weigh
+  against the playbook's standards and current evidence.
+
+The first role is in use today; the other two are designed and not yet wired.
+
 - **Append-only, enforced:** CI refuses any change that edits, deletes, or reorders an entry.
 - **Ranked and timed:** the **[CAPA register](docs/FINDINGS_REGISTER.json)** gives every finding a
   severity on a written rubric and a mandatory deadline (critical 7 days, high 30, medium 90, low
