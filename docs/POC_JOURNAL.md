@@ -1,81 +1,239 @@
 # Proof-of-Concept Journal
 
-*What applying the playbook actually found, in the order it was found, with the evidence for each.*
+*What applying the playbook actually found, in the order it was found, each written up as a
+compact post-mortem.*
 
 This journal is the factory's working record of proof. Each entry is a finding the playbook's rules
 surfaced in real work: a defect, a gap between a written rule and what runs, or a check shown to
 work. It feeds each program increment's re-grade (`docs/PROGRAM_INCREMENTS.md`) and the case study.
-Entries are added, never rewritten; a later entry corrects an earlier one. This file is the journal
-until the notepad runs (`06_AgentZone/07_Agent_Notepad.md`); then the journal moves into the
-notepad's filing system, where each entry is a sealed, hash-chained record.
 
-Each entry gives: the date, the playbook rule that applied, how it was found, the evidence (pull
-requests, workflow runs, incident records), what changed, and its status.
+## Format: CAPA
+
+Every entry follows **CAPA** (Corrective and Preventive Action), the quality-management form of a
+post-mortem: fixing the instance is not enough; the cause is found and the recurrence prevented.
+
+| Field | Answers |
+| :--- | :--- |
+| **Rule** | Which playbook rule applied |
+| **Problem** | What was wrong, and its impact |
+| **Detection** | How it was found, and whether a control or a person found it |
+| **Root cause** | Why it happened, not just what broke |
+| **Correction** | The immediate fix to this instance |
+| **Preventive action** | What stops it happening again: a check, a signal, or a rule |
+| **Verification** | Proof that the correction and the preventive action work |
+| **Evidence** | Pull requests, commits, workflow runs, reports, incident records |
+| **Status** | Open, fixed, or proven |
+
+A failure also gets a full post-mortem in the affected repository's `docs/incidents/`
+(`00_UniversalStandards/03_Post_Mortem_Template.md`); its entry here is the compact CAPA that points
+to it. Entries are added, never rewritten; a later entry corrects an earlier one. (On 2026-10-29
+the first seven entries were restated in this format; their facts did not change.)
+
+This file is the journal until the notepad runs (`06_AgentZone/07_Agent_Notepad.md`); then the
+journal moves into the notepad's filing system, where each entry is a sealed, hash-chained record.
 
 ---
+
+## 2026-10-28: The prototype never produced any audio
+
+- **Rule:** a refactor proves it changed no behavior before it changes any (the narration job's
+  Phase 1 exit check: same audio).
+- **Problem:** the text-to-speech prototype had never written an MP3 for any slide, and nothing
+  said so.
+- **Detection:** the equivalence check, run on the prototype and the refactored pipeline: both
+  failed every slide in the same way.
+- **Root cause:** the `vctk/vits` model is multi-speaker and refuses a request without a speaker.
+  Each failure was caught per slide and the job still exited 0, so a run that produced nothing
+  looked like a success.
+- **Correction:** a default speaker.
+- **Preventive action:** exit codes are now the contract (1 when any slide fails, 2 when the job
+  cannot start), and the equivalence check compares decoded audio and MP3 bytes for every slide,
+  applying the same one-line fix to a copy of the verbatim prototype.
+- **Verification:** the Phase 1 exit check passes; 7 unit tests at the time, 25 later.
+- **Evidence:** coqui-tts `fd4d39c`, `57e51ba`; `reports/phase1-equivalence-20261028T061544Z.json`.
+- **Status:** fixed.
+
+## 2026-10-28: A model loader that writes broke on a read-only root
+
+- **Rule:** containers are stateless with a read-only root filesystem (`AGENTS.md` → Container
+  Rules).
+- **Problem:** the job crashed when run as the cloud will run it.
+- **Detection:** the hardened run script: read-only root, no network, no capabilities.
+- **Root cause:** loading the model by name goes through a manager that rewrites `config.json` on
+  every load. The job had only ever run with a writable filesystem.
+- **Correction:** the model loads by path from the image.
+- **Preventive action:** the job is always run hardened (`scripts/run.sh`), the same way locally and
+  in the cloud.
+- **Verification:** hardened run: 4 of 4 slides saved, exit 0; a rerun skips all 4.
+- **Evidence:** coqui-tts `57e51ba`.
+- **Status:** fixed.
+
+## 2026-10-28: A CRITICAL CVE in the speech engine's runtime
+
+- **Rule:** CRITICAL or CISA KEV blocks (`AGENTS.md` → Security Rules).
+- **Problem:** CVE-2025-32434, code execution through `torch.load`, in the shipped torch 2.4.1.
+- **Detection:** Trivy on the runtime image.
+- **Root cause:** the pin predated the fix, and the central gate scanned only the repository's
+  files, not the built image, where the engine actually lives.
+- **Correction:** torch 2.6.0.
+- **Preventive action:** the image is scanned on every pull request (first in the repository's own
+  CI, now in the central gate's image job).
+- **Verification:** Trivy no longer reports it. The new numerics change the audio bytes, so
+  equivalence is held where it matters: the prototype and the pipeline on the same torch still
+  match exactly.
+- **Evidence:** coqui-tts `4ce148f`; `reports/phase1-equivalence-20261028T080820Z.json`.
+- **Status:** fixed.
+
+## 2026-10-28: The license gate found no licenses
+
+- **Rule:** licenses are checked against a reviewed policy (`AGENTS.md` → Supply Chain Rules);
+  verified means run.
+- **Problem:** the new license gate would have passed every repository while checking nothing:
+  against a TypeScript repository it found 19 "packages", none of them the npm dependencies.
+- **Detection:** running the gate against a real repository before merging it.
+- **Root cause:** a directory scan reads lockfiles and manifests by default, and they carry no
+  license metadata; the 19 were GitHub Actions and Go modules vendored inside `node_modules`.
+- **Correction:** each stack scans what it actually installed (an installed-package cataloger per
+  stack).
+- **Preventive action:** a gate check counts only after it has run on real repositories and on a
+  designed-to-fail case (a denied-license fixture).
+- **Verification:** agent-notepad: 130 packages, every one with a license; compliance-authority: 33,
+  with no vendored noise.
+- **Evidence:** sovereign-vpc-gcp #31, `e323a06`.
+- **Status:** fixed.
+
+## 2026-10-28: The license gate carried a copy of the contract
+
+- **Rule:** contracts have one home; a second copy of contract logic is forbidden (`AGENTS.md` →
+  Reuse Rules).
+- **Problem:** the gate re-implemented the playbook's reference license evaluator inline, so two
+  implementations could drift apart.
+- **Detection:** review of the new gate.
+- **Root cause:** copying was the quick way to get the evaluator into the gate; nothing flagged it.
+- **Correction:** the gate fetches the playbook's evaluator at a pinned commit and imports it.
+- **Preventive action:** the contract's test vectors are replayed on every run before any verdict
+  counts, so an evaluator that disagrees with its own contract stops the gate.
+- **Verification:** the same verdicts on agent-notepad; the denied-license fixture still blocks.
+- **Evidence:** sovereign-vpc-gcp #31, `8a6a506`.
+- **Status:** fixed.
+
+## 2026-10-28: Telemetry code copied across services
+
+- **Rule:** extract on the third copy (`AGENTS.md` → Reuse Rules).
+- **Problem:** the TypeScript telemetry setup exists in three services (Builder, Reviewer,
+  notepad); the Python setup is in two, and a third would follow.
+- **Detection:** review.
+- **Root cause:** each service set up telemetry before there was a home for shared packages.
+- **Correction:** none yet.
+- **Preventive action:** decide where shared packages live, then extract.
+- **Verification:** pending.
+- **Status:** open.
 
 ## 2026-10-28: An image scan that ran out of disk passed for the expected CVE block
 
 - **Rule:** read every red check's log (`AGENTS.md` → CI Rules).
-- **Found by:** reading the log of a check everyone expected to be red, 16 hours later.
-- **Evidence:** coqui-tts INC-001; runs 40656484883 (the failure) and 40808933067 (measured: 13 GB
-  free at start, an 11 GB peak).
-- **Changed:** a need-based disk preflight and a low-point report in every central gate job
-  (sovereign-vpc-gcp #35).
+- **Problem:** for 16 hours the image was not scanned at all, and nobody knew.
+- **Detection:** a person reading the log of a check everyone expected to be red.
+- **Root cause:** the job needs about 11 GB at its peak and a hosted runner starts with 13 GB free,
+  with the test image and build cache still on disk. The failed check carried no reason, and the
+  pull request had predicted a red check, so the real failure looked like the expected one.
+- **Correction:** delete unused toolchains and prune before the scan.
+- **Preventive action:** every central gate job starts with a need-based disk preflight and reports
+  its low point, warning under 5 GB; every red check's log is read.
+- **Verification:** run 40808933067 measured the need (low point 21 GB); the preflight's cases pass
+  on a real runner, including one that must fail.
+- **Evidence:** coqui-tts INC-001; runs 40656484883, 40808933067; sovereign-vpc-gcp #35.
 - **Status:** fixed and measured.
 
 ## 2026-10-28: The central gate type-checked tests before installing pytest
 
 - **Rule:** the factory tests itself; a skipped job is not a pass (`AGENTS.md` → CI Rules).
-- **Found by:** a consumer's red gate (coqui-tts #1). The fix (sovereign-vpc-gcp #32) merged before
-  its code path had run anywhere.
-- **Evidence:** sovereign-vpc-gcp INC-007; the fixture fails on the old gate (run 40808542665) and
-  passes on the fixed one (run 40808502279).
-- **Changed:** a Python fixture and a self-test on every gate change (sovereign-vpc-gcp #33).
+- **Problem:** any Python repository whose pytest is not a runtime dependency failed the gate; the
+  fix then merged before its code path had run anywhere.
+- **Detection:** a consumer's red gate (coqui-tts #1).
+- **Root cause:** step order: mypy ran before the test step installed pytest. The two other Python
+  repositories listed pytest as a runtime dependency, which hid it. The factory repository has no
+  Python, so its own gate skipped the changed job, and a skipped job looked like a pass.
+- **Correction:** pytest is installed before lint (sovereign-vpc-gcp #32).
+- **Preventive action:** a Python fixture, run by a self-test in both job layouts on every gate
+  change (sovereign-vpc-gcp #33).
+- **Verification:** the fixture fails on the old gate (run 40808542665) and passes on the fixed one
+  (run 40808502279).
+- **Evidence:** sovereign-vpc-gcp INC-007.
 - **Status:** fixed; the fixture proves it.
 
 ## 2026-10-29: A CRITICAL CVE removed at its source, not excepted
 
 - **Rule:** an image finding is fixed at its source, never excepted (`AGENTS.md` → Container Rules).
-- **Found by:** the image scan blocking on CVE-2026-6653 (libxml2). A time-boxed exception was
-  written, then rejected as a workaround.
-- **Evidence:** coqui-tts #1 and #2; the equivalence report shows all 16 MP3s byte-identical.
-- **Changed:** a minimal ffmpeg build; image findings 749 → 214 (CRITICAL 1 → 0); a daily check
-  that the source build keeps up with Debian's security releases.
+- **Problem:** CVE-2026-6653 (libxml2, CRITICAL, no Debian fix) blocked the image.
+- **Detection:** the image scan. A time-boxed exception was written first, then rejected as a
+  workaround.
+- **Root cause:** Debian's ffmpeg links about 60 optional libraries, libxml2 among them; the job
+  uses only WAV, MP3, and LAME.
+- **Correction:** a minimal ffmpeg built from the pinned upstream source.
+- **Preventive action:** a daily check that fails when Debian's security release moves past the
+  version the source build matches (scanners cannot see a source build); image findings take no
+  exceptions.
+- **Verification:** all 16 MP3s byte-identical to the Debian build; image findings 749 → 214,
+  CRITICAL 1 → 0.
+- **Evidence:** coqui-tts #1, #2; `reports/phase1-equivalence-20261029T022705Z.json`.
 - **Status:** fixed.
 
 ## 2026-10-29: The central gate's checks proven to fail
 
 - **Rule:** each check is shown to fail on the defect it guards against before it counts.
-- **Evidence:** a throwaway pull request with the pre-fix gate fails the Python fixture
-  (sovereign-vpc-gcp #34); one with a CRITICAL base image fails the image scan (#37); the disk
-  preflight's cases, including an unmeetable need, run on a real runner (#35).
+- **Problem:** a check that has never failed may not be checking anything.
+- **Detection:** the INC-007 review.
+- **Root cause:** checks were shown to pass, never to fail.
+- **Correction:** throwaway pull requests that reintroduce each defect.
+- **Preventive action:** the rule above, in `AGENTS.md` → CI Rules, and the self-test on every gate
+  change.
+- **Verification:** the pre-fix gate fails the Python fixture (sovereign-vpc-gcp #34); a CRITICAL
+  base image fails the image scan (#37); the disk preflight's unmeetable need fails on a real
+  runner (#35).
 - **Status:** proven.
 
 ## 2026-10-29: A public repository could not call the private gate
 
 - **Rule:** every repository calls the central gate by full commit SHA (`AGENTS.md` → CI Rules).
-- **Found by:** Genesis's gate run failing to start; its caller also pinned `@main`.
+- **Problem:** Genesis had no gate at all: its gate run failed to start.
+- **Detection:** the run's "workflow file issue" on Genesis #3.
+- **Root cause:** a public repository cannot call a private reusable workflow, and the factory's
+  repositories had mixed visibility. The caller also pinned `@main`, and nothing checked pins.
+- **Correction:** Genesis made private; its caller pinned to a full SHA.
+- **Preventive action:** one visibility for the whole factory (private), the playbook alone public.
+- **Verification:** the gate now runs on Genesis. It is red on legacy code, which the agent loop
+  takes to green as the first real workload.
 - **Evidence:** Genesis #3.
-- **Changed:** Genesis made private; one visibility for the factory, the playbook public. The
-  caller pinned to a full SHA.
-- **Status:** fixed. The gate now runs on Genesis and is red on legacy code; taking it to green
-  through the agent loop is the first real workload.
+- **Status:** fixed.
 
 ## 2026-10-29: A cloud project outside the organization
 
 - **Rule:** every cloud project lives in the governance hierarchy; a standalone project is a
   finding (`AGENTS.md` → Governance Rules).
-- **Found by:** checking where the registry could live (`gcloud projects list`).
-- **Evidence:** the project that holds the CI runners and their state has no parent organization.
-- **Changed:** nothing yet; the registry goes into a project Genesis vends inside the organization.
+- **Problem:** the project that holds the CI runners and their state has no parent organization,
+  so no organization policy applies to it.
+- **Detection:** checking where the registry could live.
+- **Root cause:** the project predates the organization, and nothing lists projects outside it.
+- **Correction:** none yet.
+- **Preventive action:** new infrastructure goes into projects Genesis vends inside the
+  organization; a check that lists projects without a parent.
+- **Verification:** pending.
 - **Status:** open.
 
 ## 2026-10-29: A long-lived administrator key on a standalone AWS account
 
 - **Rule:** SSO with MFA, never static keys (`AGENTS.md` → Security Rules); every account lives in
   the governance hierarchy.
-- **Found by:** checking the toolchain's identity before the first live-agent run.
+- **Problem:** the workstation's AWS profile used an IAM user's access key, about eleven months
+  old, with administrator access and no MFA, on an account in no organization.
+- **Detection:** a coding assistant checking the toolchain's identity before the first live-agent
+  run; no control reported it.
+- **Root cause:** the move to single sign-on was started but not finished, and nothing checks
+  identities against the rule.
+- **Correction:** none yet; the actions are the owner's.
+- **Preventive action:** AWS Config rules for key age, MFA, and unused credentials, routed as
+  alerts; the governance baseline once the account is in the organization.
+- **Verification:** pending.
 - **Evidence:** INC-002.
-- **Changed:** nothing yet; the actions are the owner's.
 - **Status:** open.
