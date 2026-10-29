@@ -64,7 +64,7 @@ The result is a smaller, deterministic, testable callable.
 | **Loop** | A Governor: max attempts, max turns, token budget, per-call timeout / `AbortSignal`, terminal `gave_up` status |
 | **Output contract** | Versioned JSON Schema (`<agent>.result.v<N>`), validated before it leaves the agent |
 | **Telemetry** | One trace per task; spans per model and tool call; metrics per `02_BackendZone/04_Telemetry_Standards.md` |
-| **Identity** | Short-lived federated credentials scoped to the agent's tools only |
+| **Identity** | Short-lived federated credentials scoped to the agent's tools only; on GitHub, its own App, whose key stays in Cloud KMS (§8) |
 
 ---
 
@@ -304,6 +304,43 @@ exhausting either ends the task as `gave_up` and escalates.
 
 The human sees one PR with the plan summary, remaining findings, rounds run and why the loop
 stopped, token cost, and a trace link.
+
+### Identities on GitHub
+
+The agents are the factory's developers; the person approves. GitHub forbids approving your own
+pull request, so each agent acts on GitHub as **its own GitHub App**, and the person's account
+authors nothing that it must also approve.
+
+| App | Does | Repository permissions (everything else: none) |
+| :--- | :--- | :--- |
+| **Builder** | Pushes branches and opens pull requests; sets labels | Contents: read and write; Pull requests: read and write; Checks: read; Commit statuses: read; Metadata: read |
+| **Reviewer** | Reads the change; posts review comments and findings; sets labels | Contents: read; Pull requests: read and write; Checks: read; Metadata: read |
+| **Assistant** (hand-built work, e.g. a coding assistant) | Same as the Builder, so hand-built and loop-built changes stay distinguishable in the record | Same as the Builder |
+
+- **Least privilege.** No App has Administration, Secrets, Actions, or Workflows permission. A
+  change to a workflow file therefore needs a person, until a reviewed change grants Workflows to
+  the Builder (its gap for Genesis, `docs/PROGRAM_INCREMENTS.md` Risks).
+- **Scoped installs.** Each App is installable only on the owner's account and installed on the
+  selected repositories it works on, never on all of them. Webhooks stay off: events reach the
+  factory through its own bus.
+- **The Reviewer advises; it never approves.** It submits comments or requested changes, never
+  `APPROVE`, and a test proves it cannot. `main` requires a code-owner review, and the person is
+  the code owner, so only the person's approval merges.
+- **The private key never leaves Cloud KMS.** An App authenticates by signing a short JWT (RS256)
+  with its private key, then exchanges it for an installation token that lasts one hour. The key is
+  imported into Cloud KMS as a non-exportable `RSA_SIGN_PKCS1_2048_SHA256` key, and the agent signs
+  through KMS with its own short-lived federated identity, the only principal holding
+  `cloudkms.signer` on that key. No agent, runner, or person holds the key file, so a compromised
+  agent can use the key only while it runs, never take it.
+- **One moment outside KMS.** GitHub generates the key and offers it once as a download. It is
+  imported into KMS at once, and the downloaded file is deleted; GitHub keeps only the public half.
+- **Every signature is logged.** Cloud KMS data-access audit logs are on for the key ring, so each
+  JWT signed names the identity, the key version, and the time.
+- **Rotation without downtime.** An App can hold two keys: generate a new one, import it as a new
+  key version, switch the agent to it, then delete the old key in GitHub and disable the old
+  version in KMS.
+- **Where it lives.** The key ring is part of Genesis's bootstrap slice, beside the deployment
+  guard's attestation key, as IaC.
 
 ---
 
