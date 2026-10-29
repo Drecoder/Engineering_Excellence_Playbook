@@ -1,0 +1,22 @@
+{
+  "schema_version": "review_disposition.v1",
+  "disposition_id": "6f1d2c3b-4a5e-4f60-9a71-8b2c3d4e5f60",
+  "review": {
+    "repo": "Drecoder/aws-builder-agent",
+    "pr_number": 21,
+    "head_sha": "3f66082a1b2c3d4e5f60718293a4b5c6d7e8f901",
+    "round": 1,
+    "task_id": "notepad-04-builder-adoption",
+    "spec_id": "agent-notepad",
+    "findings_sha256": "sha256:2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b"
+  },
+  "author": { "kind": "human", "subject": "github:Drecoder", "role": "maintainer" },
+  "submitted_at": "2026-10-28T14:05:00Z",
+  "dispositions": [
+    { "fingerprint": "sec:no-timeout:src/notepad/client.ts", "decision": "agree" },
+    { "fingerprint": "reuse:clone:src/telemetry/instrument.ts", "decision": "disagree", "reason": "Second copy only; the reuse rule extracts on the third." }
+  ],
+  "suggestions": [
+    { "summary": "Log the manifest digest on seal so the trace links to the commit trailer.", "file": "src/notepad/seal.ts", "start_line": 40 }
+  ]
+}

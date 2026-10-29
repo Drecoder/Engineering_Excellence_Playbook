@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "notepad_op.v1.schema.json",
+  "title": "notepad_op.v1",
+  "description": "One operation on the notepad service (06_AgentZone/07_Agent_Notepad.md). It names only the task and the file: the project, the agent, and whether the caller is a person or an agent come from the caller's token claims, never from the request, so an operation cannot address another project's or agent's folder. The service resolves the path inside that scoped root and enforces the file's region: people write the human region; the folder's agent appends to the agent region; tool output and inputs are written only by the service. op_id makes a retried operation change nothing. An invalid operation is rejected, not repaired.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "op_id", "op", "spec_id", "task_id"],
+  "properties": {
+    "schema_version": { "const": "notepad_op.v1" },
+    "op_id": { "type": "string", "format": "uuid", "description": "Idempotency key: a repeated op_id returns the first result." },
+    "op": { "enum": ["read", "list", "write", "append", "transition", "record_tool_output", "place_input", "seal", "lease_acquire", "lease_release"] },
+    "spec_id": { "$ref": "notepad_manifest.v1.schema.json#/$defs/id" },
+    "task_id": { "$ref": "notepad_manifest.v1.schema.json#/$defs/id" },
+    "path": { "$ref": "notepad_manifest.v1.schema.json#/$defs/path" },
+    "version": { "type": "integer", "minimum": 1, "description": "For read and list: a sealed version. Absent means the working copy." },
+    "region": { "enum": ["human", "agent_append", "tool_output", "inputs"] },
+    "content": { "type": "string", "maxLength": 1048576, "description": "Data, never instructions: it enters any prompt delimited as untrusted input." },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["block_id", "to"],
+      "properties": {
+        "block_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}(?!\n)$" },
+        "to": { "enum": ["answered", "accepted", "deferred"] }
+      },
+      "description": "A person's decision on a question block. Only the block's human owner may accept it, and never the person who answered it."
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "image_digest", "inputs_sha256"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([-+][0-9A-Za-z.-]+)?(?!\n)$" },
+        "image_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}(?!\n)$" },
+        "inputs_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}(?!\n)$" }
+      },
+      "description": "Enough to rerun the tool and get the same result."
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "object"],
+      "properties": {
+        "kind": { "enum": ["spec", "review_findings", "review_disposition", "merge_conflict"] },
+        "object": { "$ref": "claim_check.v1.schema.json" }
+      },
+      "description": "An object handed over by event; the service verifies its digest before placing it."
+    },
+    "lease": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "ttl_seconds"],
+      "properties": {
+        "branch": { "type": "string", "maxLength": 255, "pattern": "^(?!.*\\.\\.)(?!/)[A-Za-z0-9._/-]+(?<!/)(?!\n)$" },
+        "ttl_seconds": { "type": "integer", "minimum": 60, "maximum": 3600 }
+      },
+      "description": "One resolver at a time on a branch (06_AgentZone/06_Merge_Conflicts.md)."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "op": { "enum": ["write", "append"] } }, "required": ["op"] },
+      "then": {
+        "required": ["path", "region", "content"],
+        "properties": { "region": { "enum": ["human", "agent_append"] }, "transition": false, "tool": false, "input": false, "lease": false, "version": false }
+      }
+    },
+    {
+      "if": { "properties": { "op": { "const": "append" } }, "required": ["op"] },
+      "then": { "properties": { "region": { "const": "agent_append" } } }
+    },
+    {
+      "if": { "properties": { "op": { "const": "transition" } }, "required": ["op"] },
+      "then": { "required": ["path", "transition"], "properties": { "content": false, "tool": false, "input": false, "lease": false, "region": false, "version": false } }
+    },
+    {
+      "if": { "properties": { "op": { "const": "record_tool_output" } }, "required": ["op"] },
+      "then": { "required": ["path", "tool", "content"], "properties": { "region": { "const": "tool_output" }, "transition": false, "input": false, "lease": false, "version": false } }
+    },
+    {
+      "if": { "properties": { "op": { "const": "place_input" } }, "required": ["op"] },
+      "then": { "required": ["path", "input"], "properties": { "region": { "const": "inputs" }, "content": false, "transition": false, "tool": false, "lease": false, "version": false } }
+    },
+    {
+      "if": { "properties": { "op": { "enum": ["read", "list"] } }, "required": ["op"] },
+      "then": { "properties": { "content": false, "transition": false, "tool": false, "input": false, "lease": false, "region": false } }
+    },
+    {
+      "if": { "properties": { "op": { "const": "read" } }, "required": ["op"] },
+      "then": { "required": ["path"] }
+    },
+    {
+      "if": { "properties": { "op": { "const": "seal" } }, "required": ["op"] },
+      "then": { "properties": { "path": false, "content": false, "transition": false, "tool": false, "input": false, "lease": false, "region": false, "version": false } }
+    },
+    {
+      "if": { "properties": { "op": { "enum": ["lease_acquire", "lease_release"] } }, "required": ["op"] },
+      "then": { "required": ["lease"], "properties": { "path": false, "content": false, "transition": false, "tool": false, "input": false, "region": false, "version": false } }
+    }
+  ]
+}

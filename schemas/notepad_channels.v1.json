@@ -1,0 +1,33 @@
+{
+  "schema_version": "notepad_channels.v1",
+  "channels": [
+    {
+      "channel": "thought-log",
+      "description": "The agent's reasoning and progress for the task, appended in order. A claim, never evidence.",
+      "files": [{ "pattern": "thought-log.md", "region": "agent_append", "format": "markdown", "max_bytes": 1048576 }]
+    },
+    {
+      "channel": "questions",
+      "description": "Questions the agent raises for a person. The agent appends a question; the answer and its acceptance belong to the block's human owner.",
+      "files": [
+        { "pattern": "questions.md", "region": "agent_append", "format": "markdown", "max_bytes": 262144 },
+        { "pattern": "answers/*.md", "region": "human", "format": "markdown", "max_bytes": 65536 }
+      ]
+    },
+    {
+      "channel": "tool-output",
+      "description": "Results of the agent's tool calls, written by the service from the tool result with the tool's version, image digest, and inputs. Read-only to everyone.",
+      "files": [{ "pattern": "tools/*.json", "region": "tool_output", "format": "json", "max_bytes": 1048576 }]
+    },
+    {
+      "channel": "inputs",
+      "description": "Objects handed to the task by event (the approved spec, the other side's sealed findings, a person's dispositions), placed by the service after their digest verifies. Read-only.",
+      "files": [{ "pattern": "inputs/*.json", "region": "inputs", "format": "json", "max_bytes": 1048576 }]
+    },
+    {
+      "channel": "dispositions",
+      "description": "A person's decisions on a review round's findings, sealed on submit.",
+      "files": [{ "pattern": "dispositions/*.json", "region": "human", "format": "json", "max_bytes": 262144, "contract": "review_disposition.v1" }]
+    }
+  ]
+}

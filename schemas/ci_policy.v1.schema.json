@@ -67,7 +67,7 @@
   },
   "$defs": {
     "category": {
-      "enum": ["format", "lint", "type", "compile", "validate", "test", "sec_policy", "dependency_vuln", "misconfig", "sast", "secrets"]
+      "enum": ["format", "lint", "type", "compile", "validate", "test", "coverage", "license", "sec_policy", "dependency_vuln", "misconfig", "sast", "secrets"]
     },
     "stack": { "enum": ["hcl", "ts", "py", "go"] },
     "tool": {
@@ -121,7 +121,7 @@
         },
         "scope": { "enum": ["changed_units", "full_repo"] },
         "blocks_on": {
-          "enum": ["any_failure", "any_finding", "critical_or_kev", "critical", "error", "high_severity_high_confidence", "sec_checks", "never"],
+          "enum": ["any_failure", "any_finding", "critical_or_kev", "critical", "error", "high_severity_high_confidence", "sec_checks", "denied_license", "never"],
           "description": "never = counted on the dashboard, never shown in the pull request."
         },
         "honors_exclude_paths": { "type": "boolean" },
@@ -163,6 +163,30 @@
         {
           "if": { "properties": { "category": { "const": "sec_policy" } } },
           "then": { "properties": { "blocks_on": { "const": "sec_checks" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "coverage" } } },
+          "then": {
+            "properties": {
+              "blocks_on": { "enum": ["any_failure", "never"] },
+              "scope": { "const": "full_repo" },
+              "exceptions_allowed": { "const": false }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "category": { "const": "license" } } },
+          "then": {
+            "properties": {
+              "blocks_on": { "const": "denied_license" },
+              "scope": { "const": "full_repo" },
+              "exceptions_allowed": { "const": false }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "blocks_on": { "const": "denied_license" } } },
+          "then": { "properties": { "category": { "const": "license" } } }
         }
       ]
     }
