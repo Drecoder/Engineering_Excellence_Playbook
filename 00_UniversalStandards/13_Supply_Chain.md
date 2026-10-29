@@ -39,6 +39,11 @@ a floating range resolving to something new at build time.
 - **Verified at deploy.** The cluster or deploy step admits only images whose signature and
   provenance name the organization's pipeline and an approved repository. An unsigned image, or one
   built anywhere else, is rejected.
+- **Enforced by the platform, not only the pipeline.** Cloud Run's Binary Authorization verifies
+  attestations signed with a key, not keyless signatures. So the deployment guard verifies the
+  keyless signature, the provenance, and a single-use release token, then attests the digest with
+  a Cloud KMS key only its identity can use; Binary Authorization runs only attested digests, which
+  also refuses a direct `gcloud run deploy` (`docs/PROGRAM_INCREMENTS.md` §7).
 
 ## 4️⃣ Licenses
 
@@ -55,6 +60,15 @@ a floating range resolving to something new at build time.
 Dependency and image vulnerabilities follow the gate thresholds in
 `00_UniversalStandards/07_Security_In_Depth.md`: CRITICAL or CISA KEV blocks, everything below is
 counted on a dashboard. The SBOM makes the same answer available for artifacts already deployed.
+
+A component built from source (for example a minimal build of a library the distribution ships
+with dozens of unneeded dependencies) removes findings, but scanners can no longer see it. Pin its
+source by checksum, and fail CI when its upstream security channel ships a newer version: the
+distribution's security release is the usual signal. Example: coqui-tts builds ffmpeg with only
+WAV, MP3, and LAME, which removed 535 of the image's 749 findings, libxml2's CVE-2026-6653 among
+them, and
+`ffmpeg-current.yml` fails, on every pull request and daily, when Debian's security release moves
+past the version the image matches.
 
 ---
 

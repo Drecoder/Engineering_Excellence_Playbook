@@ -85,6 +85,10 @@ How work runs and how images are built (rationale in `00_UniversalStandards/12_C
 - **Images are multi-stage, minimal, stateless, and non-root**, run one process in exec form, take
   configuration from the environment, and are built once and promoted by digest.
 - **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
+- **Every service ships an image,** because everything runs in the cloud as a container. The central
+  gate builds it, runs its tests inside it unprivileged with no network, and scans it; a repository
+  that runs nothing (docs, infrastructure) declares why instead. An image finding is fixed at its
+  source, never excepted.
 
 ## CI Rules
 
@@ -99,8 +103,13 @@ One factory for every repository's gates (rationale in `00_UniversalStandards/15
   gate tools and project dependencies in separate environments, and reads nothing from the caller
   but its code and configuration files.
 - **Inputs are a contract** (`runs-on`, `fixture-paths`, `exclude-paths`, `run-tests`,
-  `install-bubblewrap`, `single-job`): never renamed, removed, or repurposed without updating every
-  caller. A caller that needs more asks for an input.
+  `install-bubblewrap`, `single-job`, `disk-need-gb`, `image-target`, `image-test-target`,
+  `image-context`, `image-dockerfile`, `image-disk-need-gb`, `no-image-reason`): never renamed,
+  removed, or repurposed without updating every caller. A caller that needs more asks for an input.
+- **Every job starts with a disk preflight and ends with its low point.** The preflight deletes
+  only preinstalled toolchains no gate uses, only until the job's measured need is free, and fails
+  at once when it cannot be met; the report warns under 5 GB. Needs come from measured low points,
+  never from guesses.
 - **Every vulnerability scanner goes through one severity gate** (CRITICAL or CISA KEV, failing
   closed).
 - **Scanners see all code.** Frozen copies and fixtures skip only the build gates (format, lint,
@@ -112,8 +121,12 @@ One factory for every repository's gates (rationale in `00_UniversalStandards/15
 - **Write each gate's script once.** A gate's script is shared by every job shape. On a runner pool
   that starts a fresh VM per job, the gates run as one job (`single-job`); on hosted runners they
   run as parallel jobs per stack.
-- **Fix CI failures in the factory,** and test a factory change through each consumer's repin
-  pull request before it merges.
+- **Fix CI failures in the factory, and the factory tests itself.** Fixtures in `tests/gates/` run
+  the real gate on every change to it, in both job shapes, and each check is shown to fail on the
+  defect it guards against before it counts. A skipped job is not a pass. Consumer repins remain
+  the test of each consumer's own code.
+- **Read every red check's log.** A failure that looks like the expected one is still read; an
+  assumed cause hides the real one.
 
 ## Supply Chain Rules
 
@@ -124,7 +137,13 @@ Know what goes into every artifact and prove where it came from (rationale in
   downloads by checksum or signature, actions by commit SHA. Update pins through gated pull
   requests, never through floating ranges.
 - **Every released artifact has an SBOM** and a keyless signature from the pipeline's identity,
-  with provenance; deploys admit only artifacts whose signature verifies.
+  with provenance; deploys admit only artifacts whose signature verifies. The deployment guard
+  verifies signature, provenance, and a single-use release token, then attests the digest with a
+  key only it holds; Cloud Run's Binary Authorization runs only attested digests, so a direct
+  deploy is refused too.
+- **A component built from source is invisible to scanners.** Pin its source by checksum, and fail
+  CI when its upstream security channel (e.g. the distribution's security release) ships a newer
+  version.
 - **Licenses are checked against a reviewed policy** (`schemas/license_policy.v1.json`); a denied
   license blocks, and a review-required or unknown one goes to a person.
 
