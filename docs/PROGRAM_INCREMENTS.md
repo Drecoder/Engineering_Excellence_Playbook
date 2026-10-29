@@ -92,6 +92,7 @@ IaC 65, agent loop 82, containers 85.
 | Cloud backends for the notepad and the compliance authority | Local files cannot resist tampering | Object-locked storage, KMS keys, and the event backbone in use |
 | The compliance authority as a service | It is a command-line tool today | The Builder submits, and the deployment guard consumes tokens, in the real pipeline |
 | Burn-rate paging and incident records | Pages fire on symptoms, and every failure leaves a record | First real incident handled end to end with evidence pointers |
+| Governance closure before production | Production runs only with no open critical or high security or governance finding | The CAPA register reports production ready; the deployment guard refuses a production deploy while it does not |
 
 **Target by area:** standards 97, CI 94, merge 90, supply chain 92, tests 86, observability 90,
 IaC 90, agent loop 90, containers 90.
