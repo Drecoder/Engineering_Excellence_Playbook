@@ -46,8 +46,12 @@ Every tool the platform runs (builds, tests, linters, scanners, benchmarks, veri
   secret manager; never `ENV` or `ARG` (`AP-DOCKER-009`).
 - **Read-only root filesystem** and dropped Linux capabilities at run time, unless a reviewed
   exception says otherwise.
+- **Every service ships an image**, because everything runs in the cloud as a container. The
+  central gate's image job builds it, runs its tests inside it unprivileged with no network and no
+  capabilities, and scans it (`15_Central_CI.md` §5). A repository that runs nothing declares why.
 - **Scanned**: images are scanned before they are pushed and block on CRITICAL or CISA KEV, the
-  same threshold as every other scanner.
+  same threshold as every other scanner. An image finding is fixed at its source (a smaller base,
+  a narrower build, a dropped dependency), never excepted.
 - **Provenance**: images are built by the pipeline and pushed to the organization's registry; a
   locally built image is never deployed.
 

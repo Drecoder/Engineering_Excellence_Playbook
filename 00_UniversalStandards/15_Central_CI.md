@@ -61,6 +61,13 @@ same change.
 | `run-tests` | `true` | Run each stack's tests (`npm test --if-present`, pytest, `go test`); tests block |
 | `install-bubblewrap` | `false` | Install pinned bubblewrap before the TypeScript tests, for repos whose tests exercise a bubblewrap sandbox |
 | `single-job` | `false` | Run every gate as steps of one job instead of one job per stack, for runner pools that start a fresh VM per job (§5) |
+| `disk-need-gb` | `5` | Free GB on `/` each gate job needs; the disk preflight's target (§5) |
+| `image-target` | empty | Dockerfile target of the image the repository ships; starts the image job (§5) |
+| `image-test-target` | empty | Optional Dockerfile target whose default command runs the tests inside the image |
+| `image-context` | `.` | Build context of the image |
+| `image-dockerfile` | empty | Dockerfile path; empty means `Dockerfile` in `image-context` |
+| `image-disk-need-gb` | `16` | Free GB the image job needs (the one measurement so far: an 11 GB peak, plus 5 GB of margin) |
+| `no-image-reason` | empty | For a repository that runs nothing: why it ships no image (at least 20 characters). Exactly one of `image-target` and `no-image-reason` is set |
 
 A caller that needs something the inputs cannot express asks for a new input in the factory; it
 does not add a step of its own.
@@ -95,6 +102,30 @@ its job, so its scanners run, while its build steps report there is nothing to b
 | Secrets | Always | Gitleaks (`SEC-010`) |
 | Trivy | Always | `trivy fs`: vulnerabilities and misconfigurations |
 | Semgrep | TypeScript or Python present | python, typescript, javascript, secrets, and security-audit rulesets |
+| Image | `image-target` set | Builds `image-test-target` and runs it unprivileged, with no network and no capabilities; builds `image-target`, drops the build cache, and scans the image with `trivy image` through the shared severity gate |
+
+**Every service ships an image.** Detection also checks that the caller set exactly one of
+`image-target` and `no-image-reason`; neither, or both, fails. Image findings take no exceptions:
+`ci_exceptions.v1` cannot name an image, so they are fixed at their source.
+
+### Disk preflight and headroom
+
+Every job's first step is a **disk preflight**; its last, run even after a failure, reports the
+job's **low point** from samples every 2 seconds and warns under 5 GB. Both write one JSON line
+(`free_disk`, `disk_low_point`).
+
+- **Need-based.** It deletes preinstalled toolchains no gate uses (Swift, Chromium, PowerShell, GHC,
+  .NET, CodeQL, Android) only until the job's need is free, and fails at once when it cannot be met,
+  instead of midway through the job. It never touches the workspace, `RUNNER_TEMP`, Docker's data
+  root, or a toolchain a kept command resolves into.
+- **Measured** on GitHub-hosted runners, 2026-10-29: 13 GB free at start. Per toolchain:
+  Swift 3 GB in about 1 s, GHC 4 GB in 1 to 5 s, Chromium and PowerShell 1 GB each in about 1 s,
+  .NET 6 GB in 8 to 24 s, CodeQL 2 GB in 5 to 15 s; Android about 7 GB in about 150 s (estimated
+  from a blanket delete, not measured alone). The default
+  `disk-need-gb` of 5 deletes nothing; the image job (16) deletes about 3 to 6 GB.
+- **On the private pool,** whose image lacks those toolchains, it deletes nothing and only checks.
+- **Raise a need from the reported low points,** never from a guess: a need below the real peak
+  passes the preflight and fails later.
 
 ### Job shape and runner pools
 
@@ -168,11 +199,19 @@ its job, so its scanners run, while its build steps report there is nothing to b
   `cmd | grep -q .` under `set -o pipefail`. When `grep` exits early, it can kill `cmd` with
   SIGPIPE, and the failed pipeline reads as "no files", which silently skips the gate. Use a
   command substitution instead: `[ -z "$(cmd)" ]`.
+- **A red check is read, not assumed.** A failure that looks like the expected one is still read:
+  an image scan that ran out of disk passed for the expected CVE block for 16 hours
+  (coqui-tts INC-001).
 
 ## 7️⃣ Changing the Factory
 
-1. Change `gates.yml` in a pull request on the factory repo. Its own run covers the stacks the
-   factory repo has.
+1. Change `gates.yml` in a pull request on the factory repo. **The factory tests itself:**
+   `gates-selftest.yml` runs the real gate on fixtures in `tests/gates/` (a Python project whose
+   tests import pytest, an image with a test stage) in both job shapes, and runs the disk preflight
+   and the image rule from their own text in `gates.yml`. A new check is shown to fail on the
+   defect it guards against, in a throwaway pull request, before it counts. **A skipped job is not
+   a pass:** a change to a stack path the factory repo does not have needs a fixture for it
+   (sovereign-vpc-gcp INC-007).
 2. In each consumer, open a pull request that repins to the new head SHA. **That run is the real
    test** of the change for that consumer's stacks; a finding it surfaces in the consumer's code is
    fixed in that same repin pull request.
