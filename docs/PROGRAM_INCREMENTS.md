@@ -134,17 +134,42 @@ authenticated path.
 | CD-4 | PI-2 | Keyless signature and SLSA provenance | The digest is signed by the pipeline's identity; provenance names repository, commit, workflow, and builder | CD-2 |
 | CD-5 | PI-3 | Cloud Run services as Terragrunt units | One unit per service: its own least-privilege service account, ingress, scaling limits; Checkov passes | CD-1 |
 | CD-6 | PI-3 | Promotion by digest through the environment repository | Development deploys on publish; staging and production on approved merges; rollback promotes the previous digest | CD-2, CD-5, branch protection |
-| CD-7 | PI-3 | Deployment guard and Binary Authorization | The guard verifies signature, provenance, and token, consumes the token, attests with its KMS key; Cloud Run admits only attested digests | CD-4, CD-6, the compliance authority as a service, the guard's KMS key |
-| CD-8 | PI-3 | Drills | An unsigned image, an unattested `gcloud run deploy`, and a replayed token are each refused, with evidence | CD-7 |
+| CD-7 | PI-3 | Deployment guard and Binary Authorization | The guard checks the signature's issuer (GitHub's OIDC issuer) and identity (the central gate's publish workflow, at an allowed ref), the digest, the provenance (repository, commit, builder), the policy version, and the token's binding to that digest and environment. A valid signature alone is not trusted provenance. It consumes the token in one atomic step, attests with its KMS key, and fails closed when the authority or its state store is unavailable; Cloud Run admits only attested digests | CD-4, CD-6, the compliance authority as a service, the guard's KMS key |
+| CD-8 | PI-3 | Negative tests (drills) | Each is refused, with evidence: a merge without approval; a direct push; a tampered artifact (digest mismatch); an unsigned image; a signature from another workflow or identity; an expired, mis-scoped, or replayed token; two concurrent consumers of one token (exactly one wins); an unattested `gcloud run deploy`; a deploy while the authority is down. Paths not yet tested are listed in the drill record, not implied covered | CD-7 |
 | CD-9 | PI-2 | Delivery metrics | Deployment frequency, lead time, change failure rate, and time to restore computed from bus events, on a dashboard | CD-2, CD-6 |
 | CD-10 | PI-2 | Delivery telemetry | Every publish and deploy emits a span, a log line, and a metric; a failed deploy alerts and opens an incident record | CD-2 |
 | CD-11 | PI-2, PI-3 | Onboard every service | Each service repository sets its image target, publishes, and has its Cloud Run unit | CD-2, CD-5 |
 
 The first slice is CD-1 to CD-4, which meets PI-2's release exit criterion.
 
+### P0: one complete, verifiable lifecycle
+
+The milestone is not a larger factory but a smaller, complete one. **P0 is met by one reproducible
+run:** an approved spec, the Builder's change and pull request, the Reviewer's findings, the central
+gate, a human-approved merge, the published digest with its SBOM, signature, and provenance, the
+compliance decision bound to that commit, gate run, digest, and policy version, and an admitted
+deploy, with no alternate release path. The same run's record shows the CD-8 refusals. Its evidence
+(run IDs, digests, the decision, the notepad's sealed record) becomes the factory's case study.
+
+**The first real workload is Genesis itself, from red to green.** Its central gate is red on legacy
+code (CRITICAL dependency CVEs, HCL parse errors, failing Go and Python checks). Those failures are
+not worked around, excepted, or archived: the agent loop takes them as its work queue and turns the
+gate green through the same specs, pull requests, and human-approved merges as any change. The
+bootstrap slice's pull requests merge once that gate is green.
+
+### P1: the economics, measured
+
+The objective is the cost of a safely accepted change, not token usage. On comparable tasks with the
+same acceptance criteria, factory-assisted delivery is compared with a documented manual baseline:
+time from approved requirement to accepted release, human intervention and correction time, defects
+escaping the gate, total cost per accepted change, and recovery time after a failed run. Golden-task
+and dogfood runs are reused rather than paying for new ones. The result is published with its
+method, sample size, and limits.
+
 ## 8️⃣ Risks
 
-- **Branch protection is the swing factor:** without it, no stage passes about 75.
+- **Branch protection is the swing factor:** without it, no stage passes about 75. The plan now
+  allows it on private repositories; it waits on the approver identity (Open Decisions).
 - **Genesis depends on the agent loop,** and the Builder cannot yet write workflow YAML or Markdown.
   That capability is a PI-2 prerequisite for PI-3.
 - **Cost:** a live telemetry backend and cloud backends add monthly spend; each rule is met with
@@ -156,12 +181,21 @@ Recorded here until decided, each by a reviewed change to this document:
 
 - **PI length:** two weeks while most work is hand-built, or four to six weeks once the agent loop
   and pilot users take part.
-- **Branch protection route:** a paid plan that keeps the repositories private, or public
-  repositories after the history audit.
+- **Approver identity:** GitHub forbids approving your own pull request, and with one maintainer
+  every change is authored by that maintainer, so "require an approving review" cannot be met
+  (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`). Recommended: changes are authored
+  by a factory identity (a GitHub App for the Builder and for hand-built work), and the maintainer
+  is the approver, as the factory's design intends. Until then, protection requires a pull request,
+  the gate checks, and no force-push or deletion, without a review count.
 
 ## Decided
 
 Each was decided by the reviewed change that moved it here.
+
+- **Branch protection route (2026-10-29): a paid plan.** GitHub Pro; every factory repository
+  stays private, and only the playbook is public.
+- **Genesis's red gate (2026-10-29): dogfooded, not worked around.** The agent loop takes Genesis
+  from red to green as the factory's first real workload (P0, §7). The legacy code stays.
 
 - **Release signing (2026-10-29): keyless.** Images are signed with the pipeline's OIDC identity
   (Sigstore), so no signing key exists to leak. Accepted: repository and workflow names appear in
