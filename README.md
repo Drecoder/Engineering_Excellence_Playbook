@@ -19,10 +19,22 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 ## 📓 Proof Journal
 
 A standard counts only when it is enforced and running. The **[proof journal](docs/POC_JOURNAL.md)**
-records what applying this playbook actually found while building the software factory: each
-finding with the rule that applied, how it was found, the evidence, what changed, and its status,
-including the ones still open. The **[incident records](docs/incidents/README.md)** hold the full
-post-mortems, and **[program increments](docs/PROGRAM_INCREMENTS.md)** show the plan they feed.
+records what applying this playbook actually found while building the software factory, each
+finding written up as a compact post-mortem in CAPA form (Corrective and Preventive Action): the
+rule, the problem, how it was found, the root cause, the correction, the preventive action, and the
+verification, including the findings still open.
+
+- **Append-only, enforced:** CI refuses any change that edits, deletes, or reorders an entry.
+- **Ranked and timed:** the **[CAPA register](docs/FINDINGS_REGISTER.json)** gives every finding a
+  severity on a written rubric and a mandatory deadline (critical 7 days, high 30, medium 90, low
+  180); an overdue finding fails the daily run.
+- **Measured:** every run reports how many control classes are proven to fail on their defect and
+  how many findings a control caught rather than a person.
+- **Governance before production:** production readiness stays false while any critical or high
+  security or governance finding is open.
+
+The **[incident records](docs/incidents/README.md)** hold the full post-mortems, and
+**[program increments](docs/PROGRAM_INCREMENTS.md)** show the plan they feed.
 
 ---
 

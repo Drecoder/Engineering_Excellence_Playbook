@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - "schemas/**"
+      - "docs/FINDINGS_REGISTER.json"
       - "tests/contracts/**"
       - "tests/antipatterns/toolchain/**"
       - ".github/workflows/contracts.yml"
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - "schemas/**"
+      - "docs/FINDINGS_REGISTER.json"
       - "tests/contracts/**"
       - "tests/antipatterns/toolchain/**"
       - ".github/workflows/contracts.yml"
