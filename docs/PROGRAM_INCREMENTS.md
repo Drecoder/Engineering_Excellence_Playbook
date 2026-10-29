@@ -186,8 +186,7 @@ Recorded here until decided, each by a reviewed change to this document:
   (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`). The factory's developers are its
   agents; the person is the approver. Recommended: each agent authors under its own identity (a
   GitHub App, free: the Builder, and the coding assistant for hand-built work), and the person
-  approves and merges, as the factory's design intends. Until then, protection requires a pull request,
-  the gate checks, and no force-push or deletion, without a review count.
+  approves and merges, as the factory's design intends.
 
 ## Decided
 
@@ -195,6 +194,11 @@ Each was decided by the reviewed change that moved it here.
 
 - **Branch protection route (2026-10-29): a paid plan.** GitHub Pro; every factory repository
   stays private, and only the playbook is public.
+- **Branch protection timing (2026-10-29): full protection in one step, once the agents' Apps
+  exist.** A required review, the gate checks, no bypass for admins, and no force-push or deletion,
+  all at once. No partial baseline first: while changes are still authored as the person, a review
+  rule cannot be met, and the first protected run should be the full multi-identity flow (an agent
+  authors, an agent reviews, the person approves and merges).
 - **Genesis's red gate (2026-10-29): dogfooded, not worked around.** The agent loop takes Genesis
   from red to green as the factory's first real workload (P0, §7). The legacy code stays.
 
