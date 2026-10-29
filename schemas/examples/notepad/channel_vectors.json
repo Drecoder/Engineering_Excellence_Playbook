@@ -1,0 +1,19 @@
+{
+  "description": "Paths and the channel and region they belong to under schemas/notepad_channels.v1.json. null means the path is rejected: no declared file matches it.",
+  "cases": [
+    { "path": "thought-log.md", "channel": "thought-log", "region": "agent_append" },
+    { "path": "questions.md", "channel": "questions", "region": "agent_append" },
+    { "path": "answers/q-001.md", "channel": "questions", "region": "human" },
+    { "path": "tools/rig-scan.json", "channel": "tool-output", "region": "tool_output" },
+    { "path": "inputs/spec.json", "channel": "inputs", "region": "inputs" },
+    { "path": "dispositions/round-1.json", "channel": "dispositions", "region": "human" },
+    { "path": "tools/a/b.json", "channel": null, "region": null },
+    { "path": "tools/scan.md", "channel": null, "region": null },
+    { "path": "answers/q.1.md", "channel": null, "region": null },
+    { "path": "notes.md", "channel": null, "region": null },
+    { "path": "Thought-log.md", "channel": null, "region": null },
+    { "path": "thought-log.md.bak", "channel": null, "region": null },
+    { "path": "../reviewer/thought-log.md", "channel": null, "region": null },
+    { "path": "inputs/", "channel": null, "region": null }
+  ]
+}

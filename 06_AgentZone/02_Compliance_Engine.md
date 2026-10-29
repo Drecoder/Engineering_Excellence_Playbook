@@ -36,7 +36,9 @@ authority) are different keys.
    that fails verification, freshness, or attestation, or is below the required tier, is
    `REMEDIATE`; the gate follows `BLOCKED > REMEDIATE > PASS`.
 4. **Authorization.** Only for a stored `PASS` record, and only for the artifact that record names,
-   the authority issues a token (RS256, unique `jti`, `iat`, `nbf`, `exp`).
+   the authority issues a token (`release_token.v1`: RS256, unique `jti`, `iat`, `nbf`, `exp`,
+   bound to the artifact digest and one environment's guard). A token lives at most 15 minutes;
+   the guard allows at most 60 seconds of clock skew.
 5. **Deployment.** The guard claims the token once and deploys the pinned digest; a replayed or
    raced token is refused.
 

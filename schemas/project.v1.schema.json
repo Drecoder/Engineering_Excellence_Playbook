@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.v1.schema.json",
+  "title": "project.v1",
+  "description": "A project's bindings (06_AgentZone/07_Agent_Notepad.md §8): the boundary a composition root validates at startup before it hands each agent its scoped handles. A project is the factory itself or a service the factory builds. An invalid configuration is rejected, not repaired. Endpoints and credentials are never here: endpoints come from the deployment's environment and credentials from short-lived workload identity. Weakening isolation, enabling shared learning, enabling narration, or changing the owner is a human-approved change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "owner", "classification", "residency", "retention", "shared_learning", "narration", "storage", "key", "repositories", "vector_namespace"],
+  "properties": {
+    "schema_version": { "const": "project.v1" },
+    "project_id": { "$ref": "#/$defs/slug", "description": "The outer boundary: on every notepad path, tag, index entry, span, and claim check." },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["factory", "internal", "client"] },
+        "id": { "$ref": "#/$defs/slug" }
+      }
+    },
+    "classification": { "enum": ["public", "internal", "confidential", "restricted"] },
+    "residency": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z]{2}(-[a-z0-9]{1,24}){0,3}(?!\n)$" },
+      "description": "Regions the project's data may live in (for example us-east-1, us-central1)."
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sealed_days", "wip_idle_days"],
+      "properties": {
+        "sealed_days": { "type": "integer", "minimum": 30, "maximum": 3650, "description": "Object-lock retention for sealed versions." },
+        "wip_idle_days": { "type": "integer", "minimum": 1, "maximum": 90, "description": "How long an untouched working copy lives." }
+      }
+    },
+    "shared_learning": { "type": "boolean", "description": "Whether resolution records may feed knowledge shared across projects. Default deny; set explicitly." },
+    "narration": { "type": "boolean", "description": "Whether the sealed story may become educational media. Public projects only." },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["isolation", "backend", "bucket", "prefix"],
+      "properties": {
+        "isolation": { "enum": ["shared_bucket", "dedicated_bucket", "owner_account"] },
+        "backend": { "enum": ["s3", "gcs"], "description": "s3 covers any S3-compatible store, including a pinned local one for development." },
+        "bucket": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9](?!\n)$" },
+        "prefix": { "$ref": "#/$defs/slug", "description": "Usually the project_id; every object key starts with it." }
+      }
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "key_ref"],
+      "properties": {
+        "provider": { "enum": ["aws-kms", "gcp-kms"] },
+        "key_ref": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^(arn:aws:kms:[a-z0-9-]+:[0-9]{12}:(key|alias)/[A-Za-z0-9/_-]+|projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/locations/[a-z0-9-]+/keyRings/[A-Za-z0-9_-]+/cryptoKeys/[A-Za-z0-9_-]+)(?!\n)$",
+          "description": "A reference to the project's key, never key material."
+        }
+      }
+    },
+    "repositories": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" }
+    },
+    "vector_namespace": { "$ref": "#/$defs/slug", "description": "The project's retrieval namespace; no retrieval across projects by default." }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "classification": { "enum": ["confidential", "restricted"] } }, "required": ["classification"] },
+      "then": { "properties": { "shared_learning": { "const": false }, "narration": { "const": false } } }
+    },
+    {
+      "if": { "properties": { "classification": { "const": "restricted" } }, "required": ["classification"] },
+      "then": { "properties": { "storage": { "properties": { "isolation": { "enum": ["dedicated_bucket", "owner_account"] } } } } }
+    },
+    {
+      "if": { "properties": { "classification": { "not": { "const": "public" } } }, "required": ["classification"] },
+      "then": { "properties": { "narration": { "const": false } } }
+    },
+    {
+      "if": { "properties": { "key": { "properties": { "provider": { "const": "aws-kms" } } } } },
+      "then": { "properties": { "storage": { "properties": { "backend": { "const": "s3" } } }, "key": { "properties": { "key_ref": { "pattern": "^arn:aws:kms:" } } } } }
+    },
+    {
+      "if": { "properties": { "key": { "properties": { "provider": { "const": "gcp-kms" } } } } },
+      "then": { "properties": { "storage": { "properties": { "backend": { "const": "gcs" } } }, "key": { "properties": { "key_ref": { "pattern": "^projects/" } } } } }
+    }
+  ],
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" }
+  }
+}

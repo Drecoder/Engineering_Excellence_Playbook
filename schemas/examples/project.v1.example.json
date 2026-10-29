@@ -1,0 +1,14 @@
+{
+  "schema_version": "project.v1",
+  "project_id": "software-factory",
+  "owner": { "kind": "factory", "id": "drecoder" },
+  "classification": "public",
+  "residency": ["us-east-1"],
+  "retention": { "sealed_days": 365, "wip_idle_days": 14 },
+  "shared_learning": false,
+  "narration": true,
+  "storage": { "isolation": "shared_bucket", "backend": "s3", "bucket": "drecoder-factory-notepad", "prefix": "software-factory" },
+  "key": { "provider": "aws-kms", "key_ref": "arn:aws:kms:us-east-1:111122223333:alias/notepad-software-factory" },
+  "repositories": ["Drecoder/Engineering_Excellence_Playbook", "Drecoder/aws-builder-agent", "Drecoder/gcp-reviewer-agent", "Drecoder/rig"],
+  "vector_namespace": "software-factory"
+}
