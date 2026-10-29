@@ -72,10 +72,10 @@ IaC 50, agent loop 78, containers 82.
 | Feature | Why | Exit criterion |
 | :--- | :--- | :--- |
 | Branch protection on every factory repository | Turns "humans approve merges" from a habit into a control | A merge without approval is refused, admins included |
-| Release pipeline: SBOM, signature, provenance | Know what is in every image and prove where it came from | Every build of `main` publishes a signed image with its SBOM and provenance |
+| Release pipeline: SBOM, signature, provenance (CD-1 to CD-4, §7) | Know what is in every image and prove where it came from | Every build of `main` publishes a signed image with its SBOM and provenance |
 | Bootstrap apply for the platform's identity unit | A factory whose apply fails cannot ship | `apply` green on `main`; the incident issue closes |
 | Live telemetry backend and dashboards | Metrics no one sees are not observability | Every service's RED metrics and SLOs visible; one alert fired in a drill |
-| Delivery metrics | Extends the baseline's lead time and change failure rate with deployment frequency and time to restore | All four measured from CI events, on a dashboard |
+| Delivery metrics (CD-9, CD-10) | Extends the baseline's lead time and change failure rate with deployment frequency and time to restore | All four measured from CI events, on a dashboard |
 | The notepad's seal check in central CI | Makes the record trustworthy | A push without a valid `Notepad-Manifest` trailer fails |
 
 **Target by area:** standards 96, CI 93, merge 90, supply chain 80, tests 82, observability 85,
@@ -88,7 +88,7 @@ IaC 65, agent loop 82, containers 85.
 | Feature | Why | Exit criterion |
 | :--- | :--- | :--- |
 | Genesis on Terragrunt, green | The IaC rules require it, and it proves the loop delivers real infrastructure | `plan` and `apply` green; no bare `terraform` |
-| Signatures verified at deploy | Signing matters only if unsigned images are refused | An unsigned image is rejected in a drill |
+| Signatures verified at deploy (CD-5 to CD-8, §7) | Signing matters only if unsigned images are refused | An unsigned image is rejected in a drill |
 | Cloud backends for the notepad and the compliance authority | Local files cannot resist tampering | Object-locked storage, KMS keys, and the event backbone in use |
 | The compliance authority as a service | It is a command-line tool today | The Builder submits, and the deployment guard consumes tokens, in the real pipeline |
 | Burn-rate paging and incident records | Pages fire on symptoms, and every failure leaves a record | First real incident handled end to end with evidence pointers |
@@ -104,7 +104,45 @@ IaC 90, agent loop 90, containers 90.
 - Client projects run on their own buckets and keys (`project.v1`).
 - Exit: 90 or more held for a whole PI, with every demotion handled.
 
-## 7️⃣ Risks
+## 7️⃣ Continuous Delivery
+
+Every service runs in the cloud as a container, so every service ships an image: the central gate
+builds it, tests in it, and scans it on every pull request, and fails a repository that neither
+names its image nor declares why it has none. Delivery takes that image from a merge to a running
+service without ever trusting anything it cannot verify:
+
+1. **Publish.** A merge to `main` builds the image once, pushes it by digest, and attaches its SBOM,
+   keyless signature, and SLSA provenance. Nothing is deployed by tag.
+2. **Promote.** Each environment's digest lives in an environment repository. Development follows
+   every publish; staging and production change only by a human-approved merge there, enforced by
+   branch protection, never by a deploy button. Rollback promotes the previous digest.
+3. **Admit.** The deployment guard verifies the signature, the provenance, and a single-use release
+   token from the compliance authority, consumes the token, and attests the digest with a key only
+   it holds; Cloud Run's Binary Authorization runs only attested digests, so a direct
+   `gcloud run deploy` is refused too.
+
+Every handoff is an event on the bus (`image.published`, `deploy.requested`, `deploy.completed`),
+built on the bus interface with its local adapter until the backbone lands. Release tokens never
+ride the bus: the event names the evaluation, and the token reaches the guard on its own
+authenticated path.
+
+| ID | PI | Story | Done when | Depends on |
+| :--- | :--- | :--- | :--- | :--- |
+| CD-1 | PI-2 | Artifact Registry and the publish identity, in Genesis's bootstrap slice | A registry per environment; a federated publish identity pinned to repository, `main`, and environment, one-hour credentials, no keys | Genesis bootstrap |
+| CD-2 | PI-2 | Central publish stage on merge to `main` | Builds once, pushes by digest, scans that digest through the shared severity gate, emits `image.published` | CD-1; the image job in the central gate |
+| CD-3 | PI-2 | SBOM attestation | A syft SBOM (pinned in the gate) attached to the digest | CD-2 |
+| CD-4 | PI-2 | Keyless signature and SLSA provenance | The digest is signed by the pipeline's identity; provenance names repository, commit, workflow, and builder | CD-2 |
+| CD-5 | PI-3 | Cloud Run services as Terragrunt units | One unit per service: its own least-privilege service account, ingress, scaling limits; Checkov passes | CD-1 |
+| CD-6 | PI-3 | Promotion by digest through the environment repository | Development deploys on publish; staging and production on approved merges; rollback promotes the previous digest | CD-2, CD-5, branch protection |
+| CD-7 | PI-3 | Deployment guard and Binary Authorization | The guard verifies signature, provenance, and token, consumes the token, attests with its KMS key; Cloud Run admits only attested digests | CD-4, CD-6, the compliance authority as a service, the guard's KMS key |
+| CD-8 | PI-3 | Drills | An unsigned image, an unattested `gcloud run deploy`, and a replayed token are each refused, with evidence | CD-7 |
+| CD-9 | PI-2 | Delivery metrics | Deployment frequency, lead time, change failure rate, and time to restore computed from bus events, on a dashboard | CD-2, CD-6 |
+| CD-10 | PI-2 | Delivery telemetry | Every publish and deploy emits a span, a log line, and a metric; a failed deploy alerts and opens an incident record | CD-2 |
+| CD-11 | PI-2, PI-3 | Onboard every service | Each service repository sets its image target, publishes, and has its Cloud Run unit | CD-2, CD-5 |
+
+The first slice is CD-1 to CD-4, which meets PI-2's release exit criterion.
+
+## 8️⃣ Risks
 
 - **Branch protection is the swing factor:** without it, no stage passes about 75.
 - **Genesis depends on the agent loop,** and the Builder cannot yet write workflow YAML or Markdown.
@@ -120,8 +158,25 @@ Recorded here until decided, each by a reviewed change to this document:
   and pilot users take part.
 - **Branch protection route:** a paid plan that keeps the repositories private, or public
   repositories after the history audit.
-- **Release signing:** keyless signing, which publishes the repository and workflow identity in
-  public transparency logs, or a cloud KMS key, which waits on Genesis.
+
+## Decided
+
+Each was decided by the reviewed change that moved it here.
+
+- **Release signing (2026-10-29): keyless.** Images are signed with the pipeline's OIDC identity
+  (Sigstore), so no signing key exists to leak. Accepted: repository and workflow names appear in
+  the public transparency log, including before the repositories go public.
+- **Registry (2026-10-29): in Genesis's bootstrap slice.** Nothing ships without it, so it is
+  built with the rest of the bootstrap, as IaC, rather than waiting for the agent loop.
+- **Deploy enforcement (2026-10-29): the deployment guard and Cloud Run Binary Authorization.**
+  A pipeline check alone leaves `gcloud run deploy` as a bypass. Binary Authorization on Cloud Run
+  verifies attestations signed with a key, not keyless signatures, so the guard verifies the keyless
+  signature, provenance, and token, then attests with a Cloud KMS key only its identity can use.
+  That key joins the registry in the bootstrap slice.
+- **Promotion (2026-10-29): an environment repository.** Each promotion is a pull request; staging
+  and production merges are human-approved and branch-protected. No deploy button.
+- **Event bus (2026-10-29): build on the interface now.** Delivery stages hand off through the bus
+  interface with its local adapter, so nothing is rewired when the backbone lands.
 
 ---
 
