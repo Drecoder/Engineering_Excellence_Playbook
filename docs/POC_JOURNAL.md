@@ -54,6 +54,10 @@ every pull request and every day.
 - **Governance closes before production.** Production readiness is false while any critical or
   high security or governance finding is open; no production operation until it is true.
 
+The register was introduced on 2026-10-29. Findings F-0001 to F-0016 were ranked then,
+retroactively: each deadline counts from the day the finding was originally recorded, and their
+journal entries are unchanged.
+
 ---
 
 ## 2026-10-28: The prototype never produced any audio
@@ -349,3 +353,23 @@ every pull request and every day.
 - **Evidence:** `docs/FINDINGS_REGISTER.json`, `tests/journal/register.py`,
   `schemas/findings_register.v1.schema.json`.
 - **Status:** fixed.
+
+## 2026-10-29: The journal's controls run on main, and earlier findings were ranked
+
+- **Rule:** a control counts only when it is enforced and running on `main` (`docs/PROGRAM_INCREMENTS.md`).
+- **Problem:** the append-only check and the CAPA register had passed only on their own pull
+  requests, and the 16 findings recorded before the register existed had no severity or deadline.
+- **Detection:** merging them (#42, #44) and checking the runs on `main`.
+- **Root cause:** a control proven on a pull request is not yet a control on `main`, and the
+  register postdated the findings it tracks.
+- **Correction:** #42, #44, and #38 merged; findings F-0001 to F-0016 ranked retroactively in the
+  register, each deadline counted from the day the finding was originally recorded. Their journal
+  entries are unchanged, as the append-only rule requires.
+- **Preventive action:** every push to `main` runs the journal check and the register check, and
+  the register check runs daily.
+- **Verification:** on `main`, the journal check passed at `f2d8897` (run 40906894231); the journal
+  and register checks at `c256d28` (run 40907358453) and the contract tests (run 40907358223);
+  and at `4c7d901` (run 40907978656): 17 entries kept, 5 findings open, 5 of 13 control classes
+  proven, production ready: no.
+- **Evidence:** #42, #44, #38; the runs above.
+- **Status:** proven.
