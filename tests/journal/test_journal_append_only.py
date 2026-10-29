@@ -5,8 +5,10 @@ fail, and each allowed change one that must pass; the real journal is checked ag
     python -m unittest discover -s tests/journal -v
 """
 
+import io
 import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -72,8 +74,14 @@ class TheRealJournal(unittest.TestCase):
         self.assertEqual(violations(text, text), [])
 
     def test_the_command_line_exits_1_on_a_violation(self):
-        self.assertEqual(main(["x", str(FIXTURES / "base.txt"), str(FIXTURES / "edited.txt")]), 1)
-        self.assertEqual(main(["x", str(FIXTURES / "base.txt"), str(FIXTURES / "append_ok.txt")]), 0)
+        # Captured, so the fixture's ::error:: line never becomes a real CI annotation.
+        out = io.StringIO()
+        with redirect_stdout(out):
+            refused = main(["x", str(FIXTURES / "base.txt"), str(FIXTURES / "edited.txt")])
+            accepted = main(["x", str(FIXTURES / "base.txt"), str(FIXTURES / "append_ok.txt")])
+        self.assertEqual(refused, 1)
+        self.assertIn("::error::journal is append-only: entry edited", out.getvalue())
+        self.assertEqual(accepted, 0)
 
 
 if __name__ == "__main__":

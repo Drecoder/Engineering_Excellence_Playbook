@@ -254,7 +254,9 @@ journal moves into the notepad's filing system, where each entry is a sealed, ha
   pinned by digest (`.github/workflows/journal.yml`), with a fixture for each allowed and each
   forbidden change.
 - **Verification:** 14 tests pass; a checker broken to allow everything fails 6 of them; the real
-  journal passes against itself, and this entry's own pull request passes it.
+  journal passes against itself and this entry's own pull request passes it (run 40904223442),
+  while a pull request that edits an existing entry fails with `entry edited` (#43, run
+  40904315387).
 - **Limitation:** this enforces the rule for changes that go through pull requests. It does not make
   the journal immutable: anyone who can bypass branch protection or edit the workflow can still
   rewrite history, and until branch protection is on, a direct push is only detected (the run on
