@@ -1,0 +1,59 @@
+# The proof journal (docs/POC_JOURNAL.md) is append-only: a change may add entries at the end, never
+# edit, delete, or reorder one. This runs the check's tests, then compares the journal before and
+# after the change, in a Python image pinned by digest.
+#
+# It runs on every pull request, so it can be a required check, and on every push to main, so a
+# direct push that rewrites the journal still turns red. It does not make the journal immutable:
+# anyone who can bypass branch protection or edit this workflow can still rewrite history. That
+# guarantee waits for the notepad's hash-chained, sealed records.
+name: Journal append-only
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: journal-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_IMAGE: python:3.12-slim@sha256:6b25cbe6577518889d553cdd5a5da97d259348d8f6e45b527dd731caaba27a07
+  JOURNAL: docs/POC_JOURNAL.md
+
+jobs:
+  check:
+    name: Journal is append-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Tests (allowed and forbidden changes)
+        run: |
+          docker run --rm -v "$PWD:/work:ro" -w /work -e PYTHONDONTWRITEBYTECODE=1 "$PYTHON_IMAGE" \
+            python -m unittest discover -s tests/journal -v
+
+      - name: The journal before and after this change
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/journal"
+          base="$RUNNER_TEMP/journal/base.md"
+          # A new branch or a first push has no "before"; then there is nothing to compare against.
+          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] \
+             && git cat-file -e "$BASE_SHA:$JOURNAL" 2>/dev/null; then
+            git show "$BASE_SHA:$JOURNAL" > "$base"
+          else
+            echo "no journal at the base; nothing to compare"
+          fi
+          docker run --rm -v "$PWD:/work:ro" -v "$RUNNER_TEMP/journal:/base:ro" -w /work \
+            -e PYTHONDONTWRITEBYTECODE=1 "$PYTHON_IMAGE" \
+            python tests/journal/journal_append_only.py /base/base.md "$JOURNAL"

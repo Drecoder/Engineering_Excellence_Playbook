@@ -1,0 +1,10 @@
+# Journal
+
+Preamble.
+
+---
+
+## 2026-10-29: Second finding
+
+- **Problem:** two.
+- **Status:** open.

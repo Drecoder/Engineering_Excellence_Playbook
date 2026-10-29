@@ -126,6 +126,11 @@ job's **low point** from samples every 2 seconds and warns under 5 GB. Both writ
 - **On the private pool,** whose image lacks those toolchains, it deletes nothing and only checks.
 - **Raise a need from the reported low points,** never from a guess: a need below the real peak
   passes the preflight and fails later.
+- **A need is an estimate, not a constant.** The preflight compares the job's need with the free
+  space it actually finds, every run. The need itself (the image job's default of 16 GB) comes from
+  one measurement on one repository (coqui-tts, 2026-10-29: an 11 GB peak plus 5 GB of margin).
+  Re-derive each repository's need from its recent low points (peak use plus the margin) whenever
+  the image or the job changes, and treat a low point under 5 GB as a sign the need is stale.
 
 ### Job shape and runner pools
 
@@ -212,6 +217,22 @@ job's **low point** from samples every 2 seconds and warns under 5 GB. Both writ
    defect it guards against, in a throwaway pull request, before it counts. **A skipped job is not
    a pass:** a change to a stack path the factory repo does not have needs a fixture for it
    (sovereign-vpc-gcp INC-007).
+
+   **What a fixture proves is bounded.** A fixture shows that *its* defect is caught, not that the
+   gate catches every defect. The self-test's coverage, as of 2026-10-29:
+
+   | Covered: shown to fail on the defect | Proof |
+   | :--- | :--- |
+   | Python: tests type-checked before pytest is installed | The pre-fix gate fails the fixture (sovereign-vpc-gcp #34) |
+   | Image: a CRITICAL finding in the runtime image | A vulnerable base fails the scan (#37) |
+   | Image rule: neither, both, or a short `no-image-reason` | Five cases from the rule's own text |
+   | Disk preflight: an unmeetable need; keep by name and by path | Cases on a real hosted runner (#35) |
+
+   **Not covered yet** (they run, but no designed-to-fail case proves them): the TypeScript and Go
+   paths (no fixtures), the coverage floor, the license gate inside the self-test (its
+   denied-license fixture ran when the gate was written, sovereign-vpc-gcp #31), and Gitleaks,
+   `trivy fs`, Semgrep, and the HCL checks. Each gets a designed-to-fail case before it is called
+   proven.
 2. In each consumer, open a pull request that repins to the new head SHA. **That run is the real
    test** of the change for that consumer's stacks; a finding it surfaces in the consumer's code is
    fixed in that same repin pull request.
