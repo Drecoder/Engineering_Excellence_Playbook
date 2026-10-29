@@ -197,7 +197,7 @@
       "status": "fixed",
       "closed": "2026-10-29",
       "verification": "on main: run 40907358453 at c256d28 (register check and metrics), contract tests run 40907358223; 29 tests, four mutants caught",
-      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run"
+      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run; the control-catch share counts detected_by, set by hand and not verified against evidence (F-0019)"
     },
     {
       "id": "F-0018",
@@ -210,6 +210,16 @@
       "status": "proven",
       "closed": "2026-10-29",
       "verification": "runs on main: 40906894231 (f2d8897), 40907358453 and 40907358223 (c256d28), 40907978656 (4c7d901)"
+    },
+    {
+      "id": "F-0019",
+      "journal": "## 2026-10-29: The control-catch metric measures a recorded attribution",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "open"
     }
   ],
   "controls": [

@@ -393,3 +393,25 @@ journal entries are unchanged.
   proven, production ready: no.
 - **Evidence:** #42, #44, #38; the runs above.
 - **Status:** proven.
+
+## 2026-10-29: The control-catch metric measures a recorded attribution
+
+- **Rule:** a claim is narrowed to what the evidence supports (`AGENTS.md` → Observability Rules:
+  evidence is telemetry; a metric counts only for what it measures).
+- **Problem:** the register reports the share of findings "caught by a control rather than a
+  person" (6 of 18 on `main`). That number counts the register's `detected_by` field, which is set
+  by hand for each finding; nothing checks it against the entry's detection evidence. It measures
+  recorded attribution, not verified detection effectiveness.
+- **Detection:** review of PR #46's wording before merge.
+- **Root cause:** the metric was defined from a field that is easy to record and hard to verify,
+  and the wording described what the field means rather than how it is set.
+- **Correction:** the README and the journal's preamble now say the share is "recorded as caught by
+  a control", an attribution recorded by hand (#46, `f7f9410`); the run summary's label says the
+  same; F-0017's register row carries the limitation as a residual. F-0017's own entry keeps its original wording, as the append-only rule
+  requires.
+- **Preventive action:** a finding attributed to a control must name the control and the run that
+  reported it, and the register check refuses one that does not, so the attribution rests on
+  evidence rather than on the field alone.
+- **Verification:** pending.
+- **Evidence:** #46; the register check's output on `main`.
+- **Status:** open.
