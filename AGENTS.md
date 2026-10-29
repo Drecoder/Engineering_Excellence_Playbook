@@ -125,7 +125,8 @@ Know what goes into every artifact and prove where it came from (rationale in
   requests, never through floating ranges.
 - **Every released artifact has an SBOM** and a keyless signature from the pipeline's identity,
   with provenance; deploys admit only artifacts whose signature verifies.
-- **Licenses are checked against a reviewed policy;** a denied license blocks.
+- **Licenses are checked against a reviewed policy** (`schemas/license_policy.v1.json`); a denied
+  license blocks, and a review-required or unknown one goes to a person.
 
 ## Test Quality Rules
 
@@ -135,7 +136,8 @@ A passing suite counts only if its tests could fail (rationale in
 - **No committed `.only` or `.skip`, and every test asserts**; expected failures are asserted
   precisely.
 - **Changed-line coverage is reported** on every pull request and each repository holds its
-  coverage floor; **mutation score** is tracked with a floor.
+  coverage floor; **mutation score** is tracked with a floor. The floors live in each repository's
+  `.ci/quality.v1.json` (`schemas/quality.v1.schema.json`); a missing file fails the gate closed.
 - **A flaky test is a defect:** rerun once at most, then fixed or quarantined with an owner.
 
 ## Anti-Pattern Rules

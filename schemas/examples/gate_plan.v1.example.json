@@ -3,7 +3,7 @@
   "repo": "Drecoder/sovereign-vpc-gcp",
   "commit": "38cb5ace47dbbb893b17f2d32ad67e5fade89c90",
   "factory_commit": "b62752ba5766d56eeb7777b6a892d7c680616976",
-  "policy": { "version": "1.0.0", "sha256": "37325c5f16569a061b9e9a1df3292be692b75b8462ae69c828b2f155830573bc" },
+  "policy": { "version": "1.1.0", "sha256": "987192a24a1bb603f58acc46c097147b0ef6b2486969cceb385421b0f64a0a70" },
   "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
   "created_at": "2026-10-26T07:27:04Z",
   "inputs": {
