@@ -27,14 +27,14 @@ verification, including the findings still open.
 It is one living document with three roles, all feeding the same loop from standard to evidence and
 back:
 
-- **Engineering artifact:** the evidence-linked history of findings, fixes, and open work, so the
-  project's actual state is readable without reconstructing it from Git.
-- **Learning resource:** causal knowledge (what failed, why, how it was caught, how the fix was
-  verified) that a learning system can teach from.
-- **Feedback mechanism:** prior experience the factory's agents and future decisions weigh
-  against the playbook's standards and current evidence.
-
-The first role is in use today; the other two are designed and not yet wired.
+- **Engineering artifact (in use today):** the evidence-linked history of findings, fixes, and
+  open work, so the project's actual state is readable without reconstructing it from Git.
+- **Learning resource (designed, not yet wired):** causal knowledge (what failed, why, how it was
+  caught, how the fix was verified), structured so a learning system will be able to teach from
+  it. None reads it yet.
+- **Feedback mechanism (designed, not yet wired):** prior experience for the factory's agents and
+  future decisions to weigh against the playbook's standards and current evidence. No agent is
+  given it yet.
 
 - **Append-only, enforced:** CI refuses any change that edits, deletes, or reorders an entry.
 - **Ranked and timed:** the **[CAPA register](docs/FINDINGS_REGISTER.json)** gives every finding a

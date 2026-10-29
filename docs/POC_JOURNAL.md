@@ -9,22 +9,22 @@ work. It feeds each program increment's re-grade (`docs/PROGRAM_INCREMENTS.md`) 
 
 ## Three Roles, One Document
 
-The journal is one living document with three functions. Each serves a different reader, and all
+The journal is one living document with three functions. Each is for a different reader, and all
 three feed the same loop: the playbook sets a standard, work tests it, the journal records what
 happened, and what it records changes the standard, the controls, and the next piece of work.
 
-| Role | Serves | What it gives them | How they read it |
-| :--- | :--- | :--- | :--- |
-| **Engineering artifact** | Engineers and reviewers | The chronological, evidence-linked history of findings, corrections, verification, and unresolved work, so the project's actual state does not have to be rebuilt from Git history | The entries in order; the [CAPA register](FINDINGS_REGISTER.json) for what is open, its severity, and its deadline |
-| **Learning resource** | People learning the craft, through a learning system | Engineering experience turned into causal knowledge: what failed, why, how it was detected, how the fix was verified, and what now prevents it | Each entry's CAPA fields as a lesson; the register's category and severity to group and order lessons |
-| **Feedback mechanism** | The factory's agents and future engineering decisions | Prior experience to weigh against the playbook's standards and the current evidence, so the variance between what a rule says, what happened before, and what is happening now is visible | The register as structured data (category, severity, status, residual); the entries it points to, as the reasoning behind each row |
+| Role | Status | For | What it gives them | How they read it |
+| :--- | :--- | :--- | :--- | :--- |
+| **Engineering artifact** | **In use** | Engineers and reviewers | The chronological, evidence-linked history of findings, corrections, verification, and unresolved work, so the project's actual state does not have to be rebuilt from Git history | The entries in order; the [CAPA register](FINDINGS_REGISTER.json) for what is open, its severity, and its deadline |
+| **Learning resource** | Designed, not yet wired | People learning the craft, through a learning system | Engineering experience turned into causal knowledge: what failed, why, how it was detected, how the fix was verified, and what now prevents it | Each entry's CAPA fields as a lesson; the register's category and severity to group and order lessons |
+| **Feedback mechanism** | Designed, not yet wired | The factory's agents and future engineering decisions | Prior experience to weigh against the playbook's standards and the current evidence, so the variance between what a rule says, what happened before, and what is happening now is visible | The register as structured data (category, severity, status, residual); the entries it points to, as the reasoning behind each row |
 
 **Status, honestly:** the engineering artifact is in use. The learning resource and the feedback
 mechanism are designed but not yet wired: no learning system reads the journal yet, and no agent
-is given it yet. When agents are, they receive a slice relevant to their task, never the whole
-journal, as with every other piece of context (`AGENTS.md` → Reuse Rules). The structure already
-serves all three: CAPA fields in every entry, and a register with the same rows as machine-readable
-data.
+is given it yet. When agents are, they will receive a slice relevant to their task, never the whole
+journal, as with every other piece of context (`AGENTS.md` → Reuse Rules). The structure is already
+ready for all three, though only the first is served: CAPA fields in every entry, and a register
+with the same rows as machine-readable data.
 
 ## Format: CAPA
 
