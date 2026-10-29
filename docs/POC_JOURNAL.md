@@ -7,6 +7,25 @@ This journal is the factory's working record of proof. Each entry is a finding t
 surfaced in real work: a defect, a gap between a written rule and what runs, or a check shown to
 work. It feeds each program increment's re-grade (`docs/PROGRAM_INCREMENTS.md`) and the case study.
 
+## Three Roles, One Document
+
+The journal is one living document with three functions. Each is for a different reader, and all
+three feed the same loop: the playbook sets a standard, work tests it, the journal records what
+happened, and what it records changes the standard, the controls, and the next piece of work.
+
+| Role | Status | For | What it gives them | How they read it |
+| :--- | :--- | :--- | :--- | :--- |
+| **Engineering artifact** | **In use** | Engineers and reviewers | The chronological, evidence-linked history of findings, corrections, verification, and unresolved work, so the project's actual state does not have to be rebuilt from Git history | The entries in order; the [CAPA register](FINDINGS_REGISTER.json) for what is open, its severity, and its deadline |
+| **Learning resource** | Designed, not yet wired | People learning the craft, through a learning system | Engineering experience turned into causal knowledge: what failed, why, how it was detected, how the fix was verified, and what now prevents it | Each entry's CAPA fields as a lesson; the register's category and severity to group and order lessons |
+| **Feedback mechanism** | Designed, not yet wired | The factory's agents and future engineering decisions | Prior experience to weigh against the playbook's standards and the current evidence, so the variance between what a rule says, what happened before, and what is happening now is visible | The register as structured data (category, severity, status, residual); the entries it points to, as the reasoning behind each row |
+
+**Status, honestly:** the engineering artifact is in use. The learning resource and the feedback
+mechanism are designed but not yet wired: no learning system reads the journal yet, and no agent
+is given it yet. When agents are, they will receive a slice relevant to their task, never the whole
+journal, as with every other piece of context (`AGENTS.md` → Reuse Rules). The structure is already
+ready for all three, though only the first is served: CAPA fields in every entry, and a register
+with the same rows as machine-readable data.
+
 ## Format: CAPA
 
 Every entry follows **CAPA** (Corrective and Preventive Action), the quality-management form of a
@@ -49,7 +68,8 @@ every pull request and every day.
 - **Deadlines are mandatory.** A due date past its severity's deadline is refused, and an open
   finding past its due date fails the daily run.
 - **Control effectiveness is measured.** Every run's summary reports the share of control classes
-  proven to fail on their defect, the share of findings caught by a control rather than a person,
+  proven to fail on their defect, the share of findings recorded as caught by a control rather than
+  a person (the register's `detected_by`, set by hand for each finding, not derived from evidence),
   open findings by severity, and days to close.
 - **Governance closes before production.** Production readiness is false while any critical or
   high security or governance finding is open; no production operation until it is true.
