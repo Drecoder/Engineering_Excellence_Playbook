@@ -183,10 +183,10 @@ Recorded here until decided, each by a reviewed change to this document:
   and pilot users take part.
 - **Approver identity:** GitHub forbids approving your own pull request, and with one maintainer
   every change is authored by that maintainer, so "require an approving review" cannot be met
-  (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`). The factory has one maintainer by
-  design, and needs no second person: the approval rule needs a second identity. Recommended:
-  changes are authored by a factory identity (a GitHub App, free, for the Builder and for
-  hand-built work), and the maintainer is the approver, as the factory's design intends. Until then, protection requires a pull request,
+  (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`). The factory's developers are its
+  agents; the person is the approver. Recommended: each agent authors under its own identity (a
+  GitHub App, free: the Builder, and the coding assistant for hand-built work), and the person
+  approves and merges, as the factory's design intends. Until then, protection requires a pull request,
   the gate checks, and no force-push or deletion, without a review count.
 
 ## Decided
