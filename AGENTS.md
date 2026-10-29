@@ -285,6 +285,10 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   deploy button.
 - **Workloads and agents:** short-lived federated identity only — never static keys or service
   account keys; trust policies pin repo, branch, and environment.
+- **Agents act on GitHub as their own GitHub Apps,** least privilege, installed on selected
+  repositories only. An App's private key is held non-exportable in Cloud KMS; the agent signs its
+  App token through KMS with its federated identity, every signature is audit-logged, and no one
+  holds the key file (`06_AgentZone/01_Agent_Standards.md` §8).
 - **CI least privilege:** workflows default to `permissions: contents: read` and grant more per
   job. Shared reusable workflows are reachable only by the owning user/org (never public), receive
   secrets explicitly (never `secrets: inherit`), and are pinned by callers to a full commit SHA.
@@ -350,7 +354,8 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   rig-scan gates pass (plus self-review when enabled).
 - **AI review advises; humans approve.** Merges to staging and prod require human approval.
   Auto-merge is limited to process classes promoted to L3 or above under Autonomy Rules, never to
-  a protected class.
+  a protected class. Agents author changes under their own App identities, never the person's;
+  the Reviewer never submits an approval, and `main` requires the person's code-owner review.
 - **Third-party coding agents are allowed only behind the same invariant.** A platform-external
   agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
   passes the same deterministic gates and the same human-approved merge, and never bypasses them.
