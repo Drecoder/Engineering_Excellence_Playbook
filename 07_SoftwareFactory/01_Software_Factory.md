@@ -30,9 +30,9 @@ Every zone of the playbook lands on a bench in the factory.
 
 ## 2️⃣ The Benches
 
-All repositories are under `Drecoder`. The playbook is public; every factory repository is private,
-because only a private repository can call the private central gate. Going public is one step for
-all of them together, after one history audit.
+All repositories are under `Drecoder`. The playbook is public: it is the public face of the work.
+Every factory repository is private, and one private repository can call another's reusable
+workflow, so all of them can call the private central gate.
 
 | Repository | Bench | Kind | Takes in | Puts out |
 | :--- | :--- | :--- | :--- | :--- |
