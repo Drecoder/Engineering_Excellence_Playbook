@@ -68,7 +68,8 @@ every pull request and every day.
 - **Deadlines are mandatory.** A due date past its severity's deadline is refused, and an open
   finding past its due date fails the daily run.
 - **Control effectiveness is measured.** Every run's summary reports the share of control classes
-  proven to fail on their defect, the share of findings caught by a control rather than a person,
+  proven to fail on their defect, the share of findings recorded as caught by a control rather than
+  a person (the register's `detected_by`, set by hand for each finding, not derived from evidence),
   open findings by severity, and days to close.
 - **Governance closes before production.** Production readiness is false while any critical or
   high security or governance finding is open; no production operation until it is true.

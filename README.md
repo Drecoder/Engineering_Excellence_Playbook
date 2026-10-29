@@ -36,12 +36,15 @@ back:
   future decisions to weigh against the playbook's standards and current evidence. No agent is
   given it yet.
 
+How it is kept honest:
+
 - **Append-only, enforced:** CI refuses any change that edits, deletes, or reorders an entry.
 - **Ranked and timed:** the **[CAPA register](docs/FINDINGS_REGISTER.json)** gives every finding a
   severity on a written rubric and a mandatory deadline (critical 7 days, high 30, medium 90, low
   180); an overdue finding fails the daily run.
 - **Measured:** every run reports how many control classes are proven to fail on their defect and
-  how many findings a control caught rather than a person.
+  how many findings are recorded as caught by a control rather than a person (an attribution
+  recorded by hand for each finding in the register, not derived from the evidence).
 - **Governance before production:** production readiness stays false while any critical or high
   security or governance finding is open.
 
