@@ -51,7 +51,7 @@ journal moves into the notepad's filing system, where each entry is a sealed, ha
   applying the same one-line fix to a copy of the verbatim prototype.
 - **Verification:** the Phase 1 exit check passes; 7 unit tests at the time, 25 later.
 - **Evidence:** coqui-tts `fd4d39c`, `57e51ba`; `reports/phase1-equivalence-20261028T061544Z.json`.
-- **Status:** fixed.
+- **Status:** proven (edited after the fact, which the check must refuse).
 
 ## 2026-10-28: A model loader that writes broke on a read-only root
 
