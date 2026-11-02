@@ -88,6 +88,11 @@ Recorded here until decided, each by a reviewed change to this document:
 - Whether the reviewer must be a different person from the architect (a two-person rule).
 - Where an approved spec is decomposed into Builder tasks (`builder.spec.v1`): before review, so
   reviewers approve the breakdown, or after.
+- **MVP path vs the event backbone.** Until the backbone exists, the MVP uses a simpler path: the
+  architect (a person or an agent) posts the spec to the board's Backlog, the owner's move to Ready
+  is the approval, and `jira-orchestrator` polls the board (`07_SoftwareFactory/01_Software_Factory.md`).
+  That makes the board the workflow authority, which conflicts with §5's event log as system of
+  record; the choice is recorded in an ADR before the backbone is built.
 
 ---
 
