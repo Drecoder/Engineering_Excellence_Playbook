@@ -18,7 +18,7 @@ object references use `schemas/claim_check.v1.schema.json`; the round rules stay
 
 | Step | Producer | Event | Object in the store | Consumer |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | Builder, after the PR's gates pass | `review.requested` | The review request: the change (repo, PR, exact head commit), the task and spec version it implements, the round, and the previous round's findings | Reviewer's queue |
+| 1 | Builder, after the PR's gates pass | `review.requested` | The review request (`review_request.v1`): the change (repo, PR, exact base and head commits), the task and spec version it implements, the round, the Builder's sealed notepad version, and the previous round's findings and dispositions with the Builder's answer to each fingerprint | Reviewer's queue |
 | 2 | Reviewer, when the round's review is done | `review.completed` | The round's `review_findings.v1` document | Builder's queue, audit |
 | 3 | Builder, if blocking findings remain | (pushes a fix to the same PR) then `review.requested` for the next round | The new request | Reviewer's queue |
 

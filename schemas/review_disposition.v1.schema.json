@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_disposition.v1.schema.json",
+  "title": "review_disposition.v1",
+  "description": "A person's decisions on one review round's findings (06_AgentZone/07_Agent_Notepad.md §5, step 3). Written in the human region of the person's notepad and sealed on submit; the service places it in the Builder's next working copy as a read-only input. Each fingerprint appears at most once (the service rejects duplicates; JSON Schema cannot express uniqueness by key). Disagreeing waives a fingerprint: it starts no further round and is not raised again. A suggestion enters the next round as a human-sourced finding. A disposition never approves a merge; branch protection does.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "disposition_id", "review", "author", "submitted_at", "dispositions", "suggestions"],
+  "properties": {
+    "schema_version": { "const": "review_disposition.v1" },
+    "disposition_id": { "type": "string", "format": "uuid" },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "pr_number", "head_sha", "round", "task_id", "spec_id", "findings_sha256"],
+      "properties": {
+        "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" },
+        "pr_number": { "type": "integer", "minimum": 1 },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}(?!\n)$" },
+        "round": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "task_id": { "$ref": "notepad_manifest.v1.schema.json#/$defs/id" },
+        "spec_id": { "$ref": "notepad_manifest.v1.schema.json#/$defs/id" },
+        "findings_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}(?!\n)$", "description": "The sealed review_findings.v1 document these decisions answer." }
+      }
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "subject", "role"],
+      "properties": {
+        "kind": { "const": "human", "description": "Dispositions belong to people. The service sets this from the caller's token claims and refuses an agent identity." },
+        "subject": { "type": "string", "maxLength": 256, "pattern": "^[A-Za-z0-9:/._@-]{1,256}(?!\n)$" },
+        "role": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" }
+      }
+    },
+    "submitted_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z(?!\n)$" },
+    "dispositions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fingerprint", "decision"],
+        "properties": {
+          "fingerprint": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?!\n)$" },
+          "decision": { "enum": ["agree", "disagree", "comment"] },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 4000 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "decision": { "enum": ["disagree", "comment"] } }, "required": ["decision"] },
+            "then": { "required": ["reason"] }
+          }
+        ]
+      }
+    },
+    "suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["summary"],
+        "properties": {
+          "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "file": { "type": "string", "maxLength": 512 },
+          "start_line": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

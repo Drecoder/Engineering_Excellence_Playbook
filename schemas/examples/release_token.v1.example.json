@@ -1,0 +1,14 @@
+{
+  "iss": "compliance-authority",
+  "sub": "Drecoder/aws-builder-agent",
+  "aud": "deploy-guard:staging",
+  "jti": "9c8b7a6d-5e4f-4321-8abc-0d1e2f3a4b5c",
+  "iat": 1793196000,
+  "nbf": 1793196000,
+  "exp": 1793196900,
+  "eval_run_id": "1e2d3c4b-5a69-4788-9a0b-c1d2e3f4a5b6",
+  "artifact_type": "CONTAINER_DIGEST",
+  "artifact_digest": "sha256:4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c",
+  "environment": "staging",
+  "contract_version": "6.0.0"
+}

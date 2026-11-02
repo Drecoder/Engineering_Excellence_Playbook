@@ -1,0 +1,121 @@
+# Builds the pinned anti-pattern toolchain image, runs the catalog tests, and re-verifies every
+# detector mapping in it (00_UniversalStandards/11_Anti_Pattern_Catalog.md §2). Pull requests and
+# pushes only verify. A manual run with record=true also opens a pull request that records the
+# results as verified_in: ci, the permanent record; nothing is written to a branch directly.
+name: Anti-pattern catalog
+
+on:
+  pull_request:
+    paths:
+      - "schemas/antipattern*.json"
+      - "schemas/examples/antipatterns/**"
+      - "tests/antipatterns/**"
+      - "metrics/promql/pint.hcl"
+      - ".github/workflows/antipatterns.yml"
+  push:
+    branches: [main]
+    paths:
+      - "schemas/antipattern*.json"
+      - "schemas/examples/antipatterns/**"
+      - "tests/antipatterns/**"
+      - "metrics/promql/pint.hcl"
+      - ".github/workflows/antipatterns.yml"
+  workflow_dispatch:
+    inputs:
+      record:
+        description: Open a pull request recording the verified mappings as verified_in ci
+        type: boolean
+        default: false
+
+permissions:
+  contents: read # default for every job; the record job grants itself more
+
+concurrency:
+  group: antipatterns-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: playbook-antipattern-toolchain
+
+jobs:
+  verify:
+    name: Build toolchain, test, verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the toolchain image
+        run: docker build --pull -t "$IMAGE:ci" tests/antipatterns/toolchain
+
+      - name: Resolve the image digest
+        id: image
+        run: echo "ref=$IMAGE@$(docker image inspect "$IMAGE:ci" --format '{{.Id}}')" >> "$GITHUB_OUTPUT"
+
+      - name: Catalog tests
+        run: |
+          docker run --rm -v "$PWD:/work:ro" -e PYTHONDONTWRITEBYTECODE=1 "$IMAGE:ci" \
+            python -m unittest discover -s tests/antipatterns -v
+
+      - name: Verify every mapping
+        env:
+          TOOLCHAIN_IMAGE: ${{ steps.image.outputs.ref }}
+        # The checkout is mounted read-only; the container (non-root) writes only to out/.
+        run: |
+          mkdir -p out
+          chmod 0777 out
+          docker run --rm -v "$PWD:/work:ro" -v "$PWD/out:/out" -e TOOLCHAIN_IMAGE -e PYTHONDONTWRITEBYTECODE=1 \
+            "$IMAGE:ci" python tests/antipatterns/verify_detectors.py --verified-in ci \
+            --write --out /out/antipatterns.v1.json --report /out/report.json > /dev/null
+
+      - name: Upload the verification results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: antipattern-verification
+          path: out/
+          if-no-files-found: warn
+          retention-days: 30
+
+  record:
+    name: Open a pull request recording verified_in ci
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && inputs.record
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the ci/antipatterns-verified-<run> branch (never the base branch)
+      pull-requests: write # open the pull request a person reviews and merges
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: antipattern-verification
+          path: out
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          BASE: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cp out/antipatterns.v1.json schemas/antipatterns.v1.json
+          if git diff --quiet; then
+            echo "The catalog already matches this verification; nothing to record."
+            exit 0
+          fi
+          branch="ci/antipatterns-verified-${RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "chore(antipatterns): record CI verification (run ${RUN_ID})"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$branch"
+          gh pr create --base "$BASE" --head "$branch" \
+            --title "chore(antipatterns): record CI verification (run ${RUN_ID})" \
+            --body "Records the detector mappings verified by workflow run ${RUN_ID} as verified_in: ci. The toolchain image and tool versions are in each mapping; the full report is the run's antipattern-verification artifact."

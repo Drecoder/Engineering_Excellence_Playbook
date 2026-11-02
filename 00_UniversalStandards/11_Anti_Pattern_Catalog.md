@@ -44,7 +44,9 @@ such as the Terragrunt rules and dependency conflicts.
 Verification runs only in the toolchain image (`tests/antipatterns/toolchain/`,
 `tests/antipatterns/verify_detectors.py`), never with host-installed tools
 (`00_UniversalStandards/12_Containers.md`). A `local` verification is provisional until the CI job
-repeats it in the same image.
+(`.github/workflows/antipatterns.yml`) repeats it in the same image. The job verifies every pull
+request that touches the catalog; a manual run with `record` opens a pull request that records the
+results as `verified_in: ci`. A run with any failed mapping records nothing.
 
 ## 3️⃣ The Contract for rig and the Reviewer
 

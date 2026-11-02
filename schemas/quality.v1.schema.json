@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quality.v1.schema.json",
+  "title": "quality.v1",
+  "description": "A repository's test-quality floors (00_UniversalStandards/14_Test_Quality.md), committed as .ci/quality.v1.json and read by the central gates. The coverage floor blocks a pull request whose total line coverage falls below it; changed-line coverage is measured and reported on every pull request against changed_lines_target. The mutation floor is held by the nightly mutation run. A floor is raised freely and lowered only through a reviewed pull request named in approved_in; .ci/ is code-owned. A missing or invalid file fails the gate closed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "owner", "approved_in", "coverage"],
+  "properties": {
+    "schema_version": { "const": "quality.v1" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$", "description": "The repository this file belongs to; the gate refuses a file naming another repository." },
+    "owner": { "type": "string", "pattern": "^github:[A-Za-z0-9-]{1,39}(?!\n)$" },
+    "approved_in": { "type": "string", "pattern": "^https://github\\.com/[\\w.-]+/[\\w.-]+/pull/[0-9]+(?!\n)$", "description": "The pull request that set the current floors." },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["floor", "changed_lines_target", "report"],
+      "properties": {
+        "floor": { "type": "number", "minimum": 0.6, "maximum": 1, "description": "Total line coverage below this blocks. Set at or just under the measured value, never below 0.6." },
+        "changed_lines_target": { "type": "number", "minimum": 0.6, "maximum": 1, "description": "Reported on every pull request; lines below it are listed as untested (features.v1 structure.untested)." },
+        "report": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "format"],
+          "properties": {
+            "path": { "type": "string", "maxLength": 256, "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]+(?!\n)$", "description": "Where the test command writes its report, relative to the repository root." },
+            "format": { "enum": ["cobertura", "lcov"] }
+          }
+        }
+      }
+    },
+    "mutation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["floor", "tool", "paths"],
+      "properties": {
+        "floor": { "type": "number", "minimum": 0.5, "maximum": 1, "description": "Killed mutants over all mutants, held by the nightly run." },
+        "tool": { "enum": ["mutmut", "stryker"] },
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "maxLength": 256, "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]+(?!\n)$" },
+          "description": "The critical paths mutated (authorization, money, data deletion first)."
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "coverage": { "properties": { "report": { "properties": { "format": { "const": "lcov" } } } } } } },
+      "then": { "properties": { "mutation": { "properties": { "tool": { "const": "stryker" } } } } } },
+    { "if": { "properties": { "coverage": { "properties": { "report": { "properties": { "format": { "const": "cobertura" } } } } } } },
+      "then": { "properties": { "mutation": { "properties": { "tool": { "const": "mutmut" } } } } } }
+  ]
+}

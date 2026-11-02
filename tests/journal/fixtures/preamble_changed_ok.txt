@@ -1,0 +1,15 @@
+# Journal
+
+Preamble, with the format explained.
+
+---
+
+## 2026-10-28: First finding
+
+- **Problem:** one.
+- **Status:** fixed.
+
+## 2026-10-29: Second finding
+
+- **Problem:** two.
+- **Status:** open.

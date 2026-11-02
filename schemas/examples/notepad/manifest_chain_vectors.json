@@ -1,0 +1,91 @@
+{
+  "description": "Hash-chained notepad manifests (06_AgentZone/07_Agent_Notepad.md \u00a72). digest = sha256 over the manifest's canonical JSON (compact, key-sorted, ASCII). Each file entry's sha256 is over the file's exact bytes (contents given here as UTF-8). v2.previous must equal v1's digest.",
+  "file_contents": {
+    "v1": {
+      "questions/q-001.md": "Answer: keep one bucket per project for now.\n",
+      "thought-log.md": "Chose an in-memory backend for golden tasks.\n"
+    },
+    "v2": {
+      "questions/q-001.md": "Answer: keep one bucket per project for now.\n",
+      "thought-log.md": "Chose an in-memory backend for golden tasks.\nFixed the timeout finding.\n"
+    }
+  },
+  "vectors": [
+    {
+      "manifest": {
+        "schema_version": "notepad_manifest.v1",
+        "project_id": "software-factory",
+        "agent": "builder",
+        "spec_id": "agent-notepad",
+        "task_id": "notepad-01-service-core",
+        "writer": "arn:aws:sts::111122223333:assumed-role/builder/session-1",
+        "version": 1,
+        "previous": null,
+        "sealed_at": "2026-10-28T15:00:00Z",
+        "files": [
+          {
+            "path": "questions/q-001.md",
+            "region": "human",
+            "sha256": "sha256:a35dab1d39a6bc033d5217738713fc7b45d370577033d7f3b87d2b97d26a57c4",
+            "size_bytes": 45
+          },
+          {
+            "path": "thought-log.md",
+            "region": "agent_append",
+            "sha256": "sha256:d1d82d853c7ef7c5fc74e4831cabb23916462f3f681ce11d6344348ca7b4036f",
+            "size_bytes": 45
+          }
+        ],
+        "inputs": [
+          {
+            "kind": "spec",
+            "sha256": "sha256:7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f"
+          }
+        ]
+      },
+      "digest": "sha256:8651186cea181cabbc1587b14b79fbe501378eae5a283f1035c6f72cd60b2858"
+    },
+    {
+      "manifest": {
+        "schema_version": "notepad_manifest.v1",
+        "project_id": "software-factory",
+        "agent": "builder",
+        "spec_id": "agent-notepad",
+        "task_id": "notepad-01-service-core",
+        "writer": "arn:aws:sts::111122223333:assumed-role/builder/session-1",
+        "version": 2,
+        "previous": "sha256:8651186cea181cabbc1587b14b79fbe501378eae5a283f1035c6f72cd60b2858",
+        "sealed_at": "2026-10-28T16:30:00.25Z",
+        "files": [
+          {
+            "path": "questions/q-001.md",
+            "region": "human",
+            "sha256": "sha256:a35dab1d39a6bc033d5217738713fc7b45d370577033d7f3b87d2b97d26a57c4",
+            "size_bytes": 45
+          },
+          {
+            "path": "thought-log.md",
+            "region": "agent_append",
+            "sha256": "sha256:15ba2f5cbb7665bf659c6da85bc378730ff69f971c0918868249e10ed11af20f",
+            "size_bytes": 72
+          }
+        ],
+        "inputs": [
+          {
+            "kind": "spec",
+            "sha256": "sha256:7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f"
+          },
+          {
+            "kind": "review_findings",
+            "sha256": "sha256:2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b"
+          },
+          {
+            "kind": "review_disposition",
+            "sha256": "sha256:8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a"
+          }
+        ]
+      },
+      "digest": "sha256:d77ecaca88662e5f08482b8a69b8e73ecc11868f84dbbce29e7664e3f4d1d099"
+    }
+  ]
+}

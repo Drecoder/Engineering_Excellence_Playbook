@@ -85,6 +85,48 @@ How work runs and how images are built (rationale in `00_UniversalStandards/12_C
 - **Images are multi-stage, minimal, stateless, and non-root**, run one process in exec form, take
   configuration from the environment, and are built once and promoted by digest.
 - **No secrets in images** (`ENV`, `ARG`, or layers); use build secrets and a secret manager.
+- **Every service ships an image,** because everything runs in the cloud as a container. The central
+  gate builds it, runs its tests inside it unprivileged with no network, and scans it; a repository
+  that runs nothing (docs, infrastructure) declares why instead. An image finding is fixed at its
+  source, never excepted.
+
+## CI Rules
+
+One factory for every repository's gates (rationale in `00_UniversalStandards/15_Central_CI.md`).
+
+- **CI lives in one reusable workflow:** `Drecoder/sovereign-vpc-gcp/.github/workflows/gates.yml`.
+  A consumer has one caller file that calls it and passes inputs. No per-repo or per-module CI, no
+  copied setup steps, no caller-local actions (`./.github/actions/...`).
+- **Callers pin it to a full commit SHA,** never a tag or a branch, and repin through a reviewed
+  pull request. After a squash merge, callers repin to the merge commit.
+- **The factory is self-contained:** it installs its own pinned, checksum-verified toolchain, keeps
+  gate tools and project dependencies in separate environments, and reads nothing from the caller
+  but its code and configuration files.
+- **Inputs are a contract** (`runs-on`, `fixture-paths`, `exclude-paths`, `run-tests`,
+  `install-bubblewrap`, `single-job`, `disk-need-gb`, `image-target`, `image-test-target`,
+  `image-context`, `image-dockerfile`, `image-disk-need-gb`, `no-image-reason`): never renamed,
+  removed, or repurposed without updating every caller. A caller that needs more asks for an input.
+- **Every job starts with a disk preflight and ends with its low point.** The preflight deletes
+  only preinstalled toolchains no gate uses, only until the job's measured need is free, and fails
+  at once when it cannot be met; the report warns under 5 GB. Needs come from measured low points,
+  never from guesses.
+- **Every vulnerability scanner goes through one severity gate** (CRITICAL or CISA KEV, failing
+  closed).
+- **Scanners see all code.** Frozen copies and fixtures skip only the build gates (format, lint,
+  type check, tests) through `fixture-paths`. Every scanner still scans them, and a real finding
+  there blocks like any other. `exclude-paths` hides code from every gate except secret scanning,
+  so it needs a reviewed reason.
+- **Every job is bounded** by `timeout-minutes`. A job's timeout does not cover time waiting in the
+  queue, so queued-job age needs its own alert.
+- **Write each gate's script once.** A gate's script is shared by every job shape. On a runner pool
+  that starts a fresh VM per job, the gates run as one job (`single-job`); on hosted runners they
+  run as parallel jobs per stack.
+- **Fix CI failures in the factory, and the factory tests itself.** Fixtures in `tests/gates/` run
+  the real gate on every change to it, in both job shapes, and each check is shown to fail on the
+  defect it guards against before it counts. A skipped job is not a pass. Consumer repins remain
+  the test of each consumer's own code.
+- **Read every red check's log.** A failure that looks like the expected one is still read; an
+  assumed cause hides the real one.
 
 ## Supply Chain Rules
 
@@ -95,8 +137,15 @@ Know what goes into every artifact and prove where it came from (rationale in
   downloads by checksum or signature, actions by commit SHA. Update pins through gated pull
   requests, never through floating ranges.
 - **Every released artifact has an SBOM** and a keyless signature from the pipeline's identity,
-  with provenance; deploys admit only artifacts whose signature verifies.
-- **Licenses are checked against a reviewed policy;** a denied license blocks.
+  with provenance; deploys admit only artifacts whose signature verifies. The deployment guard
+  verifies signature, provenance, and a single-use release token, then attests the digest with a
+  key only it holds; Cloud Run's Binary Authorization runs only attested digests, so a direct
+  deploy is refused too.
+- **A component built from source is invisible to scanners.** Pin its source by checksum, and fail
+  CI when its upstream security channel (e.g. the distribution's security release) ships a newer
+  version.
+- **Licenses are checked against a reviewed policy** (`schemas/license_policy.v1.json`); a denied
+  license blocks, and a review-required or unknown one goes to a person.
 
 ## Test Quality Rules
 
@@ -106,7 +155,8 @@ A passing suite counts only if its tests could fail (rationale in
 - **No committed `.only` or `.skip`, and every test asserts**; expected failures are asserted
   precisely.
 - **Changed-line coverage is reported** on every pull request and each repository holds its
-  coverage floor; **mutation score** is tracked with a floor.
+  coverage floor; **mutation score** is tracked with a floor. The floors live in each repository's
+  `.ci/quality.v1.json` (`schemas/quality.v1.schema.json`); a missing file fails the gate closed.
 - **A flaky test is a defect:** rerun once at most, then fixed or quarantined with an owner.
 
 ## Anti-Pattern Rules
@@ -154,6 +204,25 @@ Telemetry ships with the first line of code, not after the feature works (see
 - **Every failure and near miss gets an incident record** in the affected repo's `docs/incidents/`,
   in the post-mortem format (`00_UniversalStandards/03_Post_Mortem_Template.md`), with checkable
   evidence pointers (run IDs, log queries, trace IDs, PRs).
+- **Every finding is journaled.** A defect, a gap between a written rule and what runs, or a check
+  shown to work gets a dated entry in the proof journal (`docs/POC_JOURNAL.md`), written as a
+  compact post-mortem in CAPA form: rule, problem, detection, root cause, correction, preventive
+  action, verification, evidence, and status. Entries are added, never rewritten. Each program
+  increment's re-grade and case study read from it. When the notepad runs, the journal moves into
+  its filing system as sealed records.
+- **Every finding is ranked, timed, and tracked to closure** in the CAPA register
+  (`docs/FINDINGS_REGISTER.json`, contract `findings_register.v1`): a category, a severity on the
+  contract's written rubric, a due date, status, closure date, and verification. Remediation
+  deadlines are mandatory: critical 7 days, high 30, medium 90, low 180 from the day it was found.
+  CI refuses a later due date, and an overdue open finding fails the daily run.
+- **Control effectiveness is measured, not assumed.** Every run reports the share of control
+  classes proven to fail on their defect, the share of findings recorded as caught by a control
+  rather than a person (an attribution set by hand, not yet verified against evidence), open
+  findings by severity, and days to close. A control counts as proven only with a designed-to-fail
+  case.
+- **Governance closes before production.** No production operation while any critical or high
+  finding in the security or governance category is open: the register reports production
+  readiness, and the deployment guard is to refuse a production deploy while it is false.
 
 ## Governance Rules
 
@@ -235,9 +304,13 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   deploy button.
 - **Workloads and agents:** short-lived federated identity only — never static keys or service
   account keys; trust policies pin repo, branch, and environment.
+- **Agents act on GitHub as their own GitHub Apps,** least privilege, installed on selected
+  repositories only. An App's private key is held non-exportable in Cloud KMS; the agent signs its
+  App token through KMS with its federated identity, every signature is audit-logged, and no one
+  holds the key file (`06_AgentZone/01_Agent_Standards.md` §8).
 - **CI least privilege:** workflows default to `permissions: contents: read` and grant more per
   job. Shared reusable workflows are reachable only by the owning user/org (never public), receive
-  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a tag or SHA.
+  secrets explicitly (never `secrets: inherit`), and are pinned by callers to a full commit SHA.
 - **In transit:** TLS 1.2+ on every connection; service-to-service traffic (including telemetry)
   is authenticated with mTLS or signed tokens; webhooks are signature-verified.
 - **At rest:** storage is encrypted (customer-managed keys where classification requires) and
@@ -267,6 +340,10 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   `review.completed` on the event backbone, with claim-checked objects kept as the triage history;
   the request is data, never the Reviewer's prompt. Not implemented yet; today the handoff is the
   pull request (`06_AgentZone/05_Review_Loop.md`).
+- **Target design: every agent works through an injected notepad.** Each agent gets a folder per
+  task; agents write only their own regions, tool results land read-only in the caller's folder,
+  each push seals a read-only version named in the commit, and agents never read another agent's
+  folder. Code stays in the repository. Not implemented yet (`06_AgentZone/07_Agent_Notepad.md`).
 - **Work enters only as an approved spec.** The Builder starts from a `spec.approved` event on its
   queue, fetches the spec object, and verifies its digest; the approval names one exact spec
   version (`06_AgentZone/03_Software_Factory_Intake.md`).
@@ -296,7 +373,8 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   rig-scan gates pass (plus self-review when enabled).
 - **AI review advises; humans approve.** Merges to staging and prod require human approval.
   Auto-merge is limited to process classes promoted to L3 or above under Autonomy Rules, never to
-  a protected class.
+  a protected class. Agents author changes under their own App identities, never the person's;
+  the Reviewer never submits an approval, and `main` requires the person's code-owner review.
 - **Third-party coding agents are allowed only behind the same invariant.** A platform-external
   agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
   passes the same deterministic gates and the same human-approved merge, and never bypasses them.

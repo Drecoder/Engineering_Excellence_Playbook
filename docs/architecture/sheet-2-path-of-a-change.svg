@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 600" width="780" height="600" role="img" aria-labelledby="title">
+  <title id="title">A change flows from intake to the Builder, through the CI gates and the Reviewer, to a person who approves the merge and the apply pipeline. The spec is an object in a versioned store fetched and verified by digest. Signed CI evidence goes to an independent compliance authority whose single-use token is consumed by the deployment guard. Each box is a separate identity.</title>
+  <style>
+  :root, svg { --sheet: #f9fafb; --ink: #1b2733; --ink-2: #3b4a59; --muted: #64758a; --rule: #c9d1da;
+    --accent: #b35c00; --block: #b42318; color: #1b2733; }
+  @media (prefers-color-scheme: dark) {
+    :root, svg { --sheet: #151c24; --ink: #dce5ee; --ink-2: #b6c3d0; --muted: #8b9cae; --rule: #2b3642;
+      --accent: #e9a24c; --block: #f2786d; color: #dce5ee; }
+  }
+  .bg { fill: var(--sheet); }
+  .box { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.3; }
+  .box.design { stroke: var(--muted); stroke-dasharray: 5 4; }
+  .box.blocked { stroke: var(--block); stroke-dasharray: 5 4; }
+  .box.frame { fill: none; stroke: var(--ink); stroke-width: 2; }
+  .tick { fill: var(--accent); }
+  .sep { stroke: var(--rule); stroke-width: 1; }
+  .t { fill: var(--ink); font-family: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif; font-weight: 600; font-size: 13px; }
+  .design-t { fill: var(--muted); }
+  .s { fill: var(--muted); font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 10.5px; }
+  .xs { fill: var(--muted); font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 9px; }  /* image SVGs fall back to a wider mono */
+  .band { fill: var(--ink); font-family: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: 0.1em; }
+  .lbl { fill: var(--ink-2); font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; font-size: 11.5px; }
+  .lbl.warn { fill: var(--block); }
+  .lbl.key { fill: var(--accent); font-weight: 600; }
+  .arrow { stroke: var(--ink); stroke-width: 1.3; fill: none; }
+  .arrow.design { stroke: var(--muted); stroke-dasharray: 5 4; }
+  .arrow.blocked { stroke: var(--block); stroke-dasharray: 5 4; }
+  .xmark { stroke: var(--block); stroke-width: 2.2; }
+  </style>
+  <rect class="bg" x="0" y="0" width="780" height="600"/>
+          <defs>
+            <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          </defs>
+
+          <!-- main column -->
+          <rect class="box design" x="200" y="30" width="240" height="56"/>
+          <text class="t design-t" x="214" y="53">Intake</text><text class="s" x="214" y="71">architect · wizard · grooming</text>
+          <rect class="box" x="200" y="122" width="240" height="56"/>
+          <text class="t" x="214" y="145">Builder</text><text class="s" x="214" y="163">plans only · never applies</text>
+          <rect class="box" x="200" y="214" width="240" height="56"/><polygon class="tick" points="426,214 440,214 440,228"/>
+          <text class="t" x="214" y="237">CI gates</text><text class="s" x="214" y="255">one factory · sheet 3</text>
+          <rect class="box" x="200" y="306" width="240" height="56"/>
+          <text class="t" x="214" y="329">Reviewer</text><text class="s" x="214" y="347">lenses · advisory findings</text>
+          <rect class="box" x="200" y="398" width="240" height="56"/>
+          <text class="t" x="214" y="421">A person approves the merge</text><text class="s" x="214" y="439">branch protection, no bypass</text>
+          <rect class="box" x="200" y="490" width="240" height="56"/>
+          <text class="t" x="214" y="513">Apply pipeline</text><text class="s" x="214" y="531">own identity · post-merge</text>
+
+          <line class="arrow design" x1="320" y1="86" x2="320" y2="121" marker-end="url(#ah2)"/>
+          <text class="lbl" x="332" y="108">spec.approved (claim check)</text>
+          <line class="arrow" x1="320" y1="178" x2="320" y2="213" marker-end="url(#ah2)"/>
+          <text class="lbl" x="332" y="200">opens PR · calls gates at SHA</text>
+          <line class="arrow" x1="320" y1="270" x2="320" y2="305" marker-end="url(#ah2)"/>
+          <text class="lbl" x="332" y="292">review requested (today: the PR)</text>
+          <line class="arrow" x1="320" y1="362" x2="320" y2="397" marker-end="url(#ah2)"/>
+          <text class="lbl" x="332" y="384">no blocking findings · ≤ 4 rounds</text>
+          <line class="arrow" x1="320" y1="454" x2="320" y2="489" marker-end="url(#ah2)"/>
+          <text class="lbl" x="332" y="476">merged, approved plan</text>
+
+          <!-- review loop -->
+          <polyline class="arrow" points="199,334 160,334 160,150 199,150" marker-end="url(#ah2)"/>
+          <text class="lbl" x="150" y="238" text-anchor="end">review completed:</text>
+          <text class="lbl" x="150" y="254" text-anchor="end">fix, next round</text>
+
+          <!-- spec store -->
+          <rect class="box design" x="520" y="30" width="220" height="56"/>
+          <text class="t design-t" x="534" y="53">Object store</text><text class="s" x="534" y="71">versioned · object-locked</text>
+          <line class="arrow design" x1="440" y1="58" x2="519" y2="58" marker-end="url(#ah2)"/>
+          <text class="lbl" x="480" y="50" text-anchor="middle">writes spec</text>
+          <polyline class="arrow design" points="630,86 630,150 441,150" marker-end="url(#ah2)"/>
+          <text class="lbl" x="638" y="122">fetch, verify sha256</text>
+
+          <!-- release authority -->
+          <rect class="box design" x="520" y="306" width="220" height="56"/>
+          <text class="t design-t" x="534" y="329">Compliance authority</text><text class="s" x="534" y="347">verifies evidence, signs</text>
+          <polyline class="arrow design" points="440,242 630,242 630,305" marker-end="url(#ah2)"/>
+          <text class="lbl" x="452" y="236">signed evidence</text>
+          <rect class="box design" x="520" y="490" width="220" height="56"/>
+          <text class="t design-t" x="534" y="513">Deployment guard</text><text class="s" x="534" y="531">accepts each token once</text>
+          <line class="arrow design" x1="630" y1="362" x2="630" y2="489" marker-end="url(#ah2)"/>
+          <text class="lbl key" x="622" y="430" text-anchor="end">RS256 token, single use</text>
+          <line class="arrow design" x1="630" y1="546" x2="630" y2="584" marker-end="url(#ah2)"/>
+          <text class="lbl" x="622" y="574" text-anchor="end">deploys the pinned digest</text>
+        </svg>

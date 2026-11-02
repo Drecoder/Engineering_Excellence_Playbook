@@ -1,0 +1,16 @@
+{
+  "schema_version": "quality.v1",
+  "repo": "Drecoder/compliance-authority",
+  "owner": "github:Drecoder",
+  "approved_in": "https://github.com/Drecoder/compliance-authority/pull/2",
+  "coverage": {
+    "floor": 0.9,
+    "changed_lines_target": 0.9,
+    "report": { "path": "coverage.xml", "format": "cobertura" }
+  },
+  "mutation": {
+    "floor": 0.7,
+    "tool": "mutmut",
+    "paths": ["compliance/deploy_guard.py", "compliance/tokens.py", "compliance/evidence.py"]
+  }
+}

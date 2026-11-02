@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "notepad_channels.v1.schema.json",
+  "title": "notepad_channels.v1",
+  "description": "The channel types of the agent notepad (06_AgentZone/07_Agent_Notepad.md §3): for every file a task folder may hold, its region and format. The notepad service enforces it on every write, and central CI checks the same declaration on any change a person pushes. A path that matches no declared file is rejected; a path that matches more than one is a defect in the declaration, rejected when it is loaded. Patterns are a file name or one directory with * standing for exactly one name segment ([A-Za-z0-9][A-Za-z0-9_-]{0,63}, no dots); nothing else is a wildcard. Consumers reproduce schemas/examples/notepad/channel_vectors.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "channels"],
+  "properties": {
+    "schema_version": { "const": "notepad_channels.v1" },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["channel", "description", "files"],
+        "properties": {
+          "channel": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+          "description": { "type": "string", "minLength": 1 },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pattern", "region", "format", "max_bytes"],
+              "properties": {
+                "pattern": {
+                  "type": "string",
+                  "pattern": "^([a-z0-9][a-z0-9-]{0,62}/)?(\\*|[a-z0-9][a-z0-9-]{0,62})\\.(md|json|jsonl)(?!\n)$"
+                },
+                "region": { "enum": ["human", "agent_append", "tool_output", "inputs"] },
+                "format": { "enum": ["markdown", "json", "jsonl"] },
+                "max_bytes": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+                "contract": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{1,62}\\.v[0-9]+(?!\n)$",
+                  "description": "The contract every file of this kind must validate against, when it has one."
+                }
+              },
+              "allOf": [
+                { "if": { "properties": { "format": { "const": "markdown" } } }, "then": { "properties": { "pattern": { "pattern": "\\.md(?!\n)$" } } } },
+                { "if": { "properties": { "format": { "const": "json" } } }, "then": { "properties": { "pattern": { "pattern": "\\.json(?!\n)$" } } } },
+                { "if": { "properties": { "format": { "const": "jsonl" } } }, "then": { "properties": { "pattern": { "pattern": "\\.jsonl(?!\n)$" } } } }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

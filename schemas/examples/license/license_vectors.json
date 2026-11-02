@@ -1,0 +1,29 @@
+{
+  "description": "License decisions every license_policy.v1 consumer must reproduce, against schemas/license_policy.v1.json. Expressions follow SPDX: OR takes the best term, AND the worst, WITH is judged by its base license, a term on no list or an unparsable expression is unknown. Packages list their declared licenses; all of them apply, and none declared is unknown.",
+  "today": "2026-10-28",
+  "expressions": [
+    { "expression": "MIT", "verdict": "allowed" },
+    { "expression": "Apache-2.0 OR BSD-3-Clause", "verdict": "allowed" },
+    { "expression": "MIT OR AGPL-3.0-only", "verdict": "allowed" },
+    { "expression": "MIT AND AGPL-3.0-only", "verdict": "denied" },
+    { "expression": "LGPL-3.0-or-later", "verdict": "review_required" },
+    { "expression": "MIT AND MPL-2.0", "verdict": "review_required" },
+    { "expression": "GPL-2.0-only WITH Classpath-exception-2.0", "verdict": "review_required" },
+    { "expression": "(MIT OR SSPL-1.0) AND Apache-2.0", "verdict": "allowed" },
+    { "expression": "(GPL-3.0-only OR SSPL-1.0) AND MIT", "verdict": "review_required" },
+    { "expression": "BUSL-1.1", "verdict": "denied" },
+    { "expression": "LicenseRef-Proprietary", "verdict": "unknown" },
+    { "expression": "MIT AND LicenseRef-Proprietary", "verdict": "unknown" },
+    { "expression": "MIT OR LicenseRef-Proprietary", "verdict": "allowed" },
+    { "expression": "", "verdict": "unknown" },
+    { "expression": "MIT AND", "verdict": "unknown" },
+    { "expression": "(MIT", "verdict": "unknown" },
+    { "expression": "MIT; rm -rf /", "verdict": "unknown" },
+    { "expression": "SSPL-1.0 OR AGPL-3.0-only", "verdict": "denied" }
+  ],
+  "packages": [
+    { "package": { "name": "cryptography", "version": "50.0.2", "licenses": ["Apache-2.0 OR BSD-3-Clause"] }, "verdict": "allowed" },
+    { "package": { "name": "dual-declared", "version": "1.0.0", "licenses": ["MIT", "AGPL-3.0-only"] }, "verdict": "denied" },
+    { "package": { "name": "undeclared", "version": "0.1.0", "licenses": [] }, "verdict": "unknown" }
+  ]
+}

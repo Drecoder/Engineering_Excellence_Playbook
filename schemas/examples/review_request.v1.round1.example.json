@@ -1,0 +1,17 @@
+{
+  "schema_version": "review_request.v1",
+  "change": {
+    "repo": "Drecoder/aws-builder-agent",
+    "pr_number": 21,
+    "base_sha": "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+    "head_sha": "3f66082a1b2c3d4e5f60718293a4b5c6d7e8f901",
+    "task_id": "notepad-01-service-core",
+    "spec_id": "agent-notepad",
+    "spec_version": 3
+  },
+  "round": 1,
+  "notepad_manifest": "sha256:8651186cea181cabbc1587b14b79fbe501378eae5a283f1035c6f72cd60b2858",
+  "previous_findings": null,
+  "dispositions": null,
+  "summary": "Adds the Notepad interface and the in-memory backend."
+}

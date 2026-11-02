@@ -10,7 +10,8 @@
     "head_sha": "3f66082a1b2c3d4e5f60718293a4b5c6d7e8f901",
     "task_id": "msg-001",
     "spec_id": "spec-2026-0042",
-    "spec_version": 3
+    "spec_version": 3,
+    "notepad_manifest": "sha256:8651186cea181cabbc1587b14b79fbe501378eae5a283f1035c6f72cd60b2858"
   },
   "round": 1,
   "object": {

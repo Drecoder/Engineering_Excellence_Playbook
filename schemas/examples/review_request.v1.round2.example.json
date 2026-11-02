@@ -1,0 +1,33 @@
+{
+  "schema_version": "review_request.v1",
+  "change": {
+    "repo": "Drecoder/aws-builder-agent",
+    "pr_number": 21,
+    "base_sha": "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+    "head_sha": "4a77193b2c3d4e5f60718293a4b5c6d7e8f90a12",
+    "task_id": "notepad-01-service-core",
+    "spec_id": "agent-notepad",
+    "spec_version": 3
+  },
+  "round": 2,
+  "notepad_manifest": "sha256:d77ecaca88662e5f08482b8a69b8e73ecc11868f84dbbce29e7664e3f4d1d099",
+  "previous_findings": {
+    "uri": "s3://drecoder-factory-reviews/findings/aws-builder-agent/21/round-1.json",
+    "sha256": "sha256:2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b",
+    "size_bytes": 2048,
+    "media_type": "application/json"
+  },
+  "dispositions": {
+    "uri": "s3://drecoder-factory-reviews/dispositions/aws-builder-agent/21/round-1.json",
+    "sha256": "sha256:8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a",
+    "size_bytes": 1024,
+    "media_type": "application/json"
+  },
+  "summary": "Adds a timeout to the notepad client.",
+  "answers": [
+    {
+      "fingerprint": "sec:no-timeout:src/notepad/client.ts",
+      "status": "fixed"
+    }
+  ]
+}

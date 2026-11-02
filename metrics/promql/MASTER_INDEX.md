@@ -78,3 +78,20 @@ See `00_UniversalStandards/10_Autonomy_by_Evidence.md`. Long-term target: 3.4 DP
 | **Demotions** | `sum by (process_class, reason) (increase(autonomy_demotions_total[30d]))` |
 | **Human Wait Share of Lead Time** | `sum by (process_class) (rate(human_wait_seconds_sum[1w])) / sum by (process_class) (rate(change_lead_time_seconds_sum[1w]))` |
 | **Reviewer Agreement (Gage R&R analogue)** | `avg by (process_class) (reviewer_agreement_ratio)` |
+
+## 8. Compliance Authority
+
+See `06_AgentZone/02_Compliance_Engine.md`. Emitted by `compliance-authority` over OTLP (`outcome`
+is `PASS`, `REMEDIATE`, `BLOCKED`, or `rejected` for evaluations; `issued` or `refused` for tokens;
+`allowed` or `denied` for the deployment guard).
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Evaluation Rate by Outcome** | `sum by (outcome) (rate(compliance_evaluation_total[5m]))` |
+| **Gate Pass Ratio** | `sum(increase(compliance_evaluation_total{outcome="PASS"}[1d])) / sum(increase(compliance_evaluation_total[1d]))` |
+| **Rejected Submissions** | `sum(increase(compliance_evaluation_total{outcome="rejected"}[1d]))` (a builder sending invalid contracts) |
+| **Evaluation Latency (P99)** | `histogram_quantile(0.99, sum by (le) (rate(compliance_evaluation_duration_seconds_bucket[5m])))` |
+| **Token Refusals** | `sum(increase(compliance_token_total{outcome="refused"}[1d]))` |
+| **Token Latency (P99)** | `histogram_quantile(0.99, sum by (le) (rate(compliance_token_duration_seconds_bucket[5m])))` |
+| **Guard Denials** | `sum(increase(compliance_guard_total{outcome="denied"}[1h]))` (alert on any; a denied deploy is a replay, a forgery, or a misroute) |
+| **Guard Latency (P99)** | `histogram_quantile(0.99, sum by (le) (rate(compliance_guard_duration_seconds_bucket[5m])))` |

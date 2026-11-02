@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "release_token.v1.schema.json",
+  "title": "release_token.v1",
+  "description": "The claims of a release token (06_AgentZone/02_Compliance_Engine.md): a JWT the compliance authority signs only for a stored PASS evaluation, and the deployment guard consumes once. The header must match $defs/header: RS256 only, with the signing key's kid; any other alg, including none, is refused. Rules JSON Schema cannot express, enforced by issuer and guard and covered by vectors: nbf >= iat, exp > nbf, and exp - iat <= 900 seconds; the guard allows at most 60 seconds of clock skew; jti is consumed atomically, so a replayed or raced token is refused. artifact_digest is sha256 over the canonical identity of the evaluated artifact, never the raw identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["iss", "sub", "aud", "jti", "iat", "nbf", "exp", "eval_run_id", "artifact_type", "artifact_digest", "environment", "contract_version"],
+  "properties": {
+    "iss": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$", "description": "The compliance authority's service identity." },
+    "sub": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$", "description": "The repository the artifact was built from." },
+    "aud": { "type": "string", "pattern": "^deploy-guard:(dev|staging|production)(?!\n)$", "description": "The deployment guard for one environment; it must equal deploy-guard:<environment>." },
+    "jti": { "type": "string", "format": "uuid", "description": "Single use: the guard consumes it atomically." },
+    "iat": { "$ref": "#/$defs/numeric_date" },
+    "nbf": { "$ref": "#/$defs/numeric_date" },
+    "exp": { "$ref": "#/$defs/numeric_date" },
+    "eval_run_id": { "type": "string", "format": "uuid", "description": "The stored evaluation record that passed." },
+    "artifact_type": { "enum": ["GIT_SHA", "CONTAINER_DIGEST", "TERRAFORM_PLAN"] },
+    "artifact_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}(?!\n)$" },
+    "environment": { "enum": ["dev", "staging", "production"] },
+    "contract_version": { "const": "6.0.0", "description": "The compliance_submission contract the evaluation used." }
+  },
+  "allOf": [
+    { "if": { "properties": { "environment": { "const": "dev" } } }, "then": { "properties": { "aud": { "const": "deploy-guard:dev" } } } },
+    { "if": { "properties": { "environment": { "const": "staging" } } }, "then": { "properties": { "aud": { "const": "deploy-guard:staging" } } } },
+    { "if": { "properties": { "environment": { "const": "production" } } }, "then": { "properties": { "aud": { "const": "deploy-guard:production" } } } }
+  ],
+  "$defs": {
+    "numeric_date": { "type": "integer", "minimum": 1700000000, "maximum": 4102444800, "description": "Seconds since the epoch (RFC 7519 NumericDate), whole seconds." },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alg", "typ", "kid"],
+      "properties": {
+        "alg": { "const": "RS256" },
+        "typ": { "const": "JWT" },
+        "kid": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}(?!\n)$" }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "license_policy.v1.schema.json",
+  "title": "license_policy.v1",
+  "description": "Validates schemas/license_policy.v1.json. Every consumer (the central gates, the release pipeline) evaluates a package's SPDX expression with the reference rules in tests/contracts/license_reference.py and reproduces schemas/examples/license/license_vectors.json: an OR takes the best of its terms, an AND the worst, a WITH clause is judged by its base license, and a term on no list is unknown. A license may appear on one list only, which JSON Schema cannot express; consumers reject a policy that lists one twice. An invalid policy is rejected, not repaired.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_version", "owner", "description", "allowed", "review_required", "denied", "exceptions"],
+  "properties": {
+    "schema_version": { "const": "license_policy.v1" },
+    "policy_version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?!\n)$" },
+    "owner": { "type": "string", "pattern": "^github:[A-Za-z0-9-]{1,39}(?!\n)$" },
+    "description": { "type": "string", "minLength": 1 },
+    "allowed": { "$ref": "#/$defs/ids" },
+    "review_required": { "$ref": "#/$defs/ids" },
+    "denied": { "$ref": "#/$defs/ids" },
+    "exceptions": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "package", "version", "license", "owner", "reason", "approved_in", "created", "expires"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^LIC-[0-9]{3,}(?!\n)$" },
+          "package": { "type": "string", "minLength": 1, "maxLength": 214, "pattern": "^\\S+(?!\n)$" },
+          "version": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^\\S+(?!\n)$", "description": "One exact version; never a range." },
+          "license": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "owner": { "type": "string", "pattern": "^github:[A-Za-z0-9-]{1,39}(?!\n)$" },
+          "reason": { "type": "string", "minLength": 20, "maxLength": 2000 },
+          "approved_in": { "type": "string", "pattern": "^https://github\\.com/[\\w.-]+/[\\w.-]+/pull/[0-9]+(?!\n)$" },
+          "created": { "type": "string", "format": "date" },
+          "expires": { "type": "string", "format": "date", "description": "At most 365 days after created." }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9.+-]{0,63}(?!\n)$" }
+    }
+  }
+}

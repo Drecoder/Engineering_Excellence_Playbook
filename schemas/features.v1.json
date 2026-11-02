@@ -93,7 +93,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["rule", "blocking"],
+        "required": ["rule", "blocking", "source", "result"],
         "properties": {
           "rule": {
             "anyOf": [
@@ -103,7 +103,7 @@
           },
           "blocking": { "type": "boolean" },
           "reuse_ref": { "type": "string", "description": "Matching symbol_index entry (path#name), when the rule found one." },
-          "source": { "type": "string", "enum": ["static", "trace"], "description": "ARCH-* hits: which check found it." },
+          "source": { "type": "string", "enum": ["static", "trace"], "description": "Which check found it: static (diff check, evidence is location) or trace (test-run trace, evidence is trace_id and span_id). Required for every finding, including reuse rules." },
           "result": {
             "type": "string",
             "enum": ["violation", "unverifiable"],

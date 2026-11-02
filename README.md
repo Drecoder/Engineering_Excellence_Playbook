@@ -16,6 +16,43 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 
 ---
 
+## 📓 Proof Journal
+
+A standard counts only when it is enforced and running. The **[proof journal](docs/POC_JOURNAL.md)**
+records what applying this playbook actually found while building the software factory, each
+finding written up as a compact post-mortem in CAPA form (Corrective and Preventive Action): the
+rule, the problem, how it was found, the root cause, the correction, the preventive action, and the
+verification, including the findings still open.
+
+It is one living document with three roles, all feeding the same loop from standard to evidence and
+back:
+
+- **Engineering artifact (in use today):** the evidence-linked history of findings, fixes, and
+  open work, so the project's actual state is readable without reconstructing it from Git.
+- **Learning resource (designed, not yet wired):** causal knowledge (what failed, why, how it was
+  caught, how the fix was verified), structured so a learning system will be able to teach from
+  it. None reads it yet.
+- **Feedback mechanism (designed, not yet wired):** prior experience for the factory's agents and
+  future decisions to weigh against the playbook's standards and current evidence. No agent is
+  given it yet.
+
+How it is kept honest:
+
+- **Append-only, enforced:** CI refuses any change that edits, deletes, or reorders an entry.
+- **Ranked and timed:** the **[CAPA register](docs/FINDINGS_REGISTER.json)** gives every finding a
+  severity on a written rubric and a mandatory deadline (critical 7 days, high 30, medium 90, low
+  180); an overdue finding fails the daily run.
+- **Measured:** every run reports how many control classes are proven to fail on their defect and
+  how many findings are recorded as caught by a control rather than a person (an attribution
+  recorded by hand for each finding in the register, not derived from the evidence).
+- **Governance before production:** production readiness stays false while any critical or high
+  security or governance finding is open.
+
+The **[incident records](docs/incidents/README.md)** hold the full post-mortems, and
+**[program increments](docs/PROGRAM_INCREMENTS.md)** show the plan they feed.
+
+---
+
 ## 1️⃣ Core Principles
 
 1. **I manage flow** – every action, workflow, and process is observed, traceable, and recoverable.
@@ -52,13 +89,15 @@ It provides **repeatable, auditable, flow-oriented guidance** for building, oper
 Engineering_Excellence_Playbook/
 ├── AGENTS.md                # Enforceable standards for engineers, assistants, and agents
 ├── CLAUDE.md                # Shim: imports AGENTS.md for Claude Code
-├── 00_UniversalStandards/   # Lifecycle, DoD, security in depth, governors, distribution, refactors
+├── 00_UniversalStandards/   # Lifecycle, DoD, security in depth, governors, distribution, refactors, central CI
 ├── 01_FrontendZone/         # React patterns, clean code, performance
 ├── 02_BackendZone/          # API architecture, async processing, database health, telemetry
 ├── 03_InfrastructureZone/   # IaC core + GCP/AWS specifics, security & IAM, Kubernetes
 ├── 04_OperationalRunbooks/  # Rollbacks, incident response, alert thresholds
 ├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
 ├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks
+├── 07_SoftwareFactory/      # Capstone: the factory's repositories and how they work together
+├── ARCHITECTURE.md          # Platform map: layers, path of a change, trust boundaries, status
 ├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
 ├── metrics/promql/          # Master Metric Index (PromQL constants)
 ├── templates/consumer/      # Files a consumer repo copies to depend on the playbook
@@ -77,4 +116,5 @@ Engineering_Excellence_Playbook/
 4. Reference **OperationalRunbooks** for reactive flows (rollbacks, monitoring).
 5. Consult **Metadata** for high-level decision frameworks (Red/Green logic, Two Sides of the Coin, least privilege).
 6. Use **AgentZone** when building or changing an AI agent (contracts, guardrails, risk routing).
-7. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.
+7. Finish with **SoftwareFactory**, the capstone — the workshop where every zone's rules are used together.
+8. Keep all updates in GitHub — changes are version-controlled, auditable, and syncable to Confluence if needed.

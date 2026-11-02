@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "merge_conflict.v1.schema.json",
+  "title": "merge_conflict.v1",
+  "description": "Status: design. rig's report of a pull request's conflicts with its base branch, produced with git merge-tree without touching any branch (06_AgentZone/06_Merge_Conflicts.md). Each hunk carries its class and route, decided by rules: only a mechanical hunk of disjoint additions may route to rule, and any hunk in a protected file or a binary conflict routes to a person. The Builder resolves from it; the Reviewer's merge-resolution lens checks the resolution against it. A report that breaks these invariants is rejected, not repaired.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "pull_request", "base", "head", "merge_base", "produced_by", "conflicts"],
+  "properties": {
+    "schema_version": { "const": "merge_conflict.v1" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$" },
+    "pull_request": { "type": "integer", "minimum": 1 },
+    "base": { "$ref": "#/$defs/ref" },
+    "head": { "$ref": "#/$defs/ref" },
+    "merge_base": { "$ref": "#/$defs/sha" },
+    "produced_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version"],
+      "properties": {
+        "tool": { "const": "rig" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/file" },
+      "description": "One entry per conflicted file. A pull request without conflicts has no report."
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "sha"],
+      "properties": {
+        "branch": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "sha": { "$ref": "#/$defs/sha" }
+      }
+    },
+    "side": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_line", "lines"],
+      "description": "One side of a hunk: where it starts in that version of the file, and its lines.",
+      "properties": {
+        "start_line": { "type": "integer", "minimum": 1 },
+        "lines": { "type": "array", "items": { "type": "string" }, "maxItems": 2000 }
+      }
+    },
+    "hunk": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One conflicted region. ours is the pull request's head, theirs is the base branch, base is the merge base.",
+      "required": ["base", "ours", "theirs", "class", "reason", "route"],
+      "properties": {
+        "base": { "$ref": "#/$defs/side" },
+        "ours": { "$ref": "#/$defs/side" },
+        "theirs": { "$ref": "#/$defs/side" },
+        "class": { "enum": ["mechanical", "semantic"] },
+        "reason": {
+          "enum": ["disjoint_additions", "same_lines_changed", "delete_vs_change", "rename_collision", "binary", "unclassified"],
+          "description": "Why the hunk has its class. Only disjoint_additions is mechanical; unclassified is semantic (fail closed)."
+        },
+        "route": { "enum": ["rule", "model", "person"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "class": { "const": "mechanical" } } },
+          "then": { "properties": { "reason": { "const": "disjoint_additions" }, "base": { "properties": { "lines": { "maxItems": 0 } } } } }
+        },
+        {
+          "if": { "properties": { "reason": { "const": "disjoint_additions" } } },
+          "then": { "properties": { "class": { "const": "mechanical" } } }
+        },
+        {
+          "if": { "properties": { "route": { "const": "rule" } } },
+          "then": { "properties": { "class": { "const": "mechanical" } } }
+        },
+        {
+          "if": { "properties": { "reason": { "const": "binary" } } },
+          "then": { "properties": { "route": { "const": "person" } } }
+        }
+      ]
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "protected", "ours_commits", "theirs_commits", "hunks"],
+      "properties": {
+        "path": { "type": "string", "maxLength": 512, "pattern": "^(?!/)(?!.*\\.\\.)\\S+$" },
+        "kind": { "enum": ["content", "add_add", "modify_delete", "rename_rename", "rename_delete", "binary"] },
+        "protected": {
+          "type": "boolean",
+          "description": "The path matches a protected pattern (IAM, state, governance, the CI factory). Decided by rules on the path; if the patterns cannot be read, every path is protected."
+        },
+        "ours_commits": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha" } },
+        "theirs_commits": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sha" } },
+        "hunks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/hunk" } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "protected": { "const": true } } },
+          "then": { "properties": { "hunks": { "items": { "properties": { "route": { "const": "person" } } } } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "binary" } } },
+          "then": { "properties": { "hunks": { "items": { "properties": { "reason": { "const": "binary" } } } } } }
+        }
+      ]
+    }
+  }
+}

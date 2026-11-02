@@ -1,0 +1,18 @@
+{
+  "description": "Release-token lifetime and binding rules that JSON Schema cannot express (schemas/release_token.v1.schema.json): nbf >= iat, exp > nbf, exp - iat <= 900, and the guard's check at time now with at most 60 seconds of skew. Each case starts from schemas/examples/release_token.v1.example.json and overrides the listed claims.",
+  "max_lifetime_seconds": 900,
+  "max_skew_seconds": 60,
+  "valid": [
+    { "name": "issued now, full lifetime", "claims": {}, "now": 1793196000 },
+    { "name": "nbf after iat", "claims": { "nbf": 1793196030 }, "now": 1793196030 },
+    { "name": "guard clock 60 s behind nbf", "claims": {}, "now": 1793195940 },
+    { "name": "guard clock 60 s past exp", "claims": {}, "now": 1793196959 }
+  ],
+  "invalid": [
+    { "name": "lifetime over 900 s", "claims": { "exp": 1793196901 }, "now": 1793196000 },
+    { "name": "nbf before iat", "claims": { "nbf": 1793195999 }, "now": 1793196000 },
+    { "name": "exp equals nbf", "claims": { "exp": 1793196000 }, "now": 1793196000 },
+    { "name": "not yet valid beyond skew", "claims": {}, "now": 1793195939 },
+    { "name": "expired beyond skew", "claims": {}, "now": 1793196960 }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ci_exceptions.v1.schema.json",
+  "title": "ci_exceptions.v1",
+  "description": "Status: design. A caller repository's need-based exceptions to blocking CI findings, kept at .ci/exceptions.v1.json and changed only through a reviewed pull request. An exception exists only because a specific finding blocked: it names one check, one finding, one file, and one resource, links the work that removes the need, and expires. The factory validates the file before using it and applies an entry only to the exact finding and resource it names; the time rules (expires after created, within ci_policy.v1 exceptions.max_days, not yet passed) and the check's exceptions_allowed flag are enforced by the factory, which records every rejected entry in the gate plan. A file that fails this schema is rejected whole, never repaired.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "exceptions"],
+  "properties": {
+    "schema_version": { "const": "ci_exceptions.v1" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$" },
+    "exceptions": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/exception" }
+    }
+  },
+  "$defs": {
+    "exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "check", "finding_id", "path", "resource", "owner", "reason", "follow_up", "approved_in", "approved_by", "created", "expires"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^EXC-[0-9]{3,}$" },
+        "check": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,40}$",
+          "description": "A check id from ci_policy.v1 whose exceptions_allowed is true."
+        },
+        "finding_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{1,79}$",
+          "description": "The scanner's ID for the finding (e.g. GCP-0035, CVE-2024-3817, a Semgrep check_id)."
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^(?!/)(?!.*\\.\\.)[^*?\\[\\]{}\\s]+$",
+          "description": "One repo-relative file. No wildcards, no directories by pattern."
+        },
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The one resource, package, or code location the finding is on (e.g. google_compute_firewall.runner_egress). A finding on any other resource in the same file is not covered."
+        },
+        "owner": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,40}$", "description": "The owning team." },
+        "reason": { "type": "string", "minLength": 20, "maxLength": 1000, "description": "Why the finding cannot be fixed before expires." },
+        "follow_up": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[A-Za-z0-9-]+/[A-Za-z0-9._-]+/(issues|pull)/[0-9]+$",
+          "description": "The issue or pull request that removes the need for this exception."
+        },
+        "approved_in": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[A-Za-z0-9-]+/[A-Za-z0-9._-]+/pull/[0-9]+$",
+          "description": "The reviewed pull request that added or renewed this entry. Renewal is a new pull request, never an edit in place."
+        },
+        "approved_by": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$",
+          "description": "GitHub login of the code owner who approved approved_in. The file is owned in CODEOWNERS by the platform team, not the caller's team, and the factory verifies through the API that this login approved that pull request and is a code owner of the file; a caller cannot exempt itself."
+        },
+        "created": { "type": "string", "format": "date" },
+        "expires": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}

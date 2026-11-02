@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "review_event.v1.schema.json",
   "title": "review_event.v1",
-  "description": "A review-loop event between the Builder and the Reviewer on the factory backbone (06_AgentZone/05_Review_Loop.md). review.requested (Builder -> Reviewer) references a review request object: the change to review, the spec it implements, and the previous round's findings. It is data for the Reviewer, never its prompt. review.completed (Reviewer -> Builder) references the round's review_findings.v1 document. Both carry a claim check (claim_check.v1); code itself is pinned by head_sha and read from the repository, never copied into the event.",
+  "description": "A review-loop event between the Builder and the Reviewer on the factory backbone (06_AgentZone/05_Review_Loop.md). review.requested (Builder -> Reviewer) references a review_request.v1 object: the change to review, the spec it implements, and the previous round's findings. It is data for the Reviewer, never its prompt. review.completed (Reviewer -> Builder) references the round's review_findings.v1 document. Both carry a claim check (claim_check.v1); code itself is pinned by head_sha and read from the repository, never copied into the event.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "event_id", "event_type", "occurred_at", "producer", "change", "round", "object"],
@@ -22,7 +22,8 @@
         "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "The exact commit reviewed; a push to the PR is a new round." },
         "task_id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$" },
         "spec_id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$" },
-        "spec_version": { "type": "integer", "minimum": 1 }
+        "spec_version": { "type": "integer", "minimum": 1 },
+        "notepad_manifest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "The Builder's sealed notepad version for head_sha (notepad_manifest.v1), the digest in the commit's Notepad-Manifest trailer. Optional in v1 (expand step) until every producer seals." }
       }
     },
     "round": { "type": "integer", "minimum": 1, "maximum": 4, "description": "PR review rounds end at round 4 (06_AgentZone/01_Agent_Standards.md §7)." },

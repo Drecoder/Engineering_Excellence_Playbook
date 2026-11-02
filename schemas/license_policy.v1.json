@@ -1,0 +1,20 @@
+{
+  "schema_version": "license_policy.v1",
+  "policy_version": "1.0.0",
+  "owner": "github:Drecoder",
+  "description": "The factory's dependency license policy (00_UniversalStandards/13_Supply_Chain.md §4). Licenses are SPDX identifiers. A package whose license resolves to denied blocks; review_required and unknown escalate to a person without blocking. Exceptions name one package version and license, with an owner, a reason, and an expiry. Rationale: the factory's code is meant to be published, and its services may run for clients, so licenses that impose obligations on network use or on the whole work (AGPL, SSPL) or restrict commercial use are denied; weak and strong copyleft is reviewed case by case; permissive licenses are allowed.",
+  "allowed": [
+    "0BSD", "Apache-2.0", "BlueOak-1.0.0", "BSD-2-Clause", "BSD-3-Clause", "BSL-1.0", "CC0-1.0",
+    "HPND", "ISC", "MIT", "MIT-0", "PSF-2.0", "Python-2.0", "Unicode-3.0", "Unicode-DFS-2016",
+    "Unlicense", "X11", "Zlib"
+  ],
+  "review_required": [
+    "CC-BY-4.0", "EPL-2.0", "GPL-2.0-only", "GPL-2.0-or-later", "GPL-3.0-only", "GPL-3.0-or-later",
+    "LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0-only", "LGPL-3.0-or-later", "MPL-2.0"
+  ],
+  "denied": [
+    "AGPL-3.0-only", "AGPL-3.0-or-later", "BUSL-1.1", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0",
+    "Commons-Clause", "Elastic-2.0", "SSPL-1.0"
+  ],
+  "exceptions": []
+}
