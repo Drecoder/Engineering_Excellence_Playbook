@@ -44,6 +44,11 @@ workflow, so all of them can call the private central gate.
 | `rig` | Measurement: deterministic lift, `ARCH-*` static and trace checks, features, the symbol index | Tool | A repository and a test run's traces | `evaluation_unit.v1`, `features.v1`, `symbol_index.v1` |
 | `compliance-authority` | Final inspection: evidence verification, evaluation, release tokens, and the deployment guard | Service | `compliance_submission.v6` with CI-signed evidence | An append-only evaluation record and a single-use `release_token.v1` |
 | `agent-notepad` | Working memory: a folder per agent and task, a sealed, hash-chained page at each push | Service | `notepad_op.v1` operations | `notepad_manifest.v1`, named in each commit's `Notepad-Manifest` trailer |
+| `jira-orchestrator` | The dispatcher: moves one approved ticket at a time from the board through build, gates, and review | Service | Tickets the owner moved to Ready | A validated `builder.spec.v1` for the Builder, ticket transitions, Reviewer findings attached to the ticket |
+
+The **architect** is a role, not a repository: it turns the owner's plan into a spec and posts it to
+the board's Backlog. It may be a person or an agent; either way it never builds, reviews the code,
+or approves.
 
 ## 3️⃣ How the Benches Work Together
 
@@ -57,6 +62,8 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 | Every repository | `sovereign-vpc-gcp` | `gates.yml`, called by full commit SHA | **Partial**: every factory repository calls it; Genesis since 2026-10-29, red on its legacy code |
 | Genesis | Platform and services | Governed projects, guardrails, messaging and storage modules | **Partial**: the bootstrap slice and modules are pending for the agent loop |
 | Intake | Builder | `spec.approved` on the Builder's queue; the spec is fetched by digest | **Design** |
+| Board | Builder (MVP path) | The orchestrator polls the Ready column, leases one ticket, and hands the Builder a validated `builder.spec.v1` | **Design** |
+| Orchestrator | Reviewer | After the gates pass, the orchestrator requests review and attaches the findings to the ticket | **Design** |
 | Builder | Notepad | The injected `Notepad` interface; a seal at each push | **Partial**: a library with local backends, no network boundary |
 | Builder | rig | The rig-scan gate and `features.v1`, before the pull request opens | **Built** |
 | Builder | Reviewer | The pull request today; `review.requested` and `review.completed` as the target | **Built** (PR-driven); events **Design** |
@@ -72,6 +79,11 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 - **Contracts live only in the playbook's `schemas/`.** A bench vendors them; it never copies or
   redefines one.
 - **No bench approves its own work.** Each is its own identity (`ARCHITECTURE.md` §4).
+- **No model provider checks its own output.** The models that write a change, review it, and test
+  it come from different providers, and the architect's provider does not review the code built
+  from its spec.
+- **Only the owner starts work.** A spec enters the board in Backlog; moving it to Ready is the one
+  trigger, and the orchestrator never picks up anything else.
 - **The factory is built by its own rules.** A bench that cannot meet the playbook is not built.
 - **Benches built by hand are replaced by the factory.** MVP benches built by hand, on local
   backends behind injected interfaces, are later rebuilt by the agent loop.
