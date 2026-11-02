@@ -267,6 +267,10 @@ the reuse map is rig's `schemas/symbol_index.v1.json`).
   it, never the whole index, and never see another boundary's internals.
 - **Contracts have one home:** the playbook's `schemas/`, vendored as `.playbook/schemas/`. A copy
   of a contract or an exact reuse of a string contract (metric, span, env var, label name) blocks.
+- **Contracts evolve by version, never by edit.** Every payload carries its `schema_version`; a
+  consumer refuses an unversioned or unsupported one before doing any work. A breaking change adds
+  `.v2` beside `.v1`, both accepted for a stated deprecation window, and the central CI tests each
+  producer's real output against every consumer's vendored schema.
 - **Across languages, share the spec and test vectors, not code.**
 - **DRY findings are fixed in the same PR** when deterministic (a clone, or a hash or signature
   match against the reuse map); the fix stays inside the PR's files.
@@ -361,6 +365,14 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   finding fingerprints resolved) or **oscillating** round (a resolved fingerprint reintroduced),
   then escalate to a human. Only blocking findings and deterministic DRY findings start a round.
   Round 4 is headroom: the expected outcome is 3 rounds or fewer (`review_loop_rounds` p90 ≤ 3).
+- **One budget per ticket, computed, never reported.** Every agent and attempt on a ticket draws
+  from one budget. Spend is computed from per-call token records and a versioned price table, never
+  from an agent's own estimate. At 80% the ticket is flagged; at 100% no new model call is made and
+  the ticket moves to Blocked. Only the owner raises a budget.
+- **Fixers fix one finding, inside their scope.** A CRAP fixer changes production code only, a
+  mutation fixer tests only, enforced by CI on changed paths. Each finding gets 3 attempts, counted
+  by the board, never by an agent; then the Builder; then Blocked. Retries get the failure delta and
+  the sealed notepad page, not the whole context. Only a person rules a mutant equivalent.
 - **Classify build failures before fixing.** rig classifies each failure
   (`build_failure.v1`); only `code` and `config` failures reach the Builder. `infra` and `unknown`
   go to a human, `flaky` gets one rerun, `mechanical` gets a deterministic auto-fix.

@@ -45,6 +45,10 @@ workflow, so all of them can call the private central gate.
 | `compliance-authority` | Final inspection: evidence verification, evaluation, release tokens, and the deployment guard | Service | `compliance_submission.v6` with CI-signed evidence | An append-only evaluation record and a single-use `release_token.v1` |
 | `agent-notepad` | Working memory: a folder per agent and task, a sealed, hash-chained page at each push | Service | `notepad_op.v1` operations | `notepad_manifest.v1`, named in each commit's `Notepad-Manifest` trailer |
 | `jira-orchestrator` | The dispatcher: moves one approved ticket at a time from the board through build, gates, and review | Service | Tickets the owner moved to Ready | A validated `builder.spec.v1` for the Builder, ticket transitions, Reviewer findings attached to the ticket |
+| CRAP service | Measurement: scores each changed method for complexity against coverage | Tool | A change and its coverage report | A finding for each method over the threshold, in its own journal |
+| Mutation service | Measurement: mutates the changed code to show whether the tests notice | Tool | A change and its tests | A finding for each surviving mutant, in its own journal |
+| CRAP fixer | Fixes one CRAP finding at a time, in production code only | Actor | One finding ticket and the sealed notepad page | A commit on the pull request's branch |
+| Mutation fixer | Kills one surviving mutant at a time by strengthening tests, in tests only | Actor | One finding ticket and the sealed notepad page | A commit on the pull request's branch |
 
 The **architect** is a role, not a repository: it turns the owner's plan into a spec and posts it to
 the board's Backlog. It may be a person or an agent; either way it never builds, reviews the code,
@@ -64,6 +68,7 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 | Intake | Builder | `spec.approved` on the Builder's queue; the spec is fetched by digest | **Design** |
 | Board | Builder (MVP path) | The orchestrator polls the Ready column, leases one ticket, and hands the Builder a validated `builder.spec.v1` | **Design** |
 | Orchestrator | Reviewer | After the gates pass, the orchestrator requests review and attaches the findings to the ticket | **Design** |
+| CRAP and mutation services | Fixers | Each finding becomes its own ticket under the change's ticket (below) | **Design** |
 | Builder | Notepad | The injected `Notepad` interface; a seal at each push | **Partial**: a library with local backends, no network boundary |
 | Builder | rig | The rig-scan gate and `features.v1`, before the pull request opens | **Built** |
 | Builder | Reviewer | The pull request today; `review.requested` and `review.completed` as the target | **Built** (PR-driven); events **Design** |
@@ -71,6 +76,26 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 | Builder | Compliance authority | The scoping skill reads the registry; the submission carries CI-signed evidence | **Partial**: the authority runs as a CLI; the scoping skill is in progress |
 | Compliance authority | Deployment guard | `release_token.v1`, on its own authenticated path | **Partial**: the guard is built, not wired into the apply pipeline |
 | People | Merge, then apply | Branch protection; the apply pipeline with its own identity | **Built** |
+
+### Findings become tickets
+
+A CRAP or mutation finding is work like any other: visible on the board, leased, and counted.
+
+- **One ticket per finding,** under the change's ticket, naming the method or mutant and its journal
+  entry. A rerun never opens a duplicate.
+- **CRAP before mutation.** Fixing production code changes the mutants, so mutation findings wait
+  until the CRAP findings on the same change are closed.
+- **Scopes are enforced, not trusted.** CI fails a CRAP fixer's change outside production code and
+  a mutation fixer's change outside tests.
+- **Only the quick check reruns** after a fix: that method's score, or that one mutant.
+- **Loops end.** A finding gets 3 attempts, counted by the board's automation, never by an agent.
+  The third failure sends it to the Builder; if the Builder fails too, the ticket moves to Blocked
+  with its history. It never moves to the Reviewer's column, which is for finished work.
+- **Retries carry the delta.** From the second attempt, an agent receives only what failed (the
+  method, the mutant, the gate's lines) and the sealed notepad page, not the whole ticket again.
+- **Equivalence is a person's call.** A fixer may propose that a mutant cannot be killed; only the
+  owner rules on it.
+- **The Reviewer runs once,** on the final diff, after every finding is closed.
 
 ## 4️⃣ Rules of the Workshop
 
@@ -84,6 +109,8 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
   from its spec.
 - **Only the owner starts work.** A spec enters the board in Backlog; moving it to Ready is the one
   trigger, and the orchestrator never picks up anything else.
+- **Agents take only factory work.** Ready also holds the owner's hand-done work, so the
+  orchestrator picks up only tickets labeled `factory`; a ticket without the label is never touched.
 - **The factory is built by its own rules.** A bench that cannot meet the playbook is not built.
 - **Benches built by hand are replaced by the factory.** MVP benches built by hand, on local
   backends behind injected interfaces, are later rebuilt by the agent loop.
