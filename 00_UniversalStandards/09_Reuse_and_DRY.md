@@ -116,6 +116,14 @@ possible anyway. The duplication that matters across languages is contracts and 
   in §4, and it blocks.
 - Changing a contract's shape follows the exported-interface rule: all consumers change in the same
   change, or the contract gets a new version.
+- **Every payload names its contract.** A payload carries its `schema_version`; a consumer refuses a
+  payload with no version, or with a version it does not support, before doing any work.
+- **A breaking change is a new version, never an edit.** `.v1` is never changed in place; `.v2` is
+  added beside it, and consumers accept both for a stated deprecation window before `.v1` is
+  retired.
+- **Producers are tested against their consumers.** The central CI validates a producer's real
+  output against every consumer's vendored schema before merge, so a shape change that would break
+  a consumer fails in the producer's pull request, not in production.
 
 ---
 

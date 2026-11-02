@@ -284,6 +284,18 @@ the Builder, and protected paths go to a person; the resolution is always a merg
 Revise and review rounds count toward the agent's attempt and **token budget per change**;
 exhausting either ends the task as `gave_up` and escalates.
 
+- **One budget per ticket, across every agent and attempt.** The Builder, the fixers, the Reviewer,
+  and QA all draw from it, so a retry loop cannot multiply the spend.
+- **Cost is computed, never reported.** Every model call writes a token record (ticket, run, agent,
+  attempt, model, provider, prompt, cached and completion tokens, duration) through the shared
+  telemetry package; spend is computed from those records and a versioned price table. An agent's
+  own estimate of its cost is never used.
+- **Warn, then stop.** At 80% of the budget the ticket gets a comment and an alert; at 100% no new
+  model call is made for it, and it moves to Blocked with its spend broken down. Only the owner
+  raises a ticket's budget.
+- **Only factory work is metered.** Cost and its KPIs (accepted change rate, cost per accepted
+  change) count tickets the factory's agents run; work done by hand is outside them.
+
 ---
 
 ## 8️⃣ Human in the Loop
