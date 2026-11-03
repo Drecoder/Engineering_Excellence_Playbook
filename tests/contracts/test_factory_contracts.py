@@ -1,6 +1,6 @@
 """
 Contract tests for the factory MVP contracts: project.v1, notepad_manifest.v1, notepad_op.v1,
-review_disposition.v1, review_request.v1, and release_token.v1.
+review_disposition.v1, review_request.v1, release_token.v1, and token_record.v1.
 
 The manifest digests and the token lifetime rules are recomputed here from the rules written in
 06_AgentZone/07_Agent_Notepad.md and 06_AgentZone/02_Compliance_Engine.md, independently of any
@@ -48,6 +48,7 @@ DISPOSITION = validator("review_disposition.v1.schema.json")
 REQUEST = validator("review_request.v1.schema.json")
 TOKEN = validator("release_token.v1.schema.json")
 TOKEN_HEADER = Draft202012Validator(load("release_token.v1.schema.json")["$defs"]["header"])
+RECORD = validator("token_record.v1.schema.json")
 
 PROJECT_EX = load("examples/project.v1.example.json")
 OPS_EX = load("examples/notepad_op.v1.examples.json")
@@ -55,6 +56,7 @@ DISPOSITION_EX = load("examples/review_disposition.v1.example.json")
 REQ1_EX = load("examples/review_request.v1.round1.example.json")
 REQ2_EX = load("examples/review_request.v1.round2.example.json")
 TOKEN_EX = load("examples/release_token.v1.example.json")
+RECORD_EX = load("examples/token_record.v1.example.json")
 CHAIN = load("examples/notepad/manifest_chain_vectors.json")
 TOKEN_VECTORS = load("examples/compliance/release_token_vectors.json")
 
@@ -343,3 +345,31 @@ class Channels(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TokenRecordsDesignedToFail(unittest.TestCase):
+    """A token record carries counts, never a cost, and names the call it came from."""
+
+    def test_example_is_valid(self):
+        self.assertFalse(rejected(RECORD, RECORD_EX))
+
+    def test_rejections(self):
+        cases = {
+            "no schema version": lambda d: d.pop("schema_version"),
+            "another schema version": lambda d: d.update(schema_version="token_record.v2"),
+            "no call id": lambda d: d.pop("call_id"),
+            "call id not a uuid": lambda d: d.update(call_id="call-1"),
+            "a self-reported cost": lambda d: d.update(cost_usd=0.01),
+            "negative tokens": lambda d: d.update(prompt_tokens=-1),
+            "fractional tokens": lambda d: d.update(completion_tokens=1.5),
+            "unknown agent": lambda d: d.update(agent="architect"),
+            "attempt zero": lambda d: d.update(attempt=0),
+            "attempt past the cap": lambda d: d.update(attempt=5),
+            "lowercase ticket key": lambda d: d.update(ticket_key="kan-18"),
+            "ticket key with a trailing newline": lambda d: d.update(ticket_key="KAN-18\n"),
+            "timestamp with an offset": lambda d: d.update(started_at="2026-11-02T16:15:04-06:00"),
+            "no start time": lambda d: d.pop("started_at"),
+        }
+        for name, fn in cases.items():
+            with self.subTest(name):
+                self.assertTrue(rejected(RECORD, mutated(RECORD_EX, fn)))

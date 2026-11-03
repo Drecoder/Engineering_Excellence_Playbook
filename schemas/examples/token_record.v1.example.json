@@ -1,0 +1,15 @@
+{
+  "schema_version": "token_record.v1",
+  "call_id": "6f1e2d3c-4b5a-4968-8776-655443322110",
+  "run_id": "0a1b2c3d-4e5f-4061-8273-8495a6b7c8d9",
+  "ticket_key": "KAN-18",
+  "agent": "crap-fixer",
+  "attempt": 2,
+  "model_id": "example-small-model-v1",
+  "provider": "example-provider",
+  "started_at": "2026-11-02T22:15:04.123Z",
+  "prompt_tokens": 4250,
+  "cached_tokens": 8192,
+  "completion_tokens": 850,
+  "execution_time_ms": 1420
+}
