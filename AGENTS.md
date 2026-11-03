@@ -373,6 +373,9 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   from one budget. Spend is computed from per-call token records and a versioned price table, never
   from an agent's own estimate. At 80% the ticket is flagged; at 100% no new model call is made and
   the ticket moves to Blocked. Only the owner raises a budget.
+- **Work inside the bench's folder.** A repository is cloned into its bench folder and a worktree
+  is created in that bench's `worktrees/`, never at the workspace root; checkouts move only with
+  `git worktree move` or `git worktree repair` (`07_SoftwareFactory/01_Software_Factory.md` §2a).
 - **Fixers fix one finding, inside their scope.** A CRAP fixer changes production code only, a
   mutation fixer tests only, enforced by CI on changed paths. Each finding gets 3 attempts, counted
   by the board, never by an agent; then the Builder; then Blocked. Retries get the failure delta and
