@@ -151,7 +151,10 @@
       "detected_by": "person",
       "found": "2026-10-29",
       "due": "2026-11-05",
-      "status": "open"
+      "status": "fixed",
+      "closed": "2026-11-03",
+      "verification": "owner signs in through IAM Identity Center with MFA (sts get-caller-identity returns the AWSReservedSSO_AdministratorAccess role); the static key is inactive and the IAM credential report shows no active access keys on any user, root with MFA; the permission set's explicit deny on creating users, access keys and console passwords, and on re-activating a key, was shown to fail: iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03",
+      "residual": "verified by hand, not yet by CI: a daily check of the credential report waits for the agent roles; the inactive key and the old IAM user are deleted after a 7-day soak; the account is the organization's management account, where service control policies do not apply, so workloads move to member accounts (F-0016)"
     },
     {
       "id": "F-0014",
