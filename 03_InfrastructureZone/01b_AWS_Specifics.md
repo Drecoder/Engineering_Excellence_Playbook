@@ -31,6 +31,9 @@ remote_state {
 
 ## Identity
 
+- People sign in through **IAM Identity Center** with MFA and a permission set; no person has an
+  IAM user. Every permission set denies creating users, access keys, and console passwords, and
+  re-activating a key, so the only way to a long-lived credential is the alerted break-glass path.
 - CI and agents authenticate via **OIDC federation** (e.g., GitHub OIDC provider →
   `sts:AssumeRoleWithWebIdentity`). **No IAM users with access keys** for workloads.
 - Role trust policies pin the OIDC `sub` claim to the exact repo / branch / environment.

@@ -61,6 +61,13 @@ later inherits them without anyone remembering to.
 
 - **No project or account lives outside the hierarchy.** A standalone project inherits no
   guardrails, so it is a finding, not a configuration.
+- **The AWS management account runs nothing.** Service control policies never apply to the
+  management account, so the baseline cannot guard it. It holds only Organizations, the sign-in
+  directory, and billing; every workload lives in a member account under an OU. Until the first
+  member account is vended, the management account is guarded by its permission sets instead:
+  every permission set carries an explicit deny on creating long-lived credentials (users, access
+  keys, console passwords, and re-activating a key), shown to fail before it counts. Root is the
+  break-glass path, with MFA and an alert on use.
 - Environment nodes may tighten the baseline (e.g. `prod` enforces controls that `dev` runs in dry
   run), never loosen it.
 
