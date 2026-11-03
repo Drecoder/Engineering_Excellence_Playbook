@@ -190,6 +190,8 @@ Telemetry ships with the first line of code, not after the feature works (see
   `00_UniversalStandards/04_CONCURRENCY_GOVERNORS.md`.
 - LLM calls are spans using the OTel GenAI conventions (`gen_ai.request.model`,
   `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`) and increment a token/cost counter.
+  Inside a factory run, each call also emits a `token_record.v1` to the cost ledger: counts only,
+  never a cost, keyed by `run_id` and `call_id` (`03_InfrastructureZone/05_Cost.md` §5).
 - Instrument through a shared wrapper (e.g. `traced(name, attrs, fn)`) — do not hand-roll spans
   inside business logic.
 - A metric or span name is a contract like an exported interface: renaming one requires updating
