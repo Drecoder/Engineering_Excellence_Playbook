@@ -420,3 +420,27 @@ journal entries are unchanged.
   (a control attribution with no run, or with a run that did not fail) and one that must pass.
 - **Evidence:** #46; the register check's output on `main`.
 - **Status:** open until the preventive action is implemented and that verification passes.
+
+## 2026-11-03: The planned key guardrail would not have reached the account it guards
+
+- **Rule:** a preventive action prevents (CAPA), and a guardrail counts only when it is shown to
+  fail on its defect (`AGENTS.md` → CI Rules); every account lives in the governance hierarchy.
+- **Problem:** INC-002's enforcement was planned as a service control policy denying IAM users and
+  access keys. Turning on the sign-in directory made the only AWS account the organization's
+  management account, and service control policies never apply to a management account. The
+  planned guardrail would have been attached, looked right, and denied nothing.
+- **Detection:** reviewing the plan while closing F-0013, before the policy was written.
+- **Root cause:** the plan assumed the guarded account would be a member account; the playbook's
+  hierarchy did not say where the management account sits or what guards it.
+- **Correction:** the owner's permission set now carries an explicit deny on creating users, access
+  keys and console passwords, and on re-activating a key. Shown to fail: creating a user returned
+  `AccessDenied` (explicit deny in an identity-based policy).
+- **Preventive action:** the governance standard now says the management account runs nothing and,
+  until a member account is vended, is guarded by permission sets
+  (`00_UniversalStandards/08_Governance_Guardrails.md` §3); people sign in through the directory and
+  never have IAM users (`03_InfrastructureZone/01b_AWS_Specifics.md`). Workloads move to a vended
+  member account, where the service control policy does apply (F-0016).
+- **Verification:** the `AccessDenied` result above, 2026-11-03; the service control policy itself
+  is proven when the member account exists.
+- **Evidence:** the permission set's inline policy; the denied `iam:CreateUser` call; this branch.
+- **Status:** fixed for the management account; the member-account guardrail is tracked by F-0016.

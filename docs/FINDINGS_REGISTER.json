@@ -223,6 +223,19 @@
       "found": "2026-10-29",
       "due": "2027-01-27",
       "status": "open"
+    },
+    {
+      "id": "F-0020",
+      "journal": "## 2026-11-03: The planned key guardrail would not have reached the account it guards",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-03",
+      "due": "2027-02-01",
+      "status": "fixed",
+      "closed": "2026-11-03",
+      "verification": "the owner's permission set denies creating users, access keys and console passwords, and re-activating a key; iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03; 08_Governance_Guardrails.md section 3 and 01b_AWS_Specifics.md updated",
+      "residual": "the service control policy for workloads is proven only once a member account is vended (F-0016)"
     }
   ],
   "controls": [
