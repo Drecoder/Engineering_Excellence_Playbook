@@ -308,6 +308,10 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   deploy button.
 - **Workloads and agents:** short-lived federated identity only — never static keys or service
   account keys; trust policies pin repo, branch, and environment.
+- **An agent is never a user.** The workforce directory (IAM Identity Center, Cloud Identity) is for
+  people. Each agent gets its own role per cloud it calls, assumed through OIDC or a task role,
+  scoped to its job, and carrying a permissions boundary that denies IAM changes, network changes,
+  and deletes. An agent gets no role in a cloud it does not call.
 - **Agents act on GitHub as their own GitHub Apps,** least privilege, installed on selected
   repositories only. An App's private key is held non-exportable in Cloud KMS; the agent signs its
   App token through KMS with its federated identity, every signature is audit-logged, and no one

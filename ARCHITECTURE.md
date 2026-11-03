@@ -71,6 +71,8 @@ Each boundary is its own identity, so no component can approve its own work.
 | :--- | :--- | :--- |
 | Builder | Read the approved spec, plan, open pull requests, submit evidence, dry-run its compliance scope | Approve a spec, review itself, merge, apply, read the authority's signing key, authorize its release |
 | Reviewer | Read the code at the requested commit, publish findings and labels | Take instructions from the review request, push code, merge |
+| Orchestrator | Lease one approved `factory` ticket, run the agents, open finding tickets, move tickets | Edit or judge code, pick up a ticket without the `factory` label, merge |
+| Fixers | Commit one finding's fix to the pull request's branch, inside their path scope | Change files outside that scope, rule a mutant equivalent, review |
 | rig and other tools | Return typed results for typed input | Hold a loop, decide what to do next, apply |
 | CI (attester) | Run the gates, sign evidence records | Sign release tokens |
 | Compliance authority | Verify evidence, evaluate criteria, sign single-use tokens | Deploy, accept a decision or status from the Builder |
@@ -80,6 +82,10 @@ Each boundary is its own identity, so no component can approve its own work.
 
 - **Workloads and agents use short-lived federated identity only**, pinned to repo, branch, and
   environment; cloud credentials live one hour (`00_UniversalStandards/07_Security_In_Depth.md`).
+- **Agents are roles, never users.** People sign in through the workforce directory with MFA;
+  agents assume roles bounded so they cannot change IAM or networks or delete resources. The Builder
+  calls models and plans but cannot apply; publishing and applying belong to their own pipeline
+  identities.
 - **Agents never notify people;** they set labels, and a notification service routes them.
 
 ## 5️⃣ Data and Messaging
