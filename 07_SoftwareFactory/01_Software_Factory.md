@@ -54,6 +54,41 @@ The **architect** is a role, not a repository: it turns the owner's plan into a 
 the board's Backlog. It may be a person or an agent; either way it never builds, reviews the code,
 or approves.
 
+## 2️⃣a The Workspace
+
+Checked out on a machine, the factory is laid out the same way it is designed: one folder per
+bench, and every repository and worktree of that bench inside it. Anyone, person or agent, can tell
+from a path which bench they are in.
+
+```text
+<workspace>/
+  <bench>/
+    <repository>/            the main checkout
+    worktrees/<short-name>/  one per branch in progress, named for the work
+```
+
+| Bench folder | Holds |
+| :--- | :--- |
+| `builder/` | `aws-builder-agent` |
+| `reviewer/` | `gcp-reviewer-agent` |
+| `rig/` | `rig` |
+| `notepad/` | `agent-notepad` |
+| `compliance/` | `compliance-authority` |
+| `orchestrator/` | `jira-orchestrator` |
+| `measurement/` | The CRAP and mutation services |
+| `platform/gcp/`, `platform/genesis/` | `sovereign-vpc-gcp`, `Genesis` |
+| `playbook/` | Worktrees of `Engineering_Excellence_Playbook` |
+| `specs/` | The factory's specs |
+
+- **New repositories are cloned straight into their bench folder,** never at the workspace root.
+  A repository that fits no bench gets its bench first: a row in §2 and a folder here.
+- **New worktrees go in the bench's `worktrees/`:** `git worktree add <bench>/worktrees/<name> <branch>`,
+  named for the work (`scanners`, `cost-ledger`), not for the repository.
+- **Checkouts move only through git.** A worktree moves with `git worktree move`; a moved main
+  checkout is relinked with `git worktree repair`. A plain file move breaks git's links between
+  them.
+- The playbook's own main checkout stays where it is; only its worktrees live under `playbook/`.
+
 ## 3️⃣ How the Benches Work Together
 
 A change moves through the factory in this order (`ARCHITECTURE.md` §3 draws it). Today most
