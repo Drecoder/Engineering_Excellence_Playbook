@@ -36,6 +36,9 @@ subset (IaC and Node/TypeScript). They narrow the general philosophy in
   state layout) with a **behavioral** change (changing resource arguments/behavior) in the
   same refactor step. Split them into separate commits/PRs so `terragrunt plan` stays easy to
   read and diff. Sequence refactors per `00_UniversalStandards/06_Module_Refactor_Framework.md`.
+- Compute runs only when called: CI runners, build agents, and inference VMs are at zero when no
+  work is queued. A minimum above zero needs a reason in the unit's design
+  (`03_InfrastructureZone/05_Cost.md` §3a).
 
 ## TypeScript / Node Rules
 
