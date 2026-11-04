@@ -41,6 +41,11 @@ A platform service that runs a few times a day must not carry a fixed monthly ch
   gateway, unless the gateway's features are needed.
 - **Prove it on the bill.** The service's budget alarm is set before it ships, and its first 30
   days of billing are checked for any fixed charge.
+- **Compute runs only when called.** CI runners, build agents, and inference VMs are at zero when
+  no work is queued. Something outside the compute wakes it, and it stops after a stated idle time.
+  An autoscaler minimum above zero, or an always-on instance group, needs a reason in its design.
+- **A deploy that half-succeeds still bills.** After a failed apply, check what was created. A
+  resource nothing can reach is removed, not left running until the apply is fixed.
 
 ## 4️⃣ Expensive Capacity Is Borrowed
 
