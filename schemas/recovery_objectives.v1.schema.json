@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recovery_objectives.v1.schema.json",
+  "title": "recovery_objectives.v1",
+  "description": "How much data a service may lose and how long it may be down (00_UniversalStandards/16_Service_Design_Record.md §3). rpo_seconds is the most recent window of acknowledged writes the service may lose; rto_seconds is the longest it may be unavailable. Replication does not meet an RPO on its own, because it copies a bad write or delete to every replica; the RPO is met by backups. Rules JSON Schema cannot express, enforced by the design record's relationship rules: every store whose data class requires backup declares a backup interval no longer than the RPO (an RPO of 0 needs continuous backup, interval 0); a region-scoped failover needs those stores placed in more than one region; and the RTO must fit inside every SLO's error budget.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "service", "rto_seconds", "rpo_seconds", "failover"],
+  "properties": {
+    "schema_version": { "const": "recovery_objectives.v1" },
+    "service": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+    "rto_seconds": { "type": "integer", "minimum": 0, "maximum": 2592000 },
+    "rpo_seconds": { "type": "integer", "minimum": 0, "maximum": 2592000 },
+    "failover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "scope", "procedure"],
+      "properties": {
+        "mode": { "enum": ["restore_from_backup", "standby", "active_active"] },
+        "scope": { "enum": ["zone", "region"], "description": "The largest failure the failover path survives." },
+        "procedure": { "type": "string", "minLength": 10, "maxLength": 500, "description": "Where the runbook is, or how failover happens automatically." }
+      }
+    }
+  }
+}

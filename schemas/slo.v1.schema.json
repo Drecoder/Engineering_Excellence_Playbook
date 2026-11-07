@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slo.v1.schema.json",
+  "title": "slo.v1",
+  "description": "A service level objective (00_UniversalStandards/16_Service_Design_Record.md §2): a target for one SLI over a rolling window, with the burn-rate alerts that page or ticket on it (04_OperationalRunbooks/02_Monitoring_Alert_Thresholds.md §2). Rules JSON Schema cannot express, enforced by the design record's relationship rules and covered by vectors: the SLI must exist in the same record; a target must be stricter than any external commitment; and one full outage lasting the service's RTO must fit inside the error budget of the window.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "service", "sli", "target_percent", "window_days", "burn_rate_alerts"],
+  "properties": {
+    "schema_version": { "const": "slo.v1" },
+    "id": { "$ref": "#/$defs/slug" },
+    "service": { "$ref": "#/$defs/slug" },
+    "sli": { "$ref": "#/$defs/slug", "description": "The id of an sli.v1 in the same design record." },
+    "target_percent": { "type": "number", "minimum": 90, "exclusiveMaximum": 100 },
+    "window_days": { "enum": [7, 28, 30] },
+    "external_commitment_percent": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMaximum": 100,
+      "description": "A commitment made to someone outside the team (an SLA), if any. The target must be strictly higher."
+    },
+    "burn_rate_alerts": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/$defs/burn_rate_alert" },
+      "allOf": [{ "contains": { "properties": { "severity": { "const": "page" } } } }, { "contains": { "properties": { "severity": { "const": "ticket" } } } }],
+      "description": "Multi-window burn-rate alerts: at least one that pages and one that opens a ticket."
+    }
+  },
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+    "duration": { "type": "string", "pattern": "^[1-9][0-9]{0,3}[mhd](?!\n)$", "description": "A Prometheus range such as 5m, 1h or 6h." },
+    "burn_rate_alert": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "burn_rate", "long_window", "short_window"],
+      "properties": {
+        "severity": { "enum": ["page", "ticket"] },
+        "burn_rate": { "type": "number", "exclusiveMinimum": 1, "maximum": 1000 },
+        "long_window": { "$ref": "#/$defs/duration" },
+        "short_window": { "$ref": "#/$defs/duration" }
+      }
+    }
+  }
+}

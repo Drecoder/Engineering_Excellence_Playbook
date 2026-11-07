@@ -1,0 +1,11 @@
+{
+  "schema_version": "recovery_objectives.v1",
+  "service": "jira-orchestrator",
+  "rto_seconds": 3600,
+  "rpo_seconds": 300,
+  "failover": {
+    "mode": "restore_from_backup",
+    "scope": "zone",
+    "procedure": "Redeploy from IaC in another zone and restore ticket state from the point-in-time backup; leases are reissued."
+  }
+}

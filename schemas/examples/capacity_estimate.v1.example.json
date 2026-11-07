@@ -1,0 +1,15 @@
+{
+  "schema_version": "capacity_estimate.v1",
+  "service": "jira-orchestrator",
+  "arrival_rate_per_second": { "mean": 0.05, "peak": 0.5 },
+  "p99_latency_ms": 2000,
+  "in_flight_at_peak": 1,
+  "payload_bytes_p99": { "request": 20000, "response": 5000 },
+  "remote_calls_per_request": 6,
+  "fan_out_width": 1,
+  "read_write_ratio": 3,
+  "bound": { "kind": "latency", "lever": "One board search per poll and batched ticket transitions, so each request makes few round trips." },
+  "serial_point": "One ticket is leased at a time by design; the lease is the serial point.",
+  "hottest_key_writes_per_second": 0.5,
+  "monthly_cost_usd": { "compute": 2, "storage": 1, "egress": 0.5, "total": 3.5 }
+}

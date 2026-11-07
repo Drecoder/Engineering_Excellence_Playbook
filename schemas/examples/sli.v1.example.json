@@ -1,0 +1,10 @@
+{
+  "schema_version": "sli.v1",
+  "id": "dispatch-latency",
+  "service": "jira-orchestrator",
+  "kind": "latency",
+  "description": "Share of dispatches completed within two seconds of the poll that found the ticket.",
+  "valid_events_query": "sum(rate(orchestrator_dispatch_duration_seconds_count[5m]))",
+  "good_events_query": "sum(rate(orchestrator_dispatch_duration_seconds_bucket{le=\"2\"}[5m]))",
+  "counts_as_bad": [{ "condition": "slower_than", "detail": "Dispatch took longer than two seconds.", "threshold_ms": 2000 }]
+}

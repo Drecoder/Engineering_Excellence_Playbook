@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sli.v1.schema.json",
+  "title": "sli.v1",
+  "description": "A service level indicator (00_UniversalStandards/16_Service_Design_Record.md §2): the share of valid events that were good. counts_as_bad lists every way an event is bad, not only server errors: a response slower than a threshold, a wrong or empty result, or missing data each count when listed. A latency SLI must list slower_than. Queries are PromQL over the service's own metrics (02_BackendZone/04_Telemetry_Standards.md).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "service", "kind", "description", "valid_events_query", "good_events_query", "counts_as_bad"],
+  "properties": {
+    "schema_version": { "const": "sli.v1" },
+    "id": { "$ref": "#/$defs/slug", "description": "Unique within the service; SLOs refer to it." },
+    "service": { "$ref": "#/$defs/slug" },
+    "kind": { "enum": ["availability", "latency", "correctness", "freshness"] },
+    "description": { "type": "string", "minLength": 10, "maxLength": 500 },
+    "valid_events_query": { "type": "string", "minLength": 5, "maxLength": 2000, "description": "Counts every event the SLI judges (the denominator)." },
+    "good_events_query": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 2000,
+      "description": "Counts the good events (the numerator); excludes everything listed in counts_as_bad."
+    },
+    "counts_as_bad": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/bad_condition" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "latency" } } },
+      "then": { "properties": { "counts_as_bad": { "contains": { "properties": { "condition": { "const": "slower_than" } } } } } }
+    }
+  ],
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+    "bad_condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "detail"],
+      "properties": {
+        "condition": { "enum": ["server_error", "slower_than", "wrong_result", "missing_data"] },
+        "detail": { "type": "string", "minLength": 5, "maxLength": 300 },
+        "threshold_ms": { "type": "integer", "minimum": 1, "maximum": 600000 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "condition": { "const": "slower_than" } } },
+          "then": { "required": ["threshold_ms"] },
+          "else": { "not": { "required": ["threshold_ms"] } }
+        }
+      ]
+    }
+  }
+}

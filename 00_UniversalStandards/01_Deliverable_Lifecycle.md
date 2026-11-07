@@ -15,7 +15,7 @@ advance (see `05_Metadata/RedGreen_Logic.md`).
 
 | Entry gate | Activities | Exit gate |
 | :--- | :--- | :--- |
-| Problem and owner identified | Define contracts (API schema, module inputs/outputs, JSON schemas); identify cross-layer impact; weigh trade-offs (`Two_Sides_of_the_Coin.md`); define SLOs and the telemetry the change will emit | Contracts and SLOs written down and reviewed |
+| Problem and owner identified | Define contracts (API schema, module inputs/outputs, JSON schemas); identify cross-layer impact; weigh trade-offs (`Two_Sides_of_the_Coin.md`); for a service, write its design record: capacity estimate, SLIs and SLOs, recovery objectives, and a data class for every store (`16_Service_Design_Record.md`); define the telemetry the change will emit | Contracts written down and reviewed; for a service, a `service_design_record.v1` that is schema-valid and passes relationship rules `DR-001`–`DR-018` |
 
 ## 2. Build
 

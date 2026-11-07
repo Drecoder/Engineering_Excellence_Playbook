@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "service_design_record.v1.schema.json",
+  "title": "service_design_record.v1",
+  "description": "What a service declares before it is built (00_UniversalStandards/16_Service_Design_Record.md). It defines nothing itself: it binds one service's capacity_estimate.v1, sli.v1 and slo.v1 definitions and recovery_objectives.v1 to its stores, each of which names a class from schemas/data_classes.v1.json. The Design exit gate (01_Deliverable_Lifecycle.md) requires a record that is valid against this schema and passes the relationship rules DR-001 to DR-018, whose reference behavior is tests/contracts/design_record_reference.py with vectors in schemas/examples/design_record/relationship_vectors.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "service", "owner", "capacity_estimate", "slis", "slos", "recovery_objectives", "stores", "concurrency"],
+  "properties": {
+    "schema_version": { "const": "service_design_record.v1" },
+    "service": { "$ref": "#/$defs/slug" },
+    "owner": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{0,38}(?!\n)$", "description": "The GitHub user or team that owns the service." },
+    "capacity_estimate": { "$ref": "capacity_estimate.v1.schema.json" },
+    "slis": { "type": "array", "minItems": 2, "items": { "$ref": "sli.v1.schema.json" } },
+    "slos": { "type": "array", "minItems": 2, "items": { "$ref": "slo.v1.schema.json" } },
+    "recovery_objectives": { "$ref": "recovery_objectives.v1.schema.json" },
+    "stores": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/store" },
+      "description": "Every place the service keeps data, including caches and coordination records. A stateless service lists none."
+    },
+    "concurrency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "max_in_flight"],
+      "properties": {
+        "mode": {
+          "enum": ["governor", "platform_cap"],
+          "description": "governor: an in-process bound per instance times a fixed instance count; platform_cap: the platform's concurrency limit on the trigger, for serverless consumers."
+        },
+        "max_in_flight": { "type": "integer", "minimum": 1, "description": "The most requests the service holds at once across all instances." }
+      }
+    }
+  },
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+    "store": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind", "data_class", "value_data", "copies", "placement", "replication"],
+      "properties": {
+        "name": { "$ref": "#/$defs/slug" },
+        "kind": { "enum": ["relational", "key_value", "document", "object", "stream", "queue", "cache", "vector", "graph"] },
+        "data_class": { "type": "string", "pattern": "^[a-z][a-z_]{1,40}(?!\n)$", "description": "The id of a class in schemas/data_classes.v1.json." },
+        "value_data": {
+          "type": "boolean",
+          "description": "True when the store holds records that break a guarantee if lost or misread: money, approvals, release tokens, leases, ledgers. Such a store needs a strongly consistent class."
+        },
+        "copies": { "type": "integer", "minimum": 1, "maximum": 9 },
+        "placement": { "enum": ["single_zone", "multi_zone", "multi_region"] },
+        "replication": { "enum": ["none", "asynchronous", "synchronous"] },
+        "backup_interval_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How often a restorable copy is taken; 0 means continuous (point-in-time recovery). Replication is not a backup: it copies a bad write too."
+        },
+        "cache": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["caches_class", "mode", "ttl_seconds"],
+          "properties": {
+            "caches_class": {
+              "type": "string",
+              "pattern": "^[a-z][a-z_]{1,40}(?!\n)$",
+              "description": "The class of the data being cached, which sets the allowed modes and the longest TTL."
+            },
+            "mode": { "enum": ["cache_aside", "write_through", "write_back"] },
+            "ttl_seconds": { "type": "integer", "minimum": 1 }
+          }
+        }
+      },
+      "allOf": [{ "if": { "properties": { "kind": { "const": "cache" } } }, "then": { "required": ["cache"] }, "else": { "not": { "required": ["cache"] } } }]
+    }
+  }
+}

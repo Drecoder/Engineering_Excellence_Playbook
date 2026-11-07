@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data_class.v1.schema.json",
+  "title": "data_class.v1",
+  "description": "The playbook's table of data classes (schemas/data_classes.v1.json; 00_UniversalStandards/16_Service_Design_Record.md §5). Each class states what losing or misreading its data costs, as requirements a store holding it must meet: how a write is acknowledged, how many copies exist and where, backup, consistency, which caching modes are allowed, and what a producer does when its buffer is full. Every store in a design record names one class. A strong class allows no replica reads and has a staleness bound of 0, and a quorum-acknowledged class keeps at least three synchronous copies. Class ids must be unique (relationship rule DR-018).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "classes"],
+  "properties": { "schema_version": { "const": "data_class.v1" }, "classes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/class" } } },
+  "$defs": {
+    "class": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "examples", "write_ack", "min_copies", "placement", "replication", "backup_required", "consistency", "replica_reads", "max_staleness_seconds", "caching", "overflow"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z_]{1,40}(?!\n)$" },
+        "description": { "type": "string", "minLength": 10, "maxLength": 500 },
+        "examples": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3, "maxLength": 120 } },
+        "write_ack": {
+          "enum": ["none", "buffered", "flushed", "replicated_quorum"],
+          "description": "When a write may be reported as done: never waited on, in memory, on disk, or on a quorum of replicas."
+        },
+        "min_copies": { "type": "integer", "minimum": 1, "maximum": 9 },
+        "placement": { "enum": ["single_zone", "multi_zone", "multi_region"], "description": "The minimum spread of the copies; a store may exceed it." },
+        "replication": { "enum": ["none", "asynchronous", "synchronous"] },
+        "backup_required": { "type": "boolean" },
+        "consistency": { "enum": ["strong", "read_your_writes", "eventual"] },
+        "replica_reads": { "type": "boolean", "description": "Whether reads may be served from a replica or cache instead of the primary." },
+        "max_staleness_seconds": { "type": "integer", "minimum": 0, "description": "The longest a reader may see old data. Cache TTLs for this class may not exceed it." },
+        "caching": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["cache_aside", "write_through", "write_back"] },
+          "description": "Caching modes allowed for this class; empty means none."
+        },
+        "overflow": {
+          "enum": ["drop", "reject_with_retry"],
+          "description": "What a producer does when its buffer is full. Blocking a user's request is never allowed."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "consistency": { "const": "strong" } } },
+          "then": { "properties": { "replica_reads": { "const": false }, "max_staleness_seconds": { "const": 0 } } }
+        },
+        {
+          "if": { "properties": { "write_ack": { "const": "replicated_quorum" } } },
+          "then": { "properties": { "min_copies": { "minimum": 3 }, "replication": { "const": "synchronous" } } }
+        }
+      ]
+    }
+  }
+}
