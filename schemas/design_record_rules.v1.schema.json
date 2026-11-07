@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design_record_rules.v1.schema.json",
+  "title": "design_record_rules.v1",
+  "description": "The versioned set of relationship rules for service_design_record.v1 (schemas/design_record_rules.v1.json). Each rule says what it checks and, where it matters, what it cannot establish (limits). Rule ids must be unique; the contract tests check that the reference implementation and the vectors cover exactly these rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "description", "rules"],
+  "properties": {
+    "schema_version": { "const": "design_record_rules.v1" },
+    "description": { "type": "string", "minLength": 10 },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "applies_to", "title"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^DR-[0-9]{3}(?!\n)$" },
+          "applies_to": { "enum": ["record", "table"] },
+          "title": { "type": "string", "minLength": 10, "maxLength": 400 },
+          "limits": { "type": "string", "minLength": 10, "maxLength": 400 }
+        }
+      }
+    }
+  }
+}

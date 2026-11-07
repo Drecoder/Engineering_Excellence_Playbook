@@ -48,7 +48,7 @@ Three rules decide whether a signal pages, opens a ticket, or only appears on a 
 
 ## 4️⃣ Alerting Workflow
 
-1. **Define SLOs** → Each service declares its availability and latency SLOs  
+1. **Define SLOs** → Each service declares its availability and latency SLOs, each on an SLI that names every way an event counts as bad, in its design record (`sli.v1`, `slo.v1`; `00_UniversalStandards/16_Service_Design_Record.md` §2)  
 2. **Measure the Knee** → Load-test to find saturation; set saturation alerts at knee − 1σ  
 3. **Configure Routes** → Page / ticket / dashboard per the policy above  
 4. **Incident Triage** → Use drill flows (e.g., K8s troubleshooting, async processing)  

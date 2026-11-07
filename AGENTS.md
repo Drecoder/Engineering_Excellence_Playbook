@@ -70,6 +70,12 @@ How services are shaped (rationale in `02_BackendZone/05_Application_Architectur
 - **Every remote call has a timeout**; retries only for idempotent operations, with backoff, jitter,
   and idempotency keys for writes.
 - **Never cache an authorization decision** longer than the credential it rests on.
+- **Every service has a design record before it is built** (`schemas/service_design_record.v1.schema.json`;
+  `00_UniversalStandards/16_Service_Design_Record.md`): its capacity estimate, SLIs and SLOs, recovery
+  objectives, and a class from `schemas/data_classes.v1.json` for every store. The record is valid
+  against its schema and passes the relationship rules of the versioned rule set it names
+  (`schemas/design_record_rules.v1.json`). Value data (money, approvals, release tokens, leases,
+  ledgers) lives only in a strongly consistent class, and replication never counts as a backup.
 - **The rules are checked from one file.** Each rule has an `ARCH-*` ID in
   `schemas/architecture_rules.v1.json`. rig runs its static checks on the diff and its trace checks
   on the targeted test run's traces; the Reviewer's `architecture` lens rubric is generated from the

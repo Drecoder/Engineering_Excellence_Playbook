@@ -1,0 +1,119 @@
+{
+  "schema_version": "service_design_record.v1",
+  "rules_version": "design_record_rules.v1",
+  "service": "jira-orchestrator",
+  "owner": "Drecoder",
+  "capacity_estimate": {
+    "schema_version": "capacity_estimate.v1",
+    "service": "jira-orchestrator",
+    "arrival_rate_per_second": { "mean": 0.05, "peak": 0.5 },
+    "p99_latency_ms": 2000,
+    "in_flight_at_peak": 1,
+    "payload_bytes_p99": { "request": 20000, "response": 5000 },
+    "remote_calls_per_request": 6,
+    "fan_out_width": 1,
+    "read_write_ratio": 3,
+    "bound": { "kind": "latency", "lever": "One board search per poll and batched ticket transitions, so each request makes few round trips." },
+    "serial_point": "One ticket is leased at a time by design; the lease is the serial point.",
+    "hottest_key_writes_per_second": 0.5,
+    "monthly_cost_usd": { "compute": 2, "storage": 1, "egress": 0.5, "total": 3.5 }
+  },
+  "slis": [
+    {
+      "schema_version": "sli.v1",
+      "id": "dispatch-availability",
+      "service": "jira-orchestrator",
+      "kind": "availability",
+      "description": "Share of dispatch attempts that hand the Builder a valid spec or correctly leave the ticket untouched.",
+      "valid_events_query": "sum(rate(orchestrator_dispatch_total[5m]))",
+      "good_events_query": "sum(rate(orchestrator_dispatch_total{outcome=~\"dispatched|skipped\"}[5m]))",
+      "counts_as_bad": [
+        { "condition": "server_error", "detail": "The dispatch failed with an error from the board, the store or the Builder's queue." },
+        { "condition": "wrong_result", "detail": "A ticket was dispatched without a valid builder.spec.v1, or twice under one lease." }
+      ]
+    },
+    {
+      "schema_version": "sli.v1",
+      "id": "dispatch-latency",
+      "service": "jira-orchestrator",
+      "kind": "latency",
+      "description": "Share of dispatches completed within two seconds of the poll that found the ticket.",
+      "valid_events_query": "sum(rate(orchestrator_dispatch_duration_seconds_count[5m]))",
+      "good_events_query": "sum(rate(orchestrator_dispatch_duration_seconds_bucket{le=\"2\"}[5m]))",
+      "counts_as_bad": [
+        { "condition": "slower_than", "detail": "Dispatch took longer than two seconds.", "threshold_ms": 2000 }
+      ]
+    }
+  ],
+  "slos": [
+    {
+      "schema_version": "slo.v1",
+      "id": "dispatch-availability-30d",
+      "service": "jira-orchestrator",
+      "sli": "dispatch-availability",
+      "target_percent": 99.5,
+      "window_days": 30,
+      "burn_rate_alerts": [
+        { "severity": "page", "burn_rate": 14.4, "long_window": "1h", "short_window": "5m" },
+        { "severity": "ticket", "burn_rate": 6, "long_window": "6h", "short_window": "30m" }
+      ]
+    },
+    {
+      "schema_version": "slo.v1",
+      "id": "dispatch-latency-30d",
+      "service": "jira-orchestrator",
+      "sli": "dispatch-latency",
+      "target_percent": 99,
+      "window_days": 30,
+      "burn_rate_alerts": [
+        { "severity": "page", "burn_rate": 14.4, "long_window": "1h", "short_window": "5m" },
+        { "severity": "ticket", "burn_rate": 6, "long_window": "6h", "short_window": "30m" }
+      ]
+    }
+  ],
+  "recovery_objectives": {
+    "schema_version": "recovery_objectives.v1",
+    "service": "jira-orchestrator",
+    "rto_seconds": 3600,
+    "rpo_seconds": 300,
+    "failover": { "mode": "restore_from_backup", "scope": "zone", "procedure": "Redeploy from IaC in another zone and restore ticket state from the point-in-time backup; leases are reissued." },
+    "failure_scenarios": [
+      { "name": "Loss of the zone running the orchestrator", "kind": "zone_loss", "expected_per_year": 0.5, "downtime_seconds": 3600 },
+      { "name": "Jira API outage", "kind": "dependency_outage", "expected_per_year": 6, "downtime_seconds": 1800 },
+      { "name": "A bad deploy rolled back", "kind": "bad_change", "expected_per_year": 4, "downtime_seconds": 900 },
+      { "name": "Corrupted ticket state restored from backup", "kind": "data_corruption", "expected_per_year": 0.2, "downtime_seconds": 3600 }
+    ]
+  },
+  "stores": [
+    {
+      "name": "leases",
+      "kind": "key_value",
+      "data_class": "coordination",
+      "value_data": true,
+      "copies": 3,
+      "placement": "multi_zone",
+      "replication": "synchronous"
+    },
+    {
+      "name": "ticket-state",
+      "kind": "key_value",
+      "data_class": "business_record",
+      "value_data": false,
+      "copies": 3,
+      "placement": "multi_zone",
+      "replication": "synchronous",
+      "backup": { "interval_seconds": 0, "completion_seconds": 60 }
+    },
+    {
+      "name": "board-cache",
+      "kind": "cache",
+      "data_class": "rebuildable",
+      "value_data": false,
+      "copies": 1,
+      "placement": "single_zone",
+      "replication": "none",
+      "cache": { "caches_class": "business_record", "mode": "cache_aside", "ttl_seconds": 5 }
+    }
+  ],
+  "concurrency": { "mode": "platform_cap", "max_in_flight": 1 }
+}

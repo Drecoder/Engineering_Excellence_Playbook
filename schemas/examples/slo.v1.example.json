@@ -1,0 +1,12 @@
+{
+  "schema_version": "slo.v1",
+  "id": "dispatch-availability-30d",
+  "service": "jira-orchestrator",
+  "sli": "dispatch-availability",
+  "target_percent": 99.5,
+  "window_days": 30,
+  "burn_rate_alerts": [
+    { "severity": "page", "burn_rate": 14.4, "long_window": "1h", "short_window": "5m" },
+    { "severity": "ticket", "burn_rate": 6, "long_window": "6h", "short_window": "30m" }
+  ]
+}

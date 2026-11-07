@@ -1,0 +1,137 @@
+{
+  "description": "The relationship rules of design_record_rules.v1 that every service_design_record.v1 consumer must reproduce, against schemas/data_classes.v1.json. Each case applies a JSON Patch (RFC 6902: add, replace, remove) to the base record or to the class table; every patched document is still schema-valid, so each expected failure comes from a relationship rule alone. expect lists the failing rule IDs, sorted; an empty list means the document passes.",
+  "record": "examples/service_design_record.v1.example.json",
+  "table": "data_classes.v1.json",
+  "rules": "design_record_rules.v1.json",
+  "record_cases": [
+    { "name": "the base record passes", "patch": [], "expect": [] },
+    { "name": "a region failover with every backed-up store in two regions passes", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/failover/scope", "value": "region" },
+      { "op": "replace", "path": "/stores/1/placement", "value": "multi_region" }
+    ], "expect": [] },
+    { "name": "an SLO stricter than its external commitment passes", "patch": [
+      { "op": "add", "path": "/slos/0/external_commitment_percent", "value": 99 }
+    ], "expect": [] },
+    { "name": "an RTO exactly equal to the error budget passes", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/rto_seconds", "value": 12960 }
+    ], "expect": [] },
+    { "name": "a worst-case recovery point exactly equal to the RPO passes (240 s interval + 60 s to restorable)", "patch": [
+      { "op": "replace", "path": "/stores/1/backup/interval_seconds", "value": 240 }
+    ], "expect": [] },
+    { "name": "a failure scenario lasting exactly the RTO passes", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/failure_scenarios/1/downtime_seconds", "value": 3600 }
+    ], "expect": [] },
+    { "name": "a fractional in-flight load rounds up (0.75 x 2 s = 1.5, so 2)", "patch": [
+      { "op": "replace", "path": "/capacity_estimate/arrival_rate_per_second/peak", "value": 0.75 }
+    ], "expect": ["DR-014"] },
+    { "name": "the recovery objectives name another service", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/service", "value": "builder" }
+    ], "expect": ["DR-001"] },
+    { "name": "an SLI names another service", "patch": [
+      { "op": "replace", "path": "/slis/1/service", "value": "builder" }
+    ], "expect": ["DR-001"] },
+    { "name": "two SLIs share an id", "patch": [
+      { "op": "add", "path": "/slis/-", "value": { "schema_version": "sli.v1", "id": "dispatch-latency", "service": "jira-orchestrator", "kind": "correctness", "description": "Share of dispatched specs that validate.", "valid_events_query": "sum(rate(orchestrator_dispatch_total[5m]))", "good_events_query": "sum(rate(orchestrator_spec_valid_total[5m]))", "counts_as_bad": [{ "condition": "wrong_result", "detail": "The spec failed validation." }] } }
+    ], "expect": ["DR-002"] },
+    { "name": "an SLO names an SLI that is not in the record", "patch": [
+      { "op": "add", "path": "/slos/-", "value": { "schema_version": "slo.v1", "id": "dispatch-freshness-30d", "service": "jira-orchestrator", "sli": "dispatch-freshness", "target_percent": 99, "window_days": 30, "burn_rate_alerts": [{ "severity": "page", "burn_rate": 14.4, "long_window": "1h", "short_window": "5m" }, { "severity": "ticket", "burn_rate": 6, "long_window": "6h", "short_window": "30m" }] } }
+    ], "expect": ["DR-003"] },
+    { "name": "no SLO covers latency", "patch": [
+      { "op": "replace", "path": "/slos/1/sli", "value": "dispatch-availability" }
+    ], "expect": ["DR-004"] },
+    { "name": "an SLO equal to its external commitment", "patch": [
+      { "op": "add", "path": "/slos/0/external_commitment_percent", "value": 99.5 }
+    ], "expect": ["DR-005"] },
+    { "name": "an RTO longer than the availability error budget (12,960 s in 30 days at 99.5%)", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/rto_seconds", "value": 14400 }
+    ], "expect": ["DR-006"] },
+    { "name": "a store names a class that does not exist", "patch": [
+      { "op": "replace", "path": "/stores/1/data_class", "value": "important" }
+    ], "expect": ["DR-007"] },
+    { "name": "a cache names a cached class that does not exist", "patch": [
+      { "op": "replace", "path": "/stores/2/cache/caches_class", "value": "important" }
+    ], "expect": ["DR-007"] },
+    { "name": "a business record kept in one copy", "patch": [
+      { "op": "replace", "path": "/stores/1/copies", "value": 1 }
+    ], "expect": ["DR-008"] },
+    { "name": "a coordination store in one zone", "patch": [
+      { "op": "replace", "path": "/stores/0/placement", "value": "single_zone" }
+    ], "expect": ["DR-008"] },
+    { "name": "a coordination store replicated asynchronously", "patch": [
+      { "op": "replace", "path": "/stores/0/replication", "value": "asynchronous" },
+      { "op": "add", "path": "/stores/0/replication_lag_seconds", "value": 1 }
+    ], "expect": ["DR-008"] },
+    { "name": "a business record with no backup", "patch": [
+      { "op": "remove", "path": "/stores/1/backup" }
+    ], "expect": ["DR-009"] },
+    { "name": "an hourly backup against a five-minute RPO", "patch": [
+      { "op": "replace", "path": "/stores/1/backup/interval_seconds", "value": 3600 }
+    ], "expect": ["DR-010"] },
+    { "name": "continuous backup that takes ten minutes to become restorable, against a five-minute RPO", "patch": [
+      { "op": "replace", "path": "/stores/1/backup/completion_seconds", "value": 600 }
+    ], "expect": ["DR-010"] },
+    { "name": "an interval within the RPO that exceeds it once completion time is added", "patch": [
+      { "op": "replace", "path": "/stores/1/backup/interval_seconds", "value": 270 }
+    ], "expect": ["DR-010"] },
+    { "name": "an asynchronous replica lagging past the RPO (the class also requires synchronous replication)", "patch": [
+      { "op": "replace", "path": "/stores/1/replication", "value": "asynchronous" },
+      { "op": "add", "path": "/stores/1/replication_lag_seconds", "value": 600 }
+    ], "expect": ["DR-008", "DR-010"] },
+    { "name": "an asynchronous replica lagging within the RPO fails only the class rule", "patch": [
+      { "op": "replace", "path": "/stores/1/replication", "value": "asynchronous" },
+      { "op": "add", "path": "/stores/1/replication_lag_seconds", "value": 100 }
+    ], "expect": ["DR-008"] },
+    { "name": "a region failover with a backed-up store in one region", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/failover/scope", "value": "region" }
+    ], "expect": ["DR-011"] },
+    { "name": "value data in an eventually consistent class", "patch": [
+      { "op": "replace", "path": "/stores/2/value_data", "value": true }
+    ], "expect": ["DR-012"] },
+    { "name": "value data in a read-your-writes class", "patch": [
+      { "op": "replace", "path": "/stores/1/value_data", "value": true }
+    ], "expect": ["DR-012"] },
+    { "name": "a cache TTL longer than the cached class's staleness bound", "patch": [
+      { "op": "replace", "path": "/stores/2/cache/ttl_seconds", "value": 60 }
+    ], "expect": ["DR-013"] },
+    { "name": "write-back caching of business records", "patch": [
+      { "op": "replace", "path": "/stores/2/cache/mode", "value": "write_back" }
+    ], "expect": ["DR-013"] },
+    { "name": "caching audit records, which allow no cache", "patch": [
+      { "op": "replace", "path": "/stores/2/cache/caches_class", "value": "audit_ledger" },
+      { "op": "replace", "path": "/stores/2/cache/ttl_seconds", "value": 1 }
+    ], "expect": ["DR-013"] },
+    { "name": "in-flight load below Little's Law", "patch": [
+      { "op": "replace", "path": "/capacity_estimate/arrival_rate_per_second/peak", "value": 5 }
+    ], "expect": ["DR-014"] },
+    { "name": "concurrency below the in-flight load", "patch": [
+      { "op": "replace", "path": "/capacity_estimate/arrival_rate_per_second/peak", "value": 5 },
+      { "op": "replace", "path": "/capacity_estimate/in_flight_at_peak", "value": 10 }
+    ], "expect": ["DR-015"] },
+    { "name": "a mean arrival rate above the peak", "patch": [
+      { "op": "replace", "path": "/capacity_estimate/arrival_rate_per_second/mean", "value": 0.6 }
+    ], "expect": ["DR-016"] },
+    { "name": "a total cost below the sum of its parts", "patch": [
+      { "op": "replace", "path": "/capacity_estimate/monthly_cost_usd/total", "value": 3 }
+    ], "expect": ["DR-017"] },
+    { "name": "a failure scenario lasting longer than the RTO", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/failure_scenarios/0/downtime_seconds", "value": 7200 }
+    ], "expect": ["DR-019"] },
+    { "name": "expected downtime that exhausts the availability budget (100 Jira outages a year x 30 min = 50 h > 43.8 h at 99.5%)", "patch": [
+      { "op": "replace", "path": "/recovery_objectives/failure_scenarios/1/expected_per_year", "value": 100 }
+    ], "expect": ["DR-020"] },
+    { "name": "a very strict latency SLO fails the RTO floor but is not charged with scenario downtime", "patch": [
+      { "op": "replace", "path": "/slos/1/target_percent", "value": 99.99 }
+    ], "expect": ["DR-006"] },
+    { "name": "several failures are all reported", "patch": [
+      { "op": "replace", "path": "/stores/1/copies", "value": 1 },
+      { "op": "replace", "path": "/stores/2/cache/ttl_seconds", "value": 60 },
+      { "op": "replace", "path": "/capacity_estimate/monthly_cost_usd/total", "value": 3 }
+    ], "expect": ["DR-008", "DR-013", "DR-017"] }
+  ],
+  "table_cases": [
+    { "name": "the published table passes", "patch": [], "expect": [] },
+    { "name": "two classes share an id", "patch": [
+      { "op": "replace", "path": "/classes/1/id", "value": "ephemeral" }
+    ], "expect": ["DR-018"] }
+  ]
+}

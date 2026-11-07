@@ -1,0 +1,80 @@
+{
+  "schema_version": "data_class.v1",
+  "classes": [
+    {
+      "id": "ephemeral",
+      "description": "Data that may be lost at any time without harm: nothing reads it after the process that wrote it is gone.",
+      "examples": ["in-process work queues", "debug logs before export", "scratch files in a sandbox"],
+      "write_ack": "none",
+      "min_copies": 1,
+      "placement": "single_zone",
+      "replication": "none",
+      "backup_required": false,
+      "consistency": "eventual",
+      "replica_reads": true,
+      "max_staleness_seconds": 3600,
+      "caching": ["cache_aside", "write_through", "write_back"],
+      "overflow": "drop"
+    },
+    {
+      "id": "rebuildable",
+      "description": "Copies derived from a source of truth that can be rebuilt from it: caches, read models, search indexes, projections. Losing one costs a rebuild, not data.",
+      "examples": ["a cache of user profiles", "a search index", "a read model built from events"],
+      "write_ack": "buffered",
+      "min_copies": 1,
+      "placement": "single_zone",
+      "replication": "none",
+      "backup_required": false,
+      "consistency": "eventual",
+      "replica_reads": true,
+      "max_staleness_seconds": 300,
+      "caching": ["cache_aside", "write_through", "write_back"],
+      "overflow": "drop"
+    },
+    {
+      "id": "business_record",
+      "description": "Records the business depends on that are not money, approvals or audit evidence: losing one is a customer-visible defect. A user who just wrote one always reads it back.",
+      "examples": ["specs and tickets", "user profiles", "orders before payment"],
+      "write_ack": "flushed",
+      "min_copies": 2,
+      "placement": "multi_zone",
+      "replication": "synchronous",
+      "backup_required": true,
+      "consistency": "read_your_writes",
+      "replica_reads": true,
+      "max_staleness_seconds": 5,
+      "caching": ["cache_aside"],
+      "overflow": "reject_with_retry"
+    },
+    {
+      "id": "audit_ledger",
+      "description": "Value and evidence records whose loss or misreading breaks a guarantee: money, approvals, release tokens, evaluation records, the cost ledger, sealed journals. Strongly consistent, quorum-replicated and backed up; never cached.",
+      "examples": ["release tokens and evaluation records", "the cost ledger", "approvals", "sealed notepad versions"],
+      "write_ack": "replicated_quorum",
+      "min_copies": 3,
+      "placement": "multi_zone",
+      "replication": "synchronous",
+      "backup_required": true,
+      "consistency": "strong",
+      "replica_reads": false,
+      "max_staleness_seconds": 0,
+      "caching": [],
+      "overflow": "reject_with_retry"
+    },
+    {
+      "id": "coordination",
+      "description": "Short-lived records that decide who may act: leases, locks, leader records and fencing counters. They must be strongly consistent, because a stale read lets two holders act at once, but they need no backup, since they are reissued after a loss.",
+      "examples": ["ticket leases", "the branch resolver lease", "fencing token counters"],
+      "write_ack": "replicated_quorum",
+      "min_copies": 3,
+      "placement": "multi_zone",
+      "replication": "synchronous",
+      "backup_required": false,
+      "consistency": "strong",
+      "replica_reads": false,
+      "max_staleness_seconds": 0,
+      "caching": [],
+      "overflow": "reject_with_retry"
+    }
+  ]
+}

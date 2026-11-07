@@ -1,0 +1,26 @@
+{
+  "schema_version": "design_record_rules.v1",
+  "description": "The relationship rules a service_design_record.v1 is checked against (00_UniversalStandards/16_Service_Design_Record.md §6). A record names this rule set in rules_version; a consumer refuses a record naming a rule set it does not implement. Changing what a rule checks is a new rule set version, never an edit.",
+  "rules": [
+    { "id": "DR-001", "applies_to": "record", "title": "Every component names the record's service." },
+    { "id": "DR-002", "applies_to": "record", "title": "SLI ids are unique and SLO ids are unique." },
+    { "id": "DR-003", "applies_to": "record", "title": "Every SLO names an SLI in the record." },
+    { "id": "DR-004", "applies_to": "record", "title": "The record has an SLO on an availability SLI and an SLO on a latency SLI." },
+    { "id": "DR-005", "applies_to": "record", "title": "An SLO target is strictly higher than its external commitment." },
+    { "id": "DR-006", "applies_to": "record", "title": "One outage lasting the RTO fits inside every SLO's error budget.", "limits": "A floor only: it shows a single recovery cannot exhaust the budget, not that the target is achievable. DR-020 checks the target against the declared failure scenarios." },
+    { "id": "DR-007", "applies_to": "record", "title": "Every store, and every cache's cached class, names a class in the table." },
+    { "id": "DR-008", "applies_to": "record", "title": "Every store meets its class's minimum copies, placement and replication." },
+    { "id": "DR-009", "applies_to": "record", "title": "A store whose class requires backup declares its backup." },
+    { "id": "DR-010", "applies_to": "record", "title": "Every backed-up store's worst-case recovery point is no longer than the RPO: the backup interval plus the time until a backup is restorable, and the replication lag of any asynchronous replica a failover could promote.", "limits": "Checks the declared design only. Whether backups complete on time and restores work is shown by backup monitoring and restore tests, not by this rule." },
+    { "id": "DR-011", "applies_to": "record", "title": "A region-scoped failover places every backed-up store in more than one region." },
+    { "id": "DR-012", "applies_to": "record", "title": "A store holding value data uses a strongly consistent class." },
+    { "id": "DR-013", "applies_to": "record", "title": "A cache uses a mode its cached class allows and a TTL within that class's staleness bound." },
+    { "id": "DR-014", "applies_to": "record", "title": "In-flight load at peak covers Little's Law: peak rate x P99 latency, rounded up." },
+    { "id": "DR-015", "applies_to": "record", "title": "Declared concurrency holds the in-flight load at peak." },
+    { "id": "DR-016", "applies_to": "record", "title": "Mean arrival rate does not exceed peak." },
+    { "id": "DR-017", "applies_to": "record", "title": "Total monthly cost is at least the sum of its parts." },
+    { "id": "DR-018", "applies_to": "table", "title": "Class ids in the table are unique." },
+    { "id": "DR-019", "applies_to": "record", "title": "No failure scenario's downtime is longer than the RTO." },
+    { "id": "DR-020", "applies_to": "record", "title": "Expected downtime from the declared failure scenarios fits every availability SLO's error budget.", "limits": "Only as good as the declared scenarios, their yearly rates and downtimes; incident history should be used to correct them." }
+  ]
+}

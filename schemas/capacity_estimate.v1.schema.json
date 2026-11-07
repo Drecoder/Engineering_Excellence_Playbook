@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capacity_estimate.v1.schema.json",
+  "title": "capacity_estimate.v1",
+  "description": "The numbers a service is designed against, written before it is built (00_UniversalStandards/16_Service_Design_Record.md §4; the math is docs/PHYSICS_OF_FLOW.md). Rules JSON Schema cannot express, enforced by the design record's relationship rules: in_flight_at_peak must cover Little's Law (peak arrival rate x P99 latency), and the record's declared concurrency must hold that in-flight load.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "service",
+    "arrival_rate_per_second",
+    "p99_latency_ms",
+    "in_flight_at_peak",
+    "payload_bytes_p99",
+    "remote_calls_per_request",
+    "fan_out_width",
+    "read_write_ratio",
+    "bound",
+    "serial_point",
+    "hottest_key_writes_per_second",
+    "monthly_cost_usd"
+  ],
+  "properties": {
+    "schema_version": { "const": "capacity_estimate.v1" },
+    "service": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,62}(?!\n)$" },
+    "arrival_rate_per_second": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mean", "peak"],
+      "properties": { "mean": { "type": "number", "minimum": 0 }, "peak": { "type": "number", "minimum": 0 } },
+      "description": "Requests or messages per second. Peak is the provisioned peak, not the mean times a guess."
+    },
+    "p99_latency_ms": { "type": "number", "exclusiveMinimum": 0, "description": "The P99 residence time W the design targets." },
+    "in_flight_at_peak": { "type": "integer", "minimum": 0, "description": "L = peak arrival rate x P99 latency, rounded up." },
+    "payload_bytes_p99": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request", "response"],
+      "properties": { "request": { "type": "integer", "minimum": 0 }, "response": { "type": "integer", "minimum": 0 } }
+    },
+    "remote_calls_per_request": { "type": "integer", "minimum": 0, "description": "Network round trips one request makes, counting each call inside a loop." },
+    "fan_out_width": { "type": "integer", "minimum": 0, "description": "The most dependencies one request calls in parallel." },
+    "read_write_ratio": { "type": "number", "minimum": 0, "description": "Reads per write; 0 for a write-only service." },
+    "bound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "lever"],
+      "properties": {
+        "kind": { "enum": ["latency", "bandwidth"] },
+        "lever": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 300,
+          "description": "The fix the design relies on: fewer or closer round trips for latency; batching, compression or wider pipes for bandwidth."
+        }
+      }
+    },
+    "serial_point": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 300,
+      "description": "The part every request passes through one at a time (a single leader, a global lock, a hot row), or 'none' with the reason."
+    },
+    "hottest_key_writes_per_second": { "type": "number", "minimum": 0 },
+    "monthly_cost_usd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compute", "storage", "egress", "total"],
+      "properties": {
+        "compute": { "type": "number", "minimum": 0 },
+        "storage": { "type": "number", "minimum": 0 },
+        "egress": { "type": "number", "minimum": 0 },
+        "total": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}
