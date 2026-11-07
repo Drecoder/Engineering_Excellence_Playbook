@@ -2,12 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "service_design_record.v1.schema.json",
   "title": "service_design_record.v1",
-  "description": "What a service declares before it is built (00_UniversalStandards/16_Service_Design_Record.md). It defines nothing itself: it binds one service's capacity_estimate.v1, sli.v1 and slo.v1 definitions and recovery_objectives.v1 to its stores, each of which names a class from schemas/data_classes.v1.json. The Design exit gate (01_Deliverable_Lifecycle.md) requires a record that is valid against this schema and passes the relationship rules DR-001 to DR-018, whose reference behavior is tests/contracts/design_record_reference.py with vectors in schemas/examples/design_record/relationship_vectors.json.",
+  "description": "What a service declares before it is built (00_UniversalStandards/16_Service_Design_Record.md). It defines nothing itself: it binds one service's capacity_estimate.v1, sli.v1 and slo.v1 definitions and recovery_objectives.v1 to its stores, each of which names a class from schemas/data_classes.v1.json. The Design exit gate (01_Deliverable_Lifecycle.md) requires a record that is valid against this schema and passes the relationship rules in the rule set it names (rules_version; schemas/design_record_rules.v1.json), whose reference behavior is tests/contracts/design_record_reference.py with vectors in schemas/examples/design_record/relationship_vectors.json.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "service", "owner", "capacity_estimate", "slis", "slos", "recovery_objectives", "stores", "concurrency"],
+  "required": ["schema_version", "rules_version", "service", "owner", "capacity_estimate", "slis", "slos", "recovery_objectives", "stores", "concurrency"],
   "properties": {
     "schema_version": { "const": "service_design_record.v1" },
+    "rules_version": {
+      "const": "design_record_rules.v1",
+      "description": "The relationship rule set (schemas/design_record_rules.v1.json) this record is checked against. A consumer refuses a rule set it does not implement."
+    },
     "service": { "$ref": "#/$defs/slug" },
     "owner": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{0,38}(?!\n)$", "description": "The GitHub user or team that owns the service." },
     "capacity_estimate": { "$ref": "capacity_estimate.v1.schema.json" },
@@ -49,10 +53,24 @@
         "copies": { "type": "integer", "minimum": 1, "maximum": 9 },
         "placement": { "enum": ["single_zone", "multi_zone", "multi_region"] },
         "replication": { "enum": ["none", "asynchronous", "synchronous"] },
-        "backup_interval_seconds": {
+        "replication_lag_seconds": {
           "type": "integer",
           "minimum": 0,
-          "description": "How often a restorable copy is taken; 0 means continuous (point-in-time recovery). Replication is not a backup: it copies a bad write too."
+          "description": "Worst-case lag of an asynchronous replica; the data a failover to it would lose (DR-010). Declared only for asynchronous replication."
+        },
+        "backup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["interval_seconds", "completion_seconds"],
+          "properties": {
+            "interval_seconds": { "type": "integer", "minimum": 0, "description": "How often a restorable copy is started; 0 means continuous (point-in-time recovery)." },
+            "completion_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "The longest time from a write until a backup holding it is restorable: snapshot duration, or log-shipping delay for point-in-time recovery."
+            }
+          },
+          "description": "Replication is not a backup: it copies a bad write too. Worst-case data loss on restore is interval plus completion (DR-010)."
         },
         "cache": {
           "type": "object",
@@ -69,7 +87,14 @@
           }
         }
       },
-      "allOf": [{ "if": { "properties": { "kind": { "const": "cache" } } }, "then": { "required": ["cache"] }, "else": { "not": { "required": ["cache"] } } }]
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "cache" } } }, "then": { "required": ["cache"] }, "else": { "not": { "required": ["cache"] } } },
+        {
+          "if": { "properties": { "replication": { "const": "asynchronous" } } },
+          "then": { "required": ["replication_lag_seconds"] },
+          "else": { "not": { "required": ["replication_lag_seconds"] } }
+        }
+      ]
     }
   }
 }

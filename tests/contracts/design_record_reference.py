@@ -7,31 +7,15 @@ agree with these functions on schemas/examples/design_record/relationship_vector
 specification aid, not the gate. Both functions return the sorted IDs of the rules that fail.
 """
 
+import json
 import math
+from pathlib import Path
 
 PLACEMENT = {"single_zone": 0, "multi_zone": 1, "multi_region": 2}
 REPLICATION = {"none": 0, "asynchronous": 1, "synchronous": 2}
 
-RULES = {
-    "DR-001": "Every component names the record's service.",
-    "DR-002": "SLI ids are unique and SLO ids are unique.",
-    "DR-003": "Every SLO names an SLI in the record.",
-    "DR-004": "The record has an SLO on an availability SLI and an SLO on a latency SLI.",
-    "DR-005": "An SLO target is strictly higher than its external commitment.",
-    "DR-006": "One outage lasting the RTO fits inside every SLO's error budget.",
-    "DR-007": "Every store, and every cache's cached class, names a class in the table.",
-    "DR-008": "Every store meets its class's minimum copies, placement and replication.",
-    "DR-009": "A store whose class requires backup declares a backup interval.",
-    "DR-010": "No backup interval is longer than the RPO.",
-    "DR-011": "A region-scoped failover places every backed-up store in more than one region.",
-    "DR-012": "A store holding value data uses a strongly consistent class.",
-    "DR-013": "A cache uses a mode its cached class allows and a TTL within that class's staleness bound.",
-    "DR-014": "In-flight load at peak covers Little's Law: peak rate x P99 latency, rounded up.",
-    "DR-015": "Declared concurrency holds the in-flight load at peak.",
-    "DR-016": "Mean arrival rate does not exceed peak.",
-    "DR-017": "Total monthly cost is at least the sum of its parts.",
-    "DR-018": "Class ids in the table are unique.",
-}
+RULE_SET = json.loads((Path(__file__).resolve().parents[2] / "schemas" / "design_record_rules.v1.json").read_text(encoding="utf-8"))
+RULES = {r["id"]: r["title"] for r in RULE_SET["rules"]}
 
 
 def check_table(table: dict) -> list:
@@ -40,6 +24,8 @@ def check_table(table: dict) -> list:
 
 
 def check_record(record: dict, table: dict) -> list:
+    if record.get("rules_version") != RULE_SET["schema_version"]:
+        raise ValueError(f"unsupported rule set {record.get('rules_version')!r}; this reference implements {RULE_SET['schema_version']}")
     failed = set()
     service = record["service"]
     classes = {c["id"]: c for c in table["classes"]}
@@ -84,10 +70,13 @@ def check_record(record: dict, table: dict) -> list:
                     or REPLICATION[s["replication"]] < REPLICATION[cls["replication"]]):
                 failed.add("DR-008")
             if cls["backup_required"]:
-                if "backup_interval_seconds" not in s:
+                if "backup" not in s:
                     failed.add("DR-009")
-                elif s["backup_interval_seconds"] > rec["rpo_seconds"]:
-                    failed.add("DR-010")
+                else:
+                    restore_loss = s["backup"]["interval_seconds"] + s["backup"]["completion_seconds"]
+                    failover_loss = s.get("replication_lag_seconds", 0)
+                    if max(restore_loss, failover_loss) > rec["rpo_seconds"]:
+                        failed.add("DR-010")
                 if rec["failover"]["scope"] == "region" and s["placement"] != "multi_region":
                     failed.add("DR-011")
             if s["value_data"] and cls["consistency"] != "strong":
@@ -96,6 +85,15 @@ def check_record(record: dict, table: dict) -> list:
             c = s["cache"]
             if c["mode"] not in cached["caching"] or c["ttl_seconds"] > cached["max_staleness_seconds"]:
                 failed.add("DR-013")
+
+    if any(f["downtime_seconds"] > rec["rto_seconds"] for f in rec["failure_scenarios"]):
+        failed.add("DR-019")
+    expected_per_year = sum(f["expected_per_year"] * f["downtime_seconds"] for f in rec["failure_scenarios"])
+    for o in slos:
+        if "availability" in kinds_of.get(o["sli"], set()):
+            allowed_per_year = (100 - o["target_percent"]) / 100 * 365 * 86400
+            if expected_per_year > allowed_per_year:
+                failed.add("DR-020")
 
     rate = cap["arrival_rate_per_second"]
     little = math.ceil(rate["peak"] * cap["p99_latency_ms"] / 1000)

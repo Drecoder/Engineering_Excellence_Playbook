@@ -1,10 +1,11 @@
 """
 Contract tests for the service design record: sli.v1, slo.v1, recovery_objectives.v1,
-capacity_estimate.v1, data_class.v1 (with the playbook's table in schemas/data_classes.v1.json), and
-service_design_record.v1, which references the others.
+capacity_estimate.v1, data_class.v1 (with the playbook's table in schemas/data_classes.v1.json),
+service_design_record.v1, which references the others, and design_record_rules.v1, the versioned rule
+set a record is checked against.
 
-The relationship rules DR-001 to DR-018 are recomputed here by design_record_reference.py from the
-rules written in 00_UniversalStandards/16_Service_Design_Record.md §6. Run inside the toolchain
+The relationship rules are recomputed here by design_record_reference.py from the rule set in
+schemas/design_record_rules.v1.json and 00_UniversalStandards/16_Service_Design_Record.md §6. Run inside the toolchain
 image:
 
     docker run --rm -v "$PWD:/work:ro" playbook-antipattern-toolchain \
@@ -13,6 +14,7 @@ image:
 
 import copy
 import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -21,9 +23,10 @@ from jsonschema import Draft202012Validator, FormatChecker
 from referencing import Registry, Resource
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from design_record_reference import RULES, apply_patch, check_record, check_table  # noqa: E402
+from design_record_reference import RULE_SET, RULES, apply_patch, check_record, check_table  # noqa: E402
 
-SCHEMAS = Path(__file__).resolve().parents[2] / "schemas"
+ROOT = Path(__file__).resolve().parents[2]
+SCHEMAS = ROOT / "schemas"
 EXAMPLES = SCHEMAS / "examples"
 COMPONENTS = ("sli.v1", "slo.v1", "recovery_objectives.v1", "capacity_estimate.v1")
 
@@ -43,7 +46,7 @@ def validator(name):
     return Draft202012Validator(schema, format_checker=FormatChecker(), registry=REGISTRY)
 
 
-V = {n: validator(f"{n}.schema.json") for n in COMPONENTS + ("data_class.v1", "service_design_record.v1")}
+V = {n: validator(f"{n}.schema.json") for n in COMPONENTS + ("data_class.v1", "service_design_record.v1", "design_record_rules.v1")}
 RECORD = load("examples/service_design_record.v1.example.json")
 TABLE = load("data_classes.v1.json")
 VECTORS = load("examples/design_record/relationship_vectors.json")
@@ -66,6 +69,11 @@ class ExamplesAreValid(unittest.TestCase):
     def test_class_table(self):
         self.assertEqual(errors(V["data_class.v1"], TABLE), [])
 
+    def test_rule_set(self):
+        self.assertEqual(errors(V["design_record_rules.v1"], RULE_SET), [])
+        ids = [r["id"] for r in RULE_SET["rules"]]
+        self.assertEqual(len(ids), len(set(ids)), "rule ids are unique")
+
     def test_component_examples(self):
         for n in COMPONENTS:
             with self.subTest(n):
@@ -83,6 +91,7 @@ class ExamplesAreValid(unittest.TestCase):
             with self.subTest(n):
                 self.assertIn("schema_version", load(f"{n}.schema.json")["required"])
         self.assertIn("schema_version", load("data_class.v1.schema.json")["required"])
+        self.assertIn("schema_version", load("design_record_rules.v1.schema.json")["required"])
 
     def test_record_references_components_instead_of_copying_them(self):
         props = load("service_design_record.v1.schema.json")["properties"]
@@ -120,6 +129,13 @@ class SchemasDesignedToFail(unittest.TestCase):
             "a store with an unknown field": ("service_design_record.v1", mutated(RECORD, lambda d: d["stores"][1].update(region="us-east-1"))),
             "an invalid embedded component": ("service_design_record.v1", mutated(RECORD, lambda d: d["slos"][0].update(target_percent=80))),
             "a record without concurrency": ("service_design_record.v1", mutated(RECORD, lambda d: d.pop("concurrency"))),
+            "a record without a rule set": ("service_design_record.v1", mutated(RECORD, lambda d: d.pop("rules_version"))),
+            "a record naming another rule set": ("service_design_record.v1", mutated(RECORD, lambda d: d.update(rules_version="design_record_rules.v2"))),
+            "an asynchronous store without its lag": ("service_design_record.v1", mutated(RECORD, lambda d: d["stores"][1].update(replication="asynchronous"))),
+            "a lag on a synchronous store": ("service_design_record.v1", mutated(RECORD, lambda d: d["stores"][1].update(replication_lag_seconds=1))),
+            "a backup without its completion time": ("service_design_record.v1", mutated(RECORD, lambda d: d["stores"][1]["backup"].pop("completion_seconds"))),
+            "recovery objectives without failure scenarios": ("recovery_objectives.v1", mutated(RECORD["recovery_objectives"], lambda d: d.update(failure_scenarios=[]))),
+            "a failure scenario of an unknown kind": ("recovery_objectives.v1", mutated(RECORD["recovery_objectives"], lambda d: d["failure_scenarios"][0].update(kind="meteor"))),
         }
         for name, (schema, doc) in cases.items():
             with self.subTest(name):
@@ -153,6 +169,24 @@ class RelationshipRules(unittest.TestCase):
     def test_vectors_reference_the_published_files(self):
         self.assertEqual(VECTORS["record"], "examples/service_design_record.v1.example.json")
         self.assertEqual(VECTORS["table"], "data_classes.v1.json")
+        self.assertEqual(VECTORS["rules"], "design_record_rules.v1.json")
+        self.assertEqual(RECORD["rules_version"], RULE_SET["schema_version"])
+
+    def test_table_rules_apply_to_the_table_only(self):
+        table_rules = {r["id"] for r in RULE_SET["rules"] if r["applies_to"] == "table"}
+        table_expect = {r for c in VECTORS["table_cases"] for r in c["expect"]}
+        record_expect = {r for c in VECTORS["record_cases"] for r in c["expect"]}
+        self.assertEqual(table_expect, table_rules)
+        self.assertFalse(record_expect & table_rules)
+
+    def test_a_record_for_another_rule_set_is_refused(self):
+        with self.assertRaises(ValueError):
+            check_record(mutated(RECORD, lambda d: d.update(rules_version="design_record_rules.v2")), TABLE)
+
+    def test_the_standard_lists_exactly_the_rule_set(self):
+        doc = (ROOT / "00_UniversalStandards" / "16_Service_Design_Record.md").read_text(encoding="utf-8")
+        section = doc.split("## 6️⃣", 1)[1].split("\n---", 1)[0]
+        self.assertEqual(sorted(set(re.findall(r"`(DR-\d{3})`", section))), sorted(RULES))
 
 
 if __name__ == "__main__":

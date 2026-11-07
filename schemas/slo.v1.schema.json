@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "slo.v1.schema.json",
   "title": "slo.v1",
-  "description": "A service level objective (00_UniversalStandards/16_Service_Design_Record.md §2): a target for one SLI over a rolling window, with the burn-rate alerts that page or ticket on it (04_OperationalRunbooks/02_Monitoring_Alert_Thresholds.md §2). Rules JSON Schema cannot express, enforced by the design record's relationship rules and covered by vectors: the SLI must exist in the same record; a target must be stricter than any external commitment; and one full outage lasting the service's RTO must fit inside the error budget of the window.",
+  "description": "A service level objective (00_UniversalStandards/16_Service_Design_Record.md §2): a target for one SLI over a rolling window, with the burn-rate alerts that page or ticket on it (04_OperationalRunbooks/02_Monitoring_Alert_Thresholds.md §2). Rules JSON Schema cannot express, enforced by the design record's relationship rules and covered by vectors: the SLI must exist in the same record; a target must be stricter than any external commitment; one full outage lasting the service's RTO must fit inside the error budget of the window (DR-006, a floor); and for an availability SLO, expected downtime from the declared failure scenarios must fit the budget too (DR-020).",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "id", "service", "sli", "target_percent", "window_days", "burn_rate_alerts"],

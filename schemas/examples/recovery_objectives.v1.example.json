@@ -7,5 +7,11 @@
     "mode": "restore_from_backup",
     "scope": "zone",
     "procedure": "Redeploy from IaC in another zone and restore ticket state from the point-in-time backup; leases are reissued."
-  }
+  },
+  "failure_scenarios": [
+    { "name": "Loss of the zone running the orchestrator", "kind": "zone_loss", "expected_per_year": 0.5, "downtime_seconds": 3600 },
+    { "name": "Jira API outage", "kind": "dependency_outage", "expected_per_year": 6, "downtime_seconds": 1800 },
+    { "name": "A bad deploy rolled back", "kind": "bad_change", "expected_per_year": 4, "downtime_seconds": 900 },
+    { "name": "Corrupted ticket state restored from backup", "kind": "data_corruption", "expected_per_year": 0.2, "downtime_seconds": 3600 }
+  ]
 }

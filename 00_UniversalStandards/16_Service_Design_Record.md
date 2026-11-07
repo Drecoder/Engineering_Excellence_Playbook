@@ -9,7 +9,7 @@ is measured and promised, how much data it may lose and how long it may be down,
 its stores must guarantee. The record is `schemas/service_design_record.v1.schema.json`; an example
 for the orchestrator is `schemas/examples/service_design_record.v1.example.json`.
 
-**Status: specified.** The schemas, the class table, the relationship rules and their vectors exist
+**Status: specified.** The schemas, the class table, the versioned rule set and its vectors exist
 and are tested. Nothing consumes them yet: the Design exit gate check, the Builder's intake check and
 the architecture lens's use of the record are still to be built. Until then a record is reviewed by a
 person against §6.
@@ -26,7 +26,7 @@ one service:
 | Capacity estimate | `capacity_estimate.v1` | Arrival rate, P99 target, in-flight load, payload size, round trips, fan-out, read/write ratio, latency or bandwidth bound, serial point, hottest key, monthly cost and egress (§4) |
 | Service level indicators | `sli.v1` | Good events over valid events, and every way an event counts as bad (§2) |
 | Service level objectives | `slo.v1` | A target and window for one SLI, and its burn-rate alerts (§2) |
-| Recovery objectives | `recovery_objectives.v1` | RTO, RPO and the failover path (§3) |
+| Recovery objectives | `recovery_objectives.v1` | RTO, RPO, the failover path, and the failure scenarios the service must survive (§3) |
 | Data classes | `data_class.v1`, table in `schemas/data_classes.v1.json` | What each class of data requires of the store that holds it (§5) |
 
 Each definition carries its own `schema_version` and can be validated alone, so a later version of
@@ -50,13 +50,21 @@ Schema cannot check across definitions is checked by the relationship rules (§6
 
 - **RPO** is the most recent window of acknowledged writes the service may lose; **RTO** is the
   longest it may be unavailable.
-- **Replication is not a backup.** It copies a bad write or a delete to every replica. The RPO is met
-  by backups, so every store whose class requires one declares a backup interval no longer than the
-  RPO (DR-009, DR-010). An RPO of 0 needs continuous backup (point-in-time recovery, interval 0).
+- **Replication is not a backup.** It copies a bad write or a delete to every replica, so every store
+  whose class requires a backup declares one (DR-009).
+- **The RPO is checked against the worst-case recovery point** (DR-010): the backup interval plus the
+  time until a backup is restorable, and the lag of any asynchronous replica a failover could
+  promote. An RPO of 0 needs continuous backup and synchronous replication. The rule checks the design;
+  whether backups complete on time and restores work is shown by backup monitoring and restore tests.
 - **The failover scope sets placement.** A service that must survive losing a region keeps its
   backed-up stores in more than one region (DR-011).
-- **One outage must fit the error budget.** An outage lasting the RTO has to fit inside every SLO's
-  budget for its window (DR-006); a target that cannot survive one recovery is not a real target.
+- **Availability is checked against failure scenarios, not the RTO alone.** The record lists the
+  failures the service is designed to survive (zone or region loss, a dependency outage, a bad change,
+  data corruption, overload), how often each is expected, and how long each takes it down. No scenario
+  may take longer than the RTO (DR-019), and their expected downtime must fit every availability SLO's
+  error budget (DR-020). The rates are estimates; correct them from the incident history.
+- **One outage must fit the error budget** (DR-006). This is a floor: a target that cannot survive
+  one recovery is not a real target, but passing it says nothing about how often recovery is needed.
 
 ## 4️⃣ Capacity Estimate
 
@@ -99,10 +107,15 @@ sets the minimum the store must meet:
 
 ## 6️⃣ Relationship Rules
 
-Each rule is checked the same way by every consumer. The reference behavior is
-`tests/contracts/design_record_reference.py`, and every consumer must reproduce
-`schemas/examples/design_record/relationship_vectors.json`, which has at least one vector that fails
-each rule alone.
+The rules are a versioned rule set, `schemas/design_record_rules.v1.json`, and a record names the set
+it is checked against (`rules_version`). A consumer refuses a record naming a set it does not
+implement, so the gate, the Builder and the Reviewer can never apply different readings of the same
+record. Changing what a rule checks is a new rule set version, never an edit. Each rule states what it
+checks and, where it matters, what it cannot establish.
+
+The reference behavior is `tests/contracts/design_record_reference.py`, and every consumer must
+reproduce `schemas/examples/design_record/relationship_vectors.json`, which has at least one vector
+that fails each rule alone.
 
 | Rule | Checks |
 | :--- | :--- |
@@ -111,11 +124,11 @@ each rule alone.
 | `DR-003` | Every SLO names an SLI in the record |
 | `DR-004` | There is an availability SLO and a latency SLO |
 | `DR-005` | An SLO target is strictly higher than its external commitment |
-| `DR-006` | One outage lasting the RTO fits inside every SLO's error budget |
+| `DR-006` | One outage lasting the RTO fits inside every SLO's error budget (a floor, not proof the target is achievable) |
 | `DR-007` | Every store, and every cache's cached class, names a class in the table |
 | `DR-008` | Every store meets its class's minimum copies, placement and replication |
-| `DR-009` | A store whose class requires backup declares a backup interval |
-| `DR-010` | No backup interval is longer than the RPO |
+| `DR-009` | A store whose class requires backup declares its backup |
+| `DR-010` | Every backed-up store's worst-case recovery point is no longer than the RPO |
 | `DR-011` | A region-scoped failover places every backed-up store in more than one region |
 | `DR-012` | A store holding value data uses a strongly consistent class |
 | `DR-013` | A cache uses a mode its cached class allows and a TTL within its staleness bound |
@@ -124,6 +137,8 @@ each rule alone.
 | `DR-016` | Mean arrival rate does not exceed peak |
 | `DR-017` | Total monthly cost is at least the sum of its parts |
 | `DR-018` | Class ids in the table are unique |
+| `DR-019` | No failure scenario's downtime is longer than the RTO |
+| `DR-020` | Expected downtime from the failure scenarios fits every availability SLO's error budget |
 
 ---
 
