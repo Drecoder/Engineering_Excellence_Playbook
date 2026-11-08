@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 550" width="1000" height="550" role="img" aria-labelledby="title">
-  <title id="title">Five layers: the playbook defines rules and contracts that every repo vendors by full commit SHA; Genesis enforces guardrails in the cloud hierarchy and vends projects; the platform repo runs network, runners, observability, inference and the CI factory; the factory's agents and tools run on the platform and build services.</title>
+  <title id="title">Five layers: the playbook defines rules and contracts that every repo vendors by full commit SHA; Genesis enforces guardrails in the cloud hierarchy and vends projects; the platform repo runs network, runners, observability, inference and the CI factory, which runs the acceptance tests, the Evaluator and the Policy Engine; in the factory, a thin orchestrator hands one ticket to the Builder, CI evaluates its change, and the owner approves the merge.</title>
   <style>
   :root, svg { --sheet: #f9fafb; --ink: #1b2733; --ink-2: #3b4a59; --muted: #64758a; --rule: #c9d1da;
     --accent: #b35c00; --block: #b42318; color: #1b2733; }
@@ -70,39 +70,39 @@
           <text class="lbl" x="358" y="242">vends projects into it</text>
 
           <!-- Platform -->
-          <rect class="box" x="170" y="250" width="152" height="60"/>
+          <rect class="box" x="170" y="250" width="140" height="60"/>
           <text class="t" x="184" y="276">Network · state</text><text class="s" x="184" y="294">identity (WIF)</text>
-          <rect class="box" x="337" y="250" width="152" height="60"/>
-          <text class="t" x="351" y="276">CI runners</text><text class="s" x="351" y="294">ephemeral, per job</text>
-          <rect class="box" x="504" y="250" width="152" height="60"/>
-          <text class="t" x="518" y="276">Observability</text><text class="s" x="518" y="294">OTLP · alerts</text>
-          <rect class="box" x="671" y="250" width="152" height="60"/><polygon class="tick" points="809,250 823,250 823,264"/>
-          <text class="t" x="685" y="276">Inference</text><text class="s" x="685" y="294">Ollama · GPU bench</text>
-          <rect class="box" x="838" y="250" width="152" height="60"/><polygon class="tick" points="976,250 990,250 990,264"/>
-          <text class="t" x="852" y="276">CI factory</text><text class="s" x="852" y="294">gates.yml · sheet 3</text>
+          <rect class="box" x="325" y="250" width="140" height="60"/>
+          <text class="t" x="339" y="276">CI runners</text><text class="s" x="339" y="294">ephemeral, per job</text>
+          <rect class="box" x="480" y="250" width="140" height="60"/>
+          <text class="t" x="494" y="276">Observability</text><text class="s" x="494" y="294">OTLP · alerts</text>
+          <rect class="box" x="635" y="250" width="140" height="60"/><polygon class="tick" points="761,250 775,250 775,264"/>
+          <text class="t" x="649" y="276">Inference</text><text class="s" x="649" y="294">Ollama · GPU bench</text>
+          <rect class="box" x="790" y="250" width="200" height="60"/><polygon class="tick" points="976,250 990,250 990,264"/>
+          <text class="t" x="804" y="272">CI factory · sheet 3</text><text class="xs" x="804" y="288">gates.yml · acceptance tests</text><text class="xs" x="804" y="301">Evaluator · Policy Engine</text>
 
-          <line class="arrow" x1="580" y1="359" x2="580" y2="312" marker-end="url(#ah1)"/>
-          <text class="lbl" x="587" y="342">runs on</text>
+          <line class="arrow" x1="550" y1="359" x2="550" y2="312" marker-end="url(#ah1)"/>
+          <text class="lbl" x="557" y="342">runs on</text>
 
           <!-- Factory -->
           <rect class="box design" x="170" y="360" width="125" height="60"/>
           <text class="t design-t" x="183" y="386">Intake</text><text class="xs" x="183" y="404">wizard · grooming</text>
-          <rect class="box" x="309" y="360" width="125" height="60"/>
-          <text class="t" x="322" y="386">Builder</text><text class="xs" x="322" y="404">aws-builder-agent</text>
+          <rect class="box design" x="309" y="360" width="125" height="60"/>
+          <text class="t design-t" x="322" y="386">Orchestrator</text><text class="xs" x="322" y="404">one ticket · bounces</text>
           <rect class="box" x="448" y="360" width="125" height="60"/>
-          <text class="t" x="461" y="386">Reviewer</text><text class="xs" x="461" y="404">gcp-reviewer-agent</text>
+          <text class="t" x="461" y="386">Builder</text><text class="xs" x="461" y="404">aws-builder-agent</text>
           <rect class="box" x="587" y="360" width="125" height="60"/>
-          <text class="t" x="600" y="386">rig (tool)</text><text class="xs" x="600" y="404">static · trace</text>
+          <text class="t" x="600" y="386">rig (tool)</text><text class="xs" x="600" y="404">pre-PR scan</text>
           <rect class="box design" x="726" y="360" width="125" height="60"/>
           <text class="t design-t" x="739" y="386">Compliance</text><text class="xs" x="739" y="404">authority · guard</text>
           <rect class="box design" x="865" y="360" width="125" height="60"/>
           <text class="t design-t" x="878" y="386">Messaging</text><text class="xs" x="878" y="404">S3 · Kafka · SQS</text>
 
-          <line class="arrow" x1="580" y1="420" x2="580" y2="469" marker-end="url(#ah1)"/>
-          <text class="lbl" x="587" y="452">builds and reviews</text>
+          <line class="arrow" x1="510" y1="420" x2="510" y2="469" marker-end="url(#ah1)"/>
+          <text class="lbl" x="517" y="452">builds; CI evaluates</text>
 
           <!-- Services -->
           <rect class="box design" x="170" y="470" width="820" height="60"/>
           <text class="t design-t" x="186" y="496">Services</text>
-          <text class="s" x="186" y="514">vended by Genesis · built by the Builder · reviewed by the Reviewer · merged by a person</text>
+          <text class="s" x="186" y="514">vended by Genesis · built by the Builder · evaluated by CI · merge approved by the owner</text>
         </svg>

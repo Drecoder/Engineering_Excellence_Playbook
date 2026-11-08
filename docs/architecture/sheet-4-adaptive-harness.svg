@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 600" width="780" height="600" role="img" aria-labelledby="title">
-  <title id="title">The adaptive harness (proposed). Four inputs feed it: long-term memory from the retrieval index, short-term memory of live operational state, deterministic quality evidence from the Evaluator and the Policy Engine, and governance state. A decision table picks one bounded action, which may route work to the Builder or its fixers or advance it as far as the independent authorization layer, never past it. Loop A adapts execution within one task; Loop B promotes validated, attributed outcomes from sealed decision records into the index across tasks.</title>
+  <title id="title">The adaptive harness (proposed). Four inputs feed it: long-term memory from the retrieval index, short-term memory of live operational state, deterministic quality evidence from the Evaluator and the Policy Engine, and governance state. A decision table picks one bounded action, which may route work to the Builder or advance it as far as the independent authorization layer, never past it. Loop A adapts execution within one task; Loop B promotes validated, attributed outcomes from sealed decision records into the index across tasks.</title>
   <style>
   :root, svg { --sheet: #f9fafb; --ink: #1b2733; --ink-2: #3b4a59; --muted: #64758a; --rule: #c9d1da;
     --accent: #b35c00; --block: #b42318; color: #1b2733; }
@@ -97,9 +97,9 @@
   <text class="s" x="552" y="236">compliance authority · tokens</text>
 
   <rect class="box" x="540" y="276" width="220" height="58"/>
-  <text class="t" x="552" y="298">Builder and fixers</text>
+  <text class="t" x="552" y="298">Builder</text>
   <text class="s" x="552" y="316">change code and tests</text>
-  <text class="s" x="552" y="328">inside their path scopes</text>
+  <text class="s" x="552" y="328">fixes its own change from CI</text>
 
   <!-- policy decision back to quality evidence -->
   <path class="arrow design" d="M540,139 L520,139 L520,100 L265,100 L265,198 L252,198" marker-end="url(#ah4)"/>
