@@ -95,3 +95,15 @@ is `PASS`, `REMEDIATE`, `BLOCKED`, or `rejected` for evaluations; `issued` or `r
 | **Token Latency (P99)** | `histogram_quantile(0.99, sum by (le) (rate(compliance_token_duration_seconds_bucket[5m])))` |
 | **Guard Denials** | `sum(increase(compliance_guard_total{outcome="denied"}[1h]))` (alert on any; a denied deploy is a replay, a forgery, or a misroute) |
 | **Guard Latency (P99)** | `histogram_quantile(0.99, sum by (le) (rate(compliance_guard_duration_seconds_bucket[5m])))` |
+
+## 9. Quality Policy Engine
+
+See `00_UniversalStandards/17_Quality_Policy_Engine.md`. The engine has no network; the gate job
+emits these from its decision (`decision` is `PASS`, `BLOCK` or `QUARANTINE`; `rule` is a `QP-*` id).
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Decisions by Outcome** | `sum by (decision) (increase(policy_engine_decisions_total[1d]))` |
+| **Quarantine Rate** | `sum(increase(policy_engine_decisions_total{decision="QUARANTINE"}[7d])) / sum(increase(policy_engine_decisions_total[7d]))` |
+| **Findings by Rule** | `sum by (rule) (increase(policy_engine_findings_total[7d]))` |
+| **Evidence Failures** | `sum(increase(policy_engine_findings_total{rule=~"QP-00[1-6]"}[1d]))` (a normalizer or baseline problem, not the code) |

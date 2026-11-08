@@ -205,6 +205,10 @@ it is critical. No noise below that line.
 - **Below-critical findings are counted, not shown.** They go to a dashboard metric
   (`gate_findings_total{severity}`), never to the pull request, so a growing backlog is visible
   without adding noise.
+- **New ones are the exception.** A dependency vulnerability of moderate, high or unknown severity
+  that the change's merge base did not have blocks the change through the Policy Engine (QP-024 in
+  `17_Quality_Policy_Engine.md`); a critical or KEV vulnerability quarantines it (QP-010). The
+  backlog that already exists stays on the dashboard, so the line moves only forward.
 - Every vulnerability scanner (`trivy`, `npm audit`, `pip-audit`, `govulncheck`) runs through one
   shared severity gate that maps findings to severity (the scanner's own, else OSV data), checks
   every alias against KEV, and applies this table (`15_Central_CI.md` §6). Open-source `checkov` has no severities, so it

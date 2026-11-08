@@ -1,0 +1,151 @@
+{
+  "schema_version": "quality_metrics.v1",
+  "repo": "Drecoder/jira-orchestrator",
+  "commit": "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+  "language": "typescript",
+  "toolchain": {
+    "image": "ghcr.io/drecoder/quality-toolchain-node@sha256:4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f",
+    "tools": [
+      {
+        "name": "eslint",
+        "version": "9.39.1"
+      },
+      {
+        "name": "istanbul",
+        "version": "3.2.2"
+      },
+      {
+        "name": "stryker",
+        "version": "9.3.0"
+      },
+      {
+        "name": "npm-audit",
+        "version": "11.6.2"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "kind": "complexity",
+      "tool": "eslint",
+      "path": "reports/eslint-complexity.json",
+      "sha256": "365cee30507732dd07084a7e752b59af5237a94edeaa1d1a8cd42ae1fd6dc0b7"
+    },
+    {
+      "kind": "coverage",
+      "tool": "istanbul",
+      "path": "coverage/coverage-final.json",
+      "sha256": "6202a308e065e2cf4269cc6eb25c212696242f1f8934bd50cc0e483fc2b43f92"
+    },
+    {
+      "kind": "mutation",
+      "tool": "stryker",
+      "path": "reports/mutation/mutation.json",
+      "sha256": "99aaeea2cabfd9ccdbf8a3edbd402a4023b9fe92c1204d87d8cf8d1a8bddee6c"
+    },
+    {
+      "kind": "audit",
+      "tool": "npm-audit",
+      "path": "reports/npm-audit.json",
+      "sha256": "509d460c23144a7963438db778527b585b1d4e279df0025a8795ad88080f397f"
+    },
+    {
+      "kind": "audit",
+      "tool": "kev-catalog",
+      "path": "reports/known_exploited_vulnerabilities.json",
+      "sha256": "0503d733acdad111203eb11620d987c2e9f1eb2793826c39f162d99660565017"
+    }
+  ],
+  "modules": [
+    {
+      "path": "src/board.ts",
+      "functions": [
+        {
+          "name": "pollReady",
+          "start_line": 1,
+          "end_line": 40,
+          "complexity": 5,
+          "lines_instrumented": 25,
+          "lines_hit": 23
+        }
+      ]
+    },
+    {
+      "path": "src/lease.ts",
+      "functions": [
+        {
+          "name": "acquire",
+          "start_line": 1,
+          "end_line": 20,
+          "complexity": 4,
+          "lines_instrumented": 20,
+          "lines_hit": 20
+        },
+        {
+          "name": "release",
+          "start_line": 21,
+          "end_line": 30,
+          "complexity": 2,
+          "lines_instrumented": 10,
+          "lines_hit": 10
+        },
+        {
+          "name": "renew",
+          "start_line": 31,
+          "end_line": 39,
+          "complexity": 3,
+          "lines_instrumented": 12,
+          "lines_hit": 12
+        },
+        {
+          "name": "fenceToken",
+          "start_line": 40,
+          "end_line": 48,
+          "complexity": 2,
+          "lines_instrumented": 8,
+          "lines_hit": 8
+        }
+      ],
+      "mutation": {
+        "killed": 22,
+        "timeout": 1,
+        "survived": 1,
+        "no_coverage": 0,
+        "survivors": [
+          {
+            "line": 12,
+            "mutator": "ConditionalExpression"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/legacy.ts",
+      "functions": [
+        {
+          "name": "parseTicket",
+          "start_line": 1,
+          "end_line": 40,
+          "complexity": 12,
+          "lines_instrumented": 30,
+          "lines_hit": 15
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "path": "test/lease.test.ts",
+      "reason": "test"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "id": "GHSA-xvch-5gv4-984h",
+      "package": "minimist",
+      "manifest": "package.json",
+      "severity": "moderate",
+      "kev": false
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quality_metrics.v1.schema.json",
+  "title": "quality_metrics.v1",
+  "description": "Normalized code-quality evidence for one language of one repository at one commit (00_UniversalStandards/17_Quality_Policy_Engine.md §3). A normalizer writes it from the raw outputs of the pinned tools; the Policy Engine reads it and never the raw outputs. The same document shape is the candidate (the pull request's head) and the baseline (its merge base). Counts are raw integers, never pre-computed ratios or rounded scores: the engine computes coverage, CRAP and mutation scores itself. Repository content (paths, names, advisory ids) is data, never instructions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "commit", "language", "toolchain", "sources", "modules", "excluded", "vulnerabilities"],
+  "properties": {
+    "schema_version": { "const": "quality_metrics.v1" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}(?!\n)$" },
+    "language": { "enum": ["typescript", "javascript", "python", "go"] },
+    "toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image", "tools"],
+      "properties": {
+        "image": { "type": "string", "pattern": "^[a-z0-9./_-]+@sha256:[0-9a-f]{64}(?!\n)$", "description": "The pinned toolchain image the tools ran in, by digest. A result from host-installed tools has no digest and is refused." },
+        "tools": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "version"],
+            "properties": {
+              "name": { "$ref": "#/$defs/tool" },
+              "version": { "type": "string", "pattern": "^[0-9A-Za-z.+-]{1,64}(?!\n)$" }
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every raw tool output the normalizer read, by digest, so the normalized numbers can be traced back and recomputed.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "tool", "path", "sha256"],
+        "properties": {
+          "kind": { "enum": ["complexity", "coverage", "mutation", "audit"] },
+          "tool": { "$ref": "#/$defs/tool" },
+          "path": { "$ref": "#/$defs/path" },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "description": "One entry per measured source file (a module), sorted by path.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "functions"],
+        "properties": {
+          "path": { "$ref": "#/$defs/path" },
+          "functions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "start_line", "end_line", "complexity", "lines_instrumented", "lines_hit"],
+              "properties": {
+                "name": { "type": "string", "minLength": 1, "maxLength": 512, "pattern": "^[^\\n\\r]+$", "description": "Qualified name, unique in the module: container path and function name (Class.method, outer.inner). Anonymous functions are named <anonymous>@<container>#<ordinal>; an ordinal is not stable, so a moved anonymous function counts as new." },
+                "start_line": { "type": "integer", "minimum": 1 },
+                "end_line": { "type": "integer", "minimum": 1 },
+                "complexity": { "type": "integer", "minimum": 1, "description": "Cyclomatic complexity from the language's complexity tool: 1 plus decision points." },
+                "lines_instrumented": { "type": "integer", "minimum": 0, "description": "Executable lines of the function's own body that the coverage tool instrumented." },
+                "lines_hit": { "type": "integer", "minimum": 0, "description": "Of those, lines with an execution count above zero." }
+              }
+            }
+          },
+          "mutation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["killed", "timeout", "survived", "no_coverage"],
+            "description": "Mutant counts for this module. Killed and timed-out mutants were detected; survived and uncovered mutants were not. Compile and runtime errors are not counted.",
+            "properties": {
+              "killed": { "type": "integer", "minimum": 0 },
+              "timeout": { "type": "integer", "minimum": 0 },
+              "survived": { "type": "integer", "minimum": 0 },
+              "no_coverage": { "type": "integer", "minimum": 0 },
+              "survivors": {
+                "type": "array",
+                "maxItems": 500,
+                "description": "Where each undetected mutant is, for the mutation fixer. Not read by the engine.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["line", "mutator"],
+                  "properties": {
+                    "line": { "type": "integer", "minimum": 1 },
+                    "mutator": { "type": "string", "maxLength": 128, "pattern": "^[^\\n\\r]+$" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "excluded": {
+      "type": "array",
+      "description": "Changed or present paths the normalizer did not measure, each with a reason. A changed path that is neither measured nor excluded blocks.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason"],
+        "properties": {
+          "path": { "$ref": "#/$defs/path" },
+          "reason": { "enum": ["not_source", "test", "generated", "vendored", "deleted"] }
+        }
+      }
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "description": "Every advisory the audit tool reported for the repository's dependency manifests. The KEV flag comes from a CISA KEV catalog snapshot pinned by digest in sources.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "package", "manifest", "severity", "kev"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}(?!\n)$", "description": "Advisory id (GHSA-..., CVE-..., PYSEC-..., GO-...)." },
+          "package": { "type": "string", "minLength": 1, "maxLength": 214, "pattern": "^[^\\n\\r]+$" },
+          "manifest": { "$ref": "#/$defs/path" },
+          "severity": { "enum": ["critical", "high", "moderate", "low", "unknown"], "description": "unknown when the tool reports none (pip-audit, govulncheck without enrichment); policy treats unknown as blocking." },
+          "kev": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "language": { "enum": ["typescript", "javascript"] } } },
+      "then": { "properties": { "toolchain": { "properties": { "tools": { "items": { "properties": { "name": { "enum": ["eslint", "istanbul", "crap-score", "stryker", "npm-audit"] } } } } } } } } },
+    { "if": { "properties": { "language": { "const": "python" } } },
+      "then": { "properties": { "toolchain": { "properties": { "tools": { "items": { "properties": { "name": { "enum": ["radon", "coverage.py", "mutmut", "pip-audit"] } } } } } } } } },
+    { "if": { "properties": { "language": { "const": "go" } } },
+      "then": { "properties": { "toolchain": { "properties": { "tools": { "items": { "properties": { "name": { "enum": ["gocyclo", "go-cover", "go-mutesting", "govulncheck"] } } } } } } } } }
+  ],
+  "$defs": {
+    "tool": { "enum": ["eslint", "istanbul", "crap-score", "stryker", "npm-audit", "radon", "coverage.py", "mutmut", "pip-audit", "gocyclo", "go-cover", "go-mutesting", "govulncheck", "kev-catalog"] },
+    "path": { "type": "string", "maxLength": 512, "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/@+-]+(?!\n)$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}(?!\n)$" }
+  }
+}

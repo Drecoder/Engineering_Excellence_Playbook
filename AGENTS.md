@@ -166,6 +166,18 @@ A passing suite counts only if its tests could fail (rationale in
 - **Changed-line coverage is reported** on every pull request and each repository holds its
   coverage floor; **mutation score** is tracked with a floor. The floors live in each repository's
   `.ci/quality.v1.json` (`schemas/quality.v1.schema.json`); a missing file fails the gate closed.
+- **One pure Policy Engine decides PASS, BLOCK or QUARANTINE** from normalized metrics
+  (`quality_metrics.v1`) for the change and its merge base, against `schemas/quality_policy.v1.json`
+  (`00_UniversalStandards/17_Quality_Policy_Engine.md`). It has no network, database or model
+  calls, recomputes every score from raw counts (CRAP = CC² · (1 − Cov)³ + CC), and gives the same
+  decision for the same inputs.
+- **Ratchet the past, zone the new.** No existing function's CRAP, and no module's mutation score,
+  complexity or coverage, gets worse than its baseline. New functions need CRAP ≤ 15 and coverage
+  ≥ 80%. New and changed code in the red zone (CRAP > 30, complexity > 20, mutation < 50%) or with a
+  critical or KEV vulnerability quarantines; the yellow zone blocks. A missing or mismatched
+  baseline blocks, never passes.
+- **Only the owner lifts a quarantine,** by a fix or an expiring `ci_exceptions.v1` entry; evidence
+  rules are never excepted.
 - **A flaky test is a defect:** rerun once at most, then fixed or quarantined with an owner.
 
 ## Anti-Pattern Rules
@@ -337,9 +349,10 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
 - **Enforced as code:** `SEC-*` policies run on every plan; a failing policy blocks the change.
   Exceptions live in a reviewed policy file with an owner and an expiry.
 - **Gates block on critical only:** scanners block on CRITICAL severity or any CISA KEV entry;
-  pass/fail checks (format, lint, type check) and `SEC-*` always block. Below-critical findings
-  are counted on a dashboard, never shown in the pull request (see
-  `00_UniversalStandards/07_Security_In_Depth.md`).
+  pass/fail checks (format, lint, type check) and `SEC-*` always block. One addition: the Policy
+  Engine blocks a change that **introduces** a dependency vulnerability of moderate, high or
+  unknown severity. Existing below-critical findings are counted on a dashboard, never shown in the
+  pull request (see `00_UniversalStandards/07_Security_In_Depth.md`).
 
 ## Agent Rules
 

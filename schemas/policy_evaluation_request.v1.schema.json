@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "policy_evaluation_request.v1.schema.json",
+  "title": "policy_evaluation_request.v1",
+  "description": "One Policy Engine evaluation (00_UniversalStandards/17_Quality_Policy_Engine.md §4): the change, and the three files the engine reads, each by path and SHA-256. The gate writes it; nothing else influences the decision. changes is the output of git diff --name-status and --unified=0 between merge_base and commit, so the engine needs no git access.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repo", "commit", "merge_base", "policy", "candidate", "baseline", "changes"],
+  "properties": {
+    "schema_version": { "const": "policy_evaluation_request.v1" },
+    "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" },
+    "commit": { "$ref": "#/$defs/sha1" },
+    "merge_base": { "$ref": "#/$defs/sha1" },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "policy_version"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "policy_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\n)$" }
+      }
+    },
+    "candidate": { "$ref": "#/$defs/file" },
+    "baseline": { "$ref": "#/$defs/file", "description": "quality_metrics.v1 for the merge base, produced in the same toolchain image. Always required: a repository's first evaluation measures its merge base too." },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "status", "hunks"],
+        "properties": {
+          "path": { "$ref": "#/$defs/path" },
+          "status": { "enum": ["added", "modified", "renamed", "deleted"] },
+          "old_path": { "$ref": "#/$defs/path", "description": "The path at the merge base; required for a rename." },
+          "hunks": {
+            "type": "array",
+            "description": "Changed line ranges on the new side, inclusive, from git diff --unified=0. A hunk that only removes lines is recorded as [n, n], n being the new-side line it follows (at least 1), so the function it sits in counts as changed. Empty for a pure rename or a deleted file.",
+            "items": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 1 }, { "type": "integer", "minimum": 1 }], "minItems": 2, "maxItems": 2 }
+          }
+        },
+        "if": { "properties": { "status": { "const": "renamed" } } },
+        "then": { "required": ["old_path"] },
+        "else": { "not": { "required": ["old_path"] } }
+      }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}(?!\n)$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}(?!\n)$" },
+    "path": { "type": "string", "maxLength": 512, "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/@+-]+(?!\n)$" },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

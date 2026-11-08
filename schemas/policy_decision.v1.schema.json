@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "policy_decision.v1.schema.json",
+  "title": "policy_decision.v1",
+  "description": "The Policy Engine's output for one request (00_UniversalStandards/17_Quality_Policy_Engine.md §6). Deterministic: the same request and files give byte-identical canonical JSON (sorted keys, no clock, no host), so it carries no timestamp; the gate adds run metadata in its own span and log line. Scores are rounded to 4 decimal places, half-even, for display only; every comparison was made on exact values.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "engine", "repo", "commit", "merge_base", "policy_version", "inputs", "decision", "exit_code", "findings", "summary"],
+  "properties": {
+    "schema_version": { "const": "policy_decision.v1" },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9-]{1,64}(?!\n)$" },
+        "version": { "type": "string", "pattern": "^[0-9A-Za-z.+-]{1,64}(?!\n)$" }
+      }
+    },
+    "repo": { "type": ["string", "null"] },
+    "commit": { "type": ["string", "null"] },
+    "merge_base": { "type": ["string", "null"] },
+    "policy_version": { "type": ["string", "null"] },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request"],
+      "description": "SHA-256 of each input as the engine read it.",
+      "properties": {
+        "request": { "$ref": "#/$defs/sha256" },
+        "policy": { "$ref": "#/$defs/sha256" },
+        "candidate": { "$ref": "#/$defs/sha256" },
+        "baseline": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "decision": { "enum": ["PASS", "BLOCK", "QUARANTINE"] },
+    "exit_code": { "enum": [0, 1, 2], "description": "PASS 0, BLOCK 1, QUARANTINE 2. An engine that cannot produce a decision exits 3 and writes no decision; the gate treats that as BLOCK." },
+    "findings": {
+      "type": "array",
+      "description": "Every failed rule, sorted by rule, module and function. Empty exactly when the decision is PASS.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule", "decision", "detail"],
+        "properties": {
+          "rule": { "type": "string", "pattern": "^QP-[0-9]{3}(?!\n)$" },
+          "decision": { "enum": ["BLOCK", "QUARANTINE"] },
+          "module": { "type": "string" },
+          "function": { "type": "string" },
+          "metric": { "enum": ["crap", "complexity", "coverage", "mutation", "vulnerability", "evidence"] },
+          "value": { "type": "number" },
+          "limit": { "type": "number" },
+          "baseline": { "type": "number" },
+          "detail": { "type": "string", "maxLength": 512 }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modules_evaluated", "functions_new", "functions_changed", "functions_unchanged", "quarantine_findings", "block_findings"],
+      "properties": {
+        "modules_evaluated": { "type": "integer", "minimum": 0 },
+        "functions_new": { "type": "integer", "minimum": 0 },
+        "functions_changed": { "type": "integer", "minimum": 0 },
+        "functions_unchanged": { "type": "integer", "minimum": 0 },
+        "quarantine_findings": { "type": "integer", "minimum": 0 },
+        "block_findings": { "type": "integer", "minimum": 0 }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "decision": { "const": "PASS" } } }, "then": { "properties": { "exit_code": { "const": 0 }, "findings": { "maxItems": 0 } } } },
+    { "if": { "properties": { "decision": { "const": "BLOCK" } } }, "then": { "properties": { "exit_code": { "const": 1 }, "findings": { "minItems": 1, "not": { "contains": { "properties": { "decision": { "const": "QUARANTINE" } } } } } } } },
+    { "if": { "properties": { "decision": { "const": "QUARANTINE" } } }, "then": { "properties": { "exit_code": { "const": 2 }, "findings": { "minItems": 1, "contains": { "properties": { "decision": { "const": "QUARANTINE" } } } } } } }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}(?!\n)$" }
+  }
+}
