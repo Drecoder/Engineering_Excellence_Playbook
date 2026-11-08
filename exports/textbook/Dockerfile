@@ -7,7 +7,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/textbook
-RUN npm install --no-audit --no-fund markdown-it@14.1.0
+RUN npm install --no-audit --no-fund markdown-it@14.1.0 katex@0.16.11
 
 ENV NODE_PATH=/opt/textbook/node_modules \
     BROWSER=/usr/bin/chromium \

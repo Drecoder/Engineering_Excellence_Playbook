@@ -70,3 +70,6 @@ h5 { font-size: 10pt; margin: 1em 0 0.3em; }
 .glossary dt { font-family: "Segoe UI", sans-serif; font-weight: 700; margin-top: 0.7em; }
 .glossary dd { margin: 0.15em 0 0 0; }
 .katex-display { margin: 0.8em 0; overflow: hidden; }
+
+/* Diagrams are drawn wider than the page; scale them to fit. */
+img { max-width: 100%; height: auto; }
