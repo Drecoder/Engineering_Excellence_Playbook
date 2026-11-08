@@ -2,46 +2,181 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "harness_decision.v1.schema.json",
   "title": "harness_decision.v1",
-  "description": "Status: proposed. One decision of the adaptive harness (06_AgentZone/09_Adaptive_Harness.md): the inputs it weighed and the one bounded action it chose. Sealed with the task, it is the evidence Loop A leaves and the only input Loop B learns from. The action vocabulary is closed: no action approves, merges, deploys, grants, raises a ceiling or edits policy. The constraints below encode the decision table's first rows; cross-file checks (a concurrency target within the approved ceiling, a rung on model_ladder.v1, a retry within the attempt limit) are stated in the standard and tested at the test-design stage.",
+  "description": "Status: proposed. One decision of the adaptive harness (06_AgentZone/09_Adaptive_Harness.md): the inputs it weighed, the evidence it rests on, and the one bounded action it chose. Sealed with the task in the notepad, it is the evidence Loop A leaves (each decision names the previous one and that one's outcome) and the only input Loop B learns from (knowledge_record.v1 derived_from). The action vocabulary is closed: no action approves, merges, deploys, grants, raises a ceiling or edits policy, and raising concurrency is absent while §15 O1 is open. The constraints below encode the decision table's first rows; cross-file checks (a concurrency target within the approved ceiling, a rung on model_ladder.v1, a retry within the attempt limit) are stated in the standard and tested at the test-design stage.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "decision_id", "run_id", "ticket_key", "stage", "inputs", "action", "recorded_at"],
+  "required": [
+    "schema_version",
+    "decision_id",
+    "run_id",
+    "ticket_key",
+    "stage",
+    "inputs",
+    "action",
+    "recorded_at"
+  ],
   "properties": {
-    "schema_version": { "const": "harness_decision.v1" },
-    "decision_id": { "type": "string", "format": "uuid" },
-    "run_id": { "type": "string", "format": "uuid" },
-    "ticket_key": { "type": "string", "pattern": "^[A-Z][A-Z0-9]+-[0-9]+(?!\n)$" },
-    "stage": { "enum": ["scope", "build", "evaluate", "remediate", "review", "await_approval"] },
+    "schema_version": {
+      "const": "harness_decision.v1"
+    },
+    "decision_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "ticket_key": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+-[0-9]+(?!\n)$"
+    },
+    "stage": {
+      "enum": [
+        "scope",
+        "build",
+        "evaluate",
+        "remediate",
+        "review",
+        "await_approval"
+      ]
+    },
     "inputs": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["governance", "quality", "reliability", "knowledge"],
+      "required": [
+        "governance",
+        "quality",
+        "reliability",
+        "knowledge",
+        "telemetry_window"
+      ],
       "properties": {
         "governance": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["repo", "policy_version", "capability_boundary", "attempt", "max_attempts", "budget_spent_fraction"],
+          "required": [
+            "repo",
+            "policy_version",
+            "capability_boundary",
+            "attempt",
+            "max_attempts",
+            "budget_spent_fraction"
+          ],
           "properties": {
-            "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" },
-            "policy_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\n)$" },
-            "capability_boundary": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The identity and permission set the harness runs under; never changed by a decision." },
-            "attempt": { "type": "integer", "minimum": 1 },
-            "max_attempts": { "type": "integer", "minimum": 1 },
-            "budget_spent_fraction": { "type": "number", "minimum": 0, "description": "Computed spend over the ticket's budget, from token records; 1 or more means spent." }
+            "repo": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$"
+            },
+            "policy_version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\n)$"
+            },
+            "capability_boundary": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "The identity and permission set the harness runs under; never changed by a decision."
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "budget_spent_fraction": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Computed spend over the ticket's budget, from token records; 1 or more means spent."
+            }
           }
         },
         "quality": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["decision"],
+          "required": [
+            "decision"
+          ],
           "properties": {
-            "decision": { "enum": ["PASS", "BLOCK", "QUARANTINE", "MISSING"], "description": "The Policy Engine's decision. MISSING when there is none, its digest does not verify, or it carries an evidence finding (QP-001 to QP-006)." },
-            "policy_decision_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}(?!\n)$" },
-            "rules": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^QP-[0-9]{3}(?!\n)$" } },
-            "survivors_on_changed_lines": { "type": "integer", "minimum": 0 }
+            "decision": {
+              "enum": [
+                "PASS",
+                "BLOCK",
+                "QUARANTINE",
+                "MISSING"
+              ],
+              "description": "The Policy Engine's decision. MISSING when there is none, its digest does not verify, or it carries an evidence finding (QP-001 to QP-006)."
+            },
+            "policy_decision_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}(?!\n)$"
+            },
+            "rules": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^QP-[0-9]{3}(?!\n)$"
+              }
+            },
+            "survivors_on_changed_lines": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evaluation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "commit",
+                "merge_base",
+                "candidate_sha256",
+                "baseline_sha256",
+                "toolchain_image"
+              ],
+              "description": "What the evaluation measured; the evaluation ID is policy_decision_sha256.",
+              "properties": {
+                "commit": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{40}(?!\n)$"
+                },
+                "merge_base": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{40}(?!\n)$"
+                },
+                "candidate_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}(?!\n)$"
+                },
+                "baseline_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}(?!\n)$"
+                },
+                "toolchain_image": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9./_-]+@sha256:[0-9a-f]{64}(?!\n)$"
+                }
+              }
+            }
           },
-          "if": { "properties": { "decision": { "enum": ["PASS", "BLOCK", "QUARANTINE"] } } },
-          "then": { "required": ["policy_decision_sha256"] }
+          "if": {
+            "properties": {
+              "decision": {
+                "enum": [
+                  "PASS",
+                  "BLOCK",
+                  "QUARANTINE"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "policy_decision_sha256",
+              "evaluation"
+            ]
+          }
         },
         "reliability": {
           "type": "array",
@@ -49,13 +184,50 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["subject_kind", "subject", "state", "reason", "evaluated_at"],
+            "required": [
+              "subject_kind",
+              "subject",
+              "state",
+              "reason",
+              "evaluated_at"
+            ],
             "properties": {
-              "subject_kind": { "enum": ["service", "harness"] },
-              "subject": { "type": "string", "minLength": 1, "maxLength": 128 },
-              "state": { "enum": ["GREEN", "RED", "UNKNOWN"] },
-              "reason": { "type": "string", "minLength": 1, "maxLength": 256 },
-              "evaluated_at": { "type": "string", "format": "date-time" }
+              "subject_kind": {
+                "enum": [
+                  "service",
+                  "harness"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "state": {
+                "enum": [
+                  "GREEN",
+                  "RED",
+                  "UNKNOWN"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "evaluated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "slo_ids": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "description": "The SLOs whose burn-rate alerts the state was read from."
+              }
             }
           }
         },
@@ -65,11 +237,49 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["record_id", "evidence_tier", "standing"],
+            "required": [
+              "record_id",
+              "evidence_tier",
+              "standing"
+            ],
             "properties": {
-              "record_id": { "type": "string", "format": "uuid" },
-              "evidence_tier": { "enum": ["CLAIMED", "OBSERVED", "VERIFIED"] },
-              "standing": { "enum": ["GREEN", "RED", "UNKNOWN"] }
+              "record_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "evidence_tier": {
+                "enum": [
+                  "CLAIMED",
+                  "OBSERVED",
+                  "VERIFIED"
+                ]
+              },
+              "standing": {
+                "enum": [
+                  "GREEN",
+                  "RED",
+                  "UNKNOWN"
+                ]
+              }
+            }
+          }
+        },
+        "telemetry_window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end"
+          ],
+          "description": "The window of operational telemetry the decision read.",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         }
@@ -78,42 +288,352 @@
     "action": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "reason", "decided_by", "table_row"],
+      "required": [
+        "kind",
+        "reason",
+        "decided_by",
+        "table_row"
+      ],
       "properties": {
-        "kind": { "enum": ["advance", "reorder_work", "pace_down", "reduce_concurrency", "restore_concurrency", "retry", "switch_tool", "change_model_rung", "request_evaluation", "request_evidence", "route_remediation", "pause", "stop", "escalate_to_human"] },
-        "reason": { "type": "string", "minLength": 1, "maxLength": 512 },
-        "decided_by": { "enum": ["rule", "validated_model_proposal"], "description": "A rule of the decision table, or a model's proposal that code checked against the row's allowed actions." },
-        "table_row": { "type": "integer", "minimum": 1, "description": "The row of the standard's decision table (§7) that applied." },
-        "from": { "type": "string", "maxLength": 128 },
-        "to": { "type": "string", "maxLength": 128 }
-      }
+        "kind": {
+          "enum": [
+            "advance",
+            "reorder_work",
+            "pace_down",
+            "reduce_concurrency",
+            "retry",
+            "switch_tool",
+            "change_model_rung",
+            "request_evaluation",
+            "request_evidence",
+            "route_remediation",
+            "pause",
+            "stop",
+            "escalate_to_human"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "decided_by": {
+          "enum": [
+            "rule",
+            "validated_model_proposal"
+          ],
+          "description": "A rule of the decision table, or a model's proposal that code checked against the row's allowed actions."
+        },
+        "table_row": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The row of the standard's decision table (§7) that applied."
+        },
+        "from": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "to": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "selected": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "description": "The model or tool tier the action selected.",
+          "properties": {
+            "model_id": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "rung": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "A rung label from model_ladder.v1."
+            },
+            "tool": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "change_model_rung"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "selected"
+            ],
+            "properties": {
+              "selected": {
+                "required": [
+                  "model_id",
+                  "rung"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "switch_tool"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "selected"
+            ],
+            "properties": {
+              "selected": {
+                "required": [
+                  "tool"
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
-    "recorded_at": { "type": "string", "format": "date-time" }
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "previous": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "outcome"
+      ],
+      "description": "The decision before this one in the same run, and what its action led to: the Loop A chain.",
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "outcome": {
+          "enum": [
+            "completed",
+            "failed",
+            "no_effect",
+            "aborted"
+          ]
+        }
+      }
+    }
   },
   "allOf": [
-    { "$comment": "Row 1: a spent budget only stops or escalates.",
-      "if": { "properties": { "inputs": { "properties": { "governance": { "properties": { "budget_spent_fraction": { "minimum": 1 } } } } } } },
-      "then": { "properties": { "action": { "properties": { "kind": { "enum": ["stop", "escalate_to_human"] } } } } } },
-    { "$comment": "Row 2: QUARANTINE only stops or escalates.",
-      "if": { "properties": { "inputs": { "properties": { "quality": { "properties": { "decision": { "const": "QUARANTINE" } } } } } } },
-      "then": { "properties": { "action": { "properties": { "kind": { "enum": ["stop", "escalate_to_human"] } } } } } },
-    { "$comment": "Row 3: missing quality evidence is never a pass.",
-      "if": { "properties": { "inputs": { "properties": { "quality": { "properties": { "decision": { "const": "MISSING" } } } } } } },
-      "then": { "properties": { "action": { "properties": { "kind": { "enum": ["request_evaluation", "pause", "stop", "escalate_to_human"] } } } } } },
-    { "$comment": "A BLOCK never advances and never adds load.",
-      "if": { "properties": { "inputs": { "properties": { "quality": { "properties": { "decision": { "const": "BLOCK" } } } } } } },
-      "then": { "properties": { "action": { "properties": { "kind": { "not": { "enum": ["advance", "restore_concurrency"] } } } } } } },
-    { "$comment": "Row 12: advance needs PASS and at least one reliability state, every one GREEN.",
-      "if": { "properties": { "action": { "properties": { "kind": { "const": "advance" } } } } },
-      "then": { "properties": { "inputs": { "properties": {
-        "quality": { "properties": { "decision": { "const": "PASS" } } },
-        "reliability": { "minItems": 1, "items": { "properties": { "state": { "const": "GREEN" } } } } } } } } },
-    { "$comment": "Concurrency goes back up only on fresh GREEN for every subject.",
-      "if": { "properties": { "action": { "properties": { "kind": { "const": "restore_concurrency" } } } } },
-      "then": { "properties": { "inputs": { "properties": {
-        "reliability": { "minItems": 1, "items": { "properties": { "state": { "const": "GREEN" } } } } } } } } },
-    { "$comment": "An action resting on a practice in RED standing is not allowed to advance.",
-      "if": { "properties": { "inputs": { "properties": { "knowledge": { "contains": { "properties": { "standing": { "const": "RED" } } } } } } } },
-      "then": { "properties": { "action": { "properties": { "kind": { "not": { "const": "advance" } } } } } } }
+    {
+      "$comment": "Row 1: a spent budget only stops or escalates.",
+      "if": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "governance": {
+                "properties": {
+                  "budget_spent_fraction": {
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "stop",
+                  "escalate_to_human"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "Row 2: QUARANTINE only stops or escalates.",
+      "if": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "quality": {
+                "properties": {
+                  "decision": {
+                    "const": "QUARANTINE"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "stop",
+                  "escalate_to_human"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "Row 3: missing quality evidence is never a pass.",
+      "if": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "quality": {
+                "properties": {
+                  "decision": {
+                    "const": "MISSING"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "request_evaluation",
+                  "pause",
+                  "stop",
+                  "escalate_to_human"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "A BLOCK never advances.",
+      "if": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "quality": {
+                "properties": {
+                  "decision": {
+                    "const": "BLOCK"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action": {
+            "properties": {
+              "kind": {
+                "not": {
+                  "const": "advance"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "Row 12: advance needs PASS and at least one reliability state, every one GREEN.",
+      "if": {
+        "properties": {
+          "action": {
+            "properties": {
+              "kind": {
+                "const": "advance"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "quality": {
+                "properties": {
+                  "decision": {
+                    "const": "PASS"
+                  }
+                }
+              },
+              "reliability": {
+                "minItems": 1,
+                "items": {
+                  "properties": {
+                    "state": {
+                      "const": "GREEN"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "An action resting on a practice in RED standing is not allowed to advance.",
+      "if": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "knowledge": {
+                "contains": {
+                  "properties": {
+                    "standing": {
+                      "const": "RED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action": {
+            "properties": {
+              "kind": {
+                "not": {
+                  "const": "advance"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   ]
 }

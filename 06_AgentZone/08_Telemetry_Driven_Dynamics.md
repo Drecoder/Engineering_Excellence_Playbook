@@ -50,7 +50,7 @@ line that keeps "dynamic" from meaning "unbounded."
 | The agent MAY adapt | The agent MAY NOT adapt |
 | :--- | :--- |
 | Crawl / test order and prioritization | Scope (in-scope assets) |
-| Pacing **down**; longer backoff under stress; concurrency back up toward its approved ceiling only on a fresh GREEN (`09` §5) | Capability grants (detection vs exploitation) |
+| Pacing **down**; longer backoff under stress | Capability grants (detection vs exploitation) |
 | Shedding dead-end paths; retry budgets | The per-target rate ceiling (never up) |
 | Model rung for a sub-task (`01` §6) | The human-review requirement for protected classes |
 

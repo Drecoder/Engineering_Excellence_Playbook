@@ -4,10 +4,11 @@
 what the organization has learned, how the systems are behaving now, and what deterministic tools
 measure in the code. It does this inside the same gates it enforces, and never authorizes itself.*
 
-**Status: proposed.** This standard codifies an architectural hypothesis so that future
-implementations have something to conform to. Nothing here is built. The contracts it names exist
-as schemas with examples; their conformance cases, and every implementation, come after the
-standard is approved (§12). It extends `08_Telemetry_Driven_Dynamics.md` (bounded steering),
+**Status: PROPOSED** (the playbook's *Design*: agreed target, not implemented). This standard
+codifies an architectural hypothesis so that future implementations have something to conform to.
+Nothing here is built. The contracts it names exist as schemas with examples; their conformance
+cases, and every implementation, come after the standard is approved (§16). A documented rule is
+not proof of enforcement, and a proposal is not proof of implementation. It extends `08_Telemetry_Driven_Dynamics.md` (bounded steering),
 `07_Agent_Notepad.md` §7 (memory), `00_UniversalStandards/17_Quality_Policy_Engine.md` (quality
 decisions) and `01_Agent_Standards.md` §6–7 (routing, budgets). Where they and this page disagree,
 they win and this page is the bug.
@@ -233,16 +234,16 @@ first that applies decides:
 | :--- | :--- | :--- |
 | Test and analysis order | Any claim that quality improved or regressed (the Evaluator, then the Policy Engine) | Merging, deploying, releasing |
 | Pacing, and backoff under stress | Advancing past a BLOCK (only a new PASS) | Lifting a QUARANTINE (the owner) |
-| Concurrency: down freely; back up toward the approved ceiling only on a fresh GREEN, never above it | Any change to the evidence it acts on | Raising a ticket's budget (the owner) |
+| Concurrency: down only (raising it again is open, §15 O1) | Any change to the evidence it acts on | Raising a ticket's budget (the owner) |
 | Retries, within the attempt limit and the budget | | A new or changed policy threshold (a reviewed playbook change) |
 | Model rung, at a task boundary, within the ladder and the budget (proofing C5) | | Promoting a practice (§3) |
 | Tool choice among the tools it is granted | | Any change to scope, capabilities, rate ceilings or the autonomy level (proofing C9) |
 | Remediation order | | |
 
 **The action vocabulary** in `harness_decision.v1` is closed: `advance`, `reorder_work`,
-`pace_down`, `reduce_concurrency`, `restore_concurrency`, `retry`, `switch_tool`,
-`change_model_rung`, `request_evaluation`, `request_evidence`, `route_remediation`, `pause`,
-`stop`, `escalate_to_human`. There is no action that approves, merges, deploys, grants, raises a
+`pace_down`, `reduce_concurrency`, `retry`, `switch_tool`, `change_model_rung`,
+`request_evaluation`, `request_evidence`, `route_remediation`, `pause`, `stop`,
+`escalate_to_human`. Restoring concurrency is not in it while §15 O1 is open. There is no action that approves, merges, deploys, grants, raises a
 ceiling or edits policy, so no reading of the evidence can produce one.
 
 ## 9️⃣ Two Connected Loops
@@ -284,24 +285,135 @@ directly, and Loop B never acts on a running task.
 - **It draws from the ticket's one budget,** and its token records follow `token_record.v1`.
 - **Its own quality is measured** like any code: the Policy Engine gates the harness's code.
 - **Its decision table is versioned,** and changing it is a behavioral change behind golden tasks,
-  including designed-to-fail ones (§12).
+  including designed-to-fail ones (§14).
 - **Its autonomy is per process class** and protected classes stay at L2 or below; an incident
   traced to a harness decision demotes the class (`10` §6).
 
-## 1️⃣2️⃣ Status and Next Stages
+## 1️⃣2️⃣ Evaluation Cadence
+
+Evidence costs time, compute and tokens, so each kind runs where it changes a decision. The
+mandatory gate never depends on the cadence.
+
+| When | What runs | Feeds | Authoritative |
+| :--- | :--- | :--- | :--- |
+| Each iteration of the Builder or a fixer | Complexity and coverage of the changed functions, and CRAP computed from them. No mutation. | Loop A, to steer the next edit | No: advisory, never a decision |
+| A verification checkpoint: before the pull request opens or is updated, and after a fixer's attempt | Mutation of the changed modules only; after a fixer's attempt, only that module or that mutant (`07_SoftwareFactory/01_Software_Factory.md` §3) | Loop A and fixer routing | No |
+| The quality gate, on every push to the pull request | The full evaluation: candidate and merge-base baseline in the pinned image, then the Policy Engine | The decision | **Yes**: the only PASS, BLOCK or QUARANTINE |
+| After a remediation | The changed module re-measured, then the Policy Engine against the exact merge base by digest; a new merge base after a rebase | A new decision | Yes |
+
+- **Mutation never runs after every minor action.** It runs at checkpoints and at the gate, scoped
+  to changed modules (`17_Quality_Policy_Engine.md` §4).
+- **Advisory results never stand in for the gate.** A lightweight CRAP figure is not a policy
+  decision; acting on one where a decision is required is §7 row 3 (missing evidence).
+- **The harness may ask for more evaluation** (`request_evaluation`) when the evidence is
+  ambiguous, within the ticket's budget. It may never ask for less than the gate requires.
+- **The balance is measured, not assumed:** decision quality, detection (mutants caught before the
+  gate), execution time, compute cost and tokens are each recorded per task (§13), so the cadence
+  can be changed on evidence through a reviewed change.
+
+## 1️⃣3️⃣ Audit Trail and Loop Linkage
+
+Every evaluation and every adaptive decision is traceable to its evidence. No new store is
+introduced: decision records are sealed in the notepad (`07` §2), evaluations are the Policy
+Engine's documents, and knowledge records point at both.
+
+| Captured | Where |
+| :--- | :--- |
+| Task and run identifiers, repository, stage | `harness_decision.v1`: `ticket_key`, `run_id`, `stage`, `inputs.governance.repo` |
+| Source commit, merge base, candidate and baseline digests, toolchain image, policy version, evaluation ID | `inputs.quality.evaluation` (the evaluation ID is the `policy_decision.v1` document's SHA-256) and `inputs.governance.policy_version` |
+| CRAP and mutation findings | `inputs.quality.rules` and `survivors_on_changed_lines`; the full findings are in the decision document the digest names |
+| Telemetry window, SLO and reliability state | `inputs.telemetry_window`; `inputs.reliability`, each state with its subject, reason, evaluation time and SLO IDs |
+| Knowledge evidence used | `inputs.knowledge`: record IDs, tiers, standing |
+| The decision, its rationale and its rule | `action.kind`, `action.reason`, `action.table_row`, `action.decided_by` |
+| Model or tool tier selected | `action.selected`: model ID, ladder rung, tool |
+| Resulting outcome | The next decision's `previous`: the earlier decision's ID and what happened |
+
+- **Loop A leaves a chain.** Each decision names the previous one and records its outcome, so a
+  task's adaptations read as one sequence.
+- **Loop B leaves promotions.** A knowledge record names the decision records it was derived from
+  (`knowledge_record.v1` `derived_from`), and any defect attributed to it names the decision that
+  cited it. The two loops therefore produce distinguishable evidence (decision records against
+  knowledge records), linked by decision IDs.
+- **Evidence is immutable.** Sealed records are never edited; an outcome learned later is a new
+  record that points back. Telemetry for each decision is the `harness.decide` span (§11).
+
+## 1️⃣4️⃣ Acceptance Criteria
+
+Codified here; turned into conformance cases at the test-design stage. Each criterion names the
+part of this standard that carries it.
+
+| # | Criterion | Carried by |
+| :--- | :--- | :--- |
+| 1 | Verified practices get stronger confidence than unsupported claims | §4 order (tier precedence) |
+| 2 | Attributable incidents lower the confidence of implicated practices | §5 practice RED; `knowledge_record.v1` attributions |
+| 3 | RED raises relevant failure evidence without penalizing unrelated knowledge | §5 "How states act" |
+| 4 | UNKNOWN never produces unjustified confidence | §5; §10 |
+| 5 | Transient failures never become permanent knowledge | §3 promotion |
+| 6 | Historical knowledge and live state stay separate | §3; §9 |
+| 7 | High CRAP can trigger a more intensive analysis path | §7 rows 5–6 |
+| 8 | Surviving mutants can trigger test-remediation routing | §7 rows 5, 7 and 11 |
+| 9 | High coverage alone cannot establish test effectiveness | §6 (mutation is read alongside coverage); §7 row 11 |
+| 10 | Healthy telemetry cannot override poor quality evidence | §7 rows 2–7 come before any advance |
+| 11 | Good quality evidence cannot override unhealthy operations | §7 rows 8–10 |
+| 12 | Missing or inconclusive evidence is never PASS | §7 row 3; `harness_decision.v1` |
+| 13 | A remediation triggers a new evaluation against the correct baseline | §12 |
+| 14 | Model-tier escalation stays bounded and auditable | §8; `action.selected`; the ladder and the budget |
+| 15 | A BLOCK cannot be overridden | §2; `harness_decision.v1` |
+| 16 | A QUARANTINE cannot become PASS | §2; §7 row 2 |
+| 17 | Favorable telemetry cannot expand permissions | §8 vocabulary |
+| 18 | The harness cannot authorize its own merge or release | §2; §7 row 12 |
+| 19 | Stale telemetry cannot justify more concurrency or autonomy | §5 freshness; §10; §15 O1 |
+| 20 | Human approval requirements stay intact | §8 |
+| 21 | Every adaptive decision has traceable evidence | §13 |
+| 22 | Evaluations identify source tree, baseline, toolchain and policy version | §13 |
+| 23 | Runtime adaptation and organizational learning leave distinguishable evidence | §13 |
+| 24 | The harness itself is observable and auditable | §11 |
+
+**Failure-injection and adversarial cases to add:**
+
+- a forged *stale* GREEN; sources that contradict each other;
+- a decision record whose policy-decision digest does not verify;
+- a retrieved record carrying instructions (it must be treated as data);
+- a highly similar `CLAIMED` record competing with a `VERIFIED` one;
+- the budget running out in the middle of an escalation;
+- steering that oscillates (thrash, visible in the §10 metrics);
+- a defect counted against a practice without its attribution chain.
+
+## 1️⃣5️⃣ Conflicts and Open Decisions
+
+Conflicts with existing standards are recorded here, not resolved by editing those standards.
+
+| # | Question | Until decided |
+| :--- | :--- | :--- |
+| O1 | **Conflict with `08` §3.** The hypothesis lets the harness raise concurrency back toward its approved ceiling. Telemetry-Driven Dynamics allows pacing **down** only. Proposal: allow a return toward the ceiling, never above it, only on a fresh GREEN for every subject, as a new action `restore_concurrency`. | `08` governs: concurrency goes down only, and `restore_concurrency` is not in the vocabulary |
+| O2 | **Status vocabulary.** The hypothesis asks for BUILT, PARTIAL, PROPOSED and OPEN. The playbook's legend (`ARCHITECTURE.md`) says Built, Partial, Design and Open. | This standard says PROPOSED and means Design; the legend is unchanged |
+| O3 | **The white paper's deliverables section (§14) is cut off** in both copies received. | Codified from §1–13; a missing deliverable is added when the section arrives |
+| O4 | **Numeric retrieval weights.** | Not used until calibrated (§4) |
+
+## 1️⃣6️⃣ Status
+
+| Capability | Status | What exists |
+| :--- | :--- | :--- |
+| Deterministic CRAP and mutation policy | PROPOSED | The Policy Engine standard, contracts, reference engine and 54 conformance vectors (PR #58). No service runs it and no gate enforces it. |
+| Agent Notepad | PARTIAL | A library with in-memory and local backends. No network boundary, and agents don't use it yet. |
+| Telemetry-driven dynamics | PROPOSED | The standard (`08`) |
+| Reliability-aware retrieval | PROPOSED | This standard and `knowledge_record.v1`. No index is built. |
+| Quality-aware harness behavior | PROPOSED | This standard, `harness_decision.v1` and diagram sheet 4 |
+| Runtime integrations (telemetry read-back, Policy Engine service, retrieval index, harness) | PROPOSED | None built |
 
 | Stage | State |
 | :--- | :--- |
-| 1. Hypothesis | Done: the white paper |
-| 2. Codification | This standard; the contracts `harness_decision.v1` and `knowledge_record.v1` (schemas and examples) |
+| 1. Hypothesis | Done: the white paper (§1–13; §14 cut off, O3) |
+| 2. Codification | This standard and its contracts |
 | 3. Review and proofing | The proofing report (Software Factory project, `claude/harness-whitepaper-proof.md`); owner review of this standard |
-| 4. Test design | Not started: conformance cases for every decision-table row and contract constraint; designed-to-fail cases (a forged stale GREEN, a QUARANTINE input, an empty reliability set, a spent budget, an attributed defect without its chain); the retrieval calibration protocol |
+| 4. Test design | Not started: §14 becomes conformance and adversarial cases, and the retrieval calibration protocol is written |
 | 5. Implementation | Not started; after the standard and the test design are approved |
 | 6. Validation | Not started |
 
-Today every service's state would be UNKNOWN: no factory service has SLOs yet (SD-07). A harness
-built now would therefore escalate to a person before every advance. That is the intended
-conservative behavior, not a defect.
+A passing contract test is not proof that a runtime capability exists. Today every service's state
+would be UNKNOWN, because no factory service has SLOs yet (SD-07). A harness built now would
+therefore escalate to a person before every advance. That is the intended conservative behavior,
+not a defect.
 
 ---
 
