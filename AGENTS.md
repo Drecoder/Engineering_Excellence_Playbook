@@ -446,6 +446,20 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   Federation), never static keys.
 - **Deterministic gates first.** A model's verdict never overrides a failing CLI gate
   (`tflint`, `checkov`, no-destroy check).
+- **Target design: the adaptive harness weighs evidence, never authorizes**
+  (`06_AgentZone/09_Adaptive_Harness.md`, proposed). An agent's harness picks its next bounded step
+  from organizational knowledge, the reliability states of the services involved and of itself
+  (GREEN, RED or UNKNOWN, from existing SLO burn rates), the Policy Engine's decision, and its
+  governance state. A deterministic decision table picks the action class; a model only proposes
+  within it. Its vocabulary has no action that approves, merges, deploys, grants or edits policy.
+  UNKNOWN never becomes GREEN, missing quality evidence never passes, and an empty input is never
+  healthy. Every decision is a sealed `harness_decision.v1`.
+- **Target design: long-term memory learns only from attributed, verified evidence.** The retrieval
+  index holds `knowledge_record.v1` pointers to sealed records. Semantic similarity finds
+  candidates but never establishes trust. Confidence falls only on a defect attributed through a
+  recorded chain, transient failures are never promoted, and a practice exists only when a person
+  approves it in a reviewed playbook change. No numeric retrieval weight is used before it is
+  calibrated.
 - **Golden tasks.** Each agent keeps a fixed set of golden tasks (including at least one
   designed-to-fail task) that must pass before a change to its prompt, tools, or model ships.
 

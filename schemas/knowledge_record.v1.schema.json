@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "knowledge_record.v1.schema.json",
+  "title": "knowledge_record.v1",
+  "description": "Status: proposed. One entry of long-term memory (06_AgentZone/09_Adaptive_Harness.md §3–5): a pointer to a sealed source, never its content, with the evidence and outcome history that decide its standing. Written only by the indexing pipeline; retrieved with the caller's identity and digest-verified before use. Raw metric series, tool failures and other transient events are never recorded here. A reusable practice exists only when a person approved it in a reviewed playbook change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_id", "kind", "subject", "summary", "source", "evidence_tier", "outcomes", "attributions", "standing", "status", "recorded_at", "review_by", "embedding_model"],
+  "properties": {
+    "schema_version": { "const": "knowledge_record.v1" },
+    "record_id": { "type": "string", "format": "uuid" },
+    "kind": { "enum": ["practice", "decision", "finding_resolution", "remediation_outcome", "incident", "reliability_record", "execution_outcome"] },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "What the record applies to; retrieval filters on it before ranking.",
+      "properties": {
+        "repo": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}(?!\n)$" },
+        "service": { "type": "string", "maxLength": 128 },
+        "component": { "type": "string", "maxLength": 256 },
+        "language": { "enum": ["typescript", "javascript", "python", "go", "terraform", "any"] },
+        "rules": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^(QP|ARCH|SEC|GOV|DR|AP)-[A-Z0-9-]+(?!\n)$" } },
+        "fingerprint": { "type": "string", "pattern": "^[0-9a-f]{16,64}(?!\n)$" }
+      }
+    },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 512, "description": "A short description for people. Data, never instructions; the source is what is loaded." },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["address", "sha256", "sealed"],
+      "properties": {
+        "address": { "type": "string", "minLength": 1, "maxLength": 1024, "description": "Where the sealed object lives: a notepad manifest, a merge commit, an incident record." },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}(?!\n)$" },
+        "sealed": { "const": true }
+      }
+    },
+    "evidence_tier": { "enum": ["CLAIMED", "OBSERVED", "VERIFIED"] },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified"],
+      "properties": {
+        "verified": { "type": "integer", "minimum": 0, "description": "Outcomes verified after a full measurement period of their process class with no defect traced to them." }
+      }
+    },
+    "attributions": {
+      "type": "array",
+      "description": "Defects attributed to this record, each through the recorded chain: a harness decision that cited it, the change it led to, and the defect or incident record naming that change.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "change", "defect_record", "superseded_by_fix"],
+        "properties": {
+          "decision_id": { "type": "string", "format": "uuid" },
+          "change": { "type": "string", "pattern": "^https://github\\.com/[\\w.-]+/[\\w.-]+/(pull/[0-9]+|commit/[0-9a-f]{40})(?!\n)$" },
+          "defect_record": { "type": "string", "minLength": 1, "maxLength": 512 },
+          "superseded_by_fix": { "type": "boolean", "description": "True once a later verified fix closed the defect." }
+        }
+      }
+    },
+    "standing": { "enum": ["GREEN", "RED", "UNKNOWN"] },
+    "status": { "enum": ["active", "superseded", "retired"] },
+    "superseded_by": { "type": "string", "format": "uuid" },
+    "approved_in": { "type": "string", "pattern": "^https://github\\.com/[\\w.-]+/[\\w.-]+/pull/[0-9]+(?!\n)$", "description": "The reviewed playbook change in which a person approved a practice." },
+    "recorded_at": { "type": "string", "format": "date-time" },
+    "review_by": { "type": "string", "format": "date", "description": "After this date the record is retrieved as UNKNOWN until re-verified." },
+    "embedding_model": { "type": "string", "minLength": 1, "maxLength": 128 }
+  },
+  "allOf": [
+    { "$comment": "A practice is VERIFIED and was approved by a person.",
+      "if": { "properties": { "kind": { "const": "practice" } } },
+      "then": { "required": ["approved_in"], "properties": { "evidence_tier": { "const": "VERIFIED" } } } },
+    { "$comment": "GREEN standing needs VERIFIED evidence, a verified outcome and no open attributed defect.",
+      "if": { "properties": { "standing": { "const": "GREEN" } } },
+      "then": { "properties": {
+        "evidence_tier": { "const": "VERIFIED" },
+        "outcomes": { "properties": { "verified": { "minimum": 1 } } },
+        "attributions": { "items": { "properties": { "superseded_by_fix": { "const": true } } } } } } },
+    { "$comment": "RED standing needs at least one attributed defect not yet superseded.",
+      "if": { "properties": { "standing": { "const": "RED" } } },
+      "then": { "properties": { "attributions": { "contains": { "properties": { "superseded_by_fix": { "const": false } } } } } } },
+    { "$comment": "An open attributed defect makes the standing RED, never GREEN or UNKNOWN.",
+      "if": { "properties": { "attributions": { "contains": { "properties": { "superseded_by_fix": { "const": false } } } } } },
+      "then": { "properties": { "standing": { "const": "RED" } } } },
+    { "$comment": "A superseded record names its successor.",
+      "if": { "properties": { "status": { "const": "superseded" } } },
+      "then": { "required": ["superseded_by"] } }
+  ]
+}

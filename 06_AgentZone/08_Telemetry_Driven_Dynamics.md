@@ -8,6 +8,8 @@ This standard builds on `02_BackendZone/04_Telemetry_Standards.md` (the signals)
 _GOVERNORS.md` (the first feedback primitive), `01_Agent_Standards.md` (actors read tool-emitted
 telemetry), and `10_Autonomy_by_Evidence.md` (a process adapts on measured signals). The enforceable
 subset belongs in `AGENTS.md` → **Observability Rules** and **Agent Rules**. Status: proposed.
+`09_Adaptive_Harness.md` extends this loop with organizational knowledge, reliability states and the
+Policy Engine's quality evidence, under the same bounds.
 
 ---
 
@@ -48,7 +50,7 @@ line that keeps "dynamic" from meaning "unbounded."
 | The agent MAY adapt | The agent MAY NOT adapt |
 | :--- | :--- |
 | Crawl / test order and prioritization | Scope (in-scope assets) |
-| Pacing **down**; longer backoff under stress | Capability grants (detection vs exploitation) |
+| Pacing **down**; longer backoff under stress; concurrency back up toward its approved ceiling only on a fresh GREEN (`09` §5) | Capability grants (detection vs exploitation) |
 | Shedding dead-end paths; retry budgets | The per-target rate ceiling (never up) |
 | Model rung for a sub-task (`01` §6) | The human-review requirement for protected classes |
 

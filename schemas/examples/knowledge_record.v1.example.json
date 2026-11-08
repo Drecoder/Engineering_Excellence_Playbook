@@ -1,0 +1,25 @@
+{
+  "schema_version": "knowledge_record.v1",
+  "record_id": "8a9b0c1d-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+  "kind": "practice",
+  "subject": {
+    "language": "typescript",
+    "component": "lease store",
+    "rules": ["DR-012"]
+  },
+  "summary": "Fence every lease: the store issues an increasing token with each lease and rejects a write carrying an older one in the same conditional write.",
+  "source": {
+    "address": "notepad://jira-orchestrator/KAN-14/v7/manifest.json",
+    "sha256": "5e4d3c2b1a0918f7e6d5c4b3a29180706f5e4d3c2b1a09f8e7d6c5b4a3928170",
+    "sealed": true
+  },
+  "evidence_tier": "VERIFIED",
+  "outcomes": { "verified": 2 },
+  "attributions": [],
+  "standing": "GREEN",
+  "status": "active",
+  "approved_in": "https://github.com/Drecoder/Engineering_Excellence_Playbook/pull/99",
+  "recorded_at": "2026-11-08T02:00:00Z",
+  "review_by": "2027-05-08",
+  "embedding_model": "text-embedding-example-v1"
+}
