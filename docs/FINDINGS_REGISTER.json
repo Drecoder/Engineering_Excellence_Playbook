@@ -131,7 +131,8 @@
       "due": "2026-11-28",
       "status": "fixed",
       "closed": "2026-10-29",
-      "verification": "Genesis #3: the gate now runs on Genesis (run 40887705962)"
+      "verification": "Genesis #3: the gate now runs on Genesis (run 40887705962)",
+      "residual": "the caller pinned to a full SHA on 2026-10-29 names @main on main as of 2026-11-08: see F-0024"
     },
     {
       "id": "F-0012",
@@ -236,6 +237,62 @@
       "closed": "2026-11-03",
       "verification": "the owner's permission set denies creating users, access keys and console passwords, and re-activating a key; iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03; 08_Governance_Guardrails.md section 3 and 01b_AWS_Specifics.md updated",
       "residual": "the service control policy for workloads is proven only once a member account is vended (F-0016)"
+    },
+    {
+      "id": "F-0021",
+      "journal": "## 2026-11-08: The branch-protection incident was never journaled",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-26",
+      "due": "2026-11-25",
+      "status": "fixed",
+      "closed": "2026-11-08",
+      "verification": "rulesets 26828664, 26828926, 26829160 read back active with an empty bypass list on 2026-11-08; INC-001 record",
+      "residual": "approvals are 0 until agents act under their own identities; the designed-to-fail direct push is not yet run"
+    },
+    {
+      "id": "F-0022",
+      "journal": "## 2026-11-08: A required check could be met by any app",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2026-12-08",
+      "status": "fixed",
+      "closed": "2026-11-08",
+      "verification": "Genesis ruleset 26828926 read back with integration_id 15368 on all six checks on 2026-11-08",
+      "residual": "a later edit in the ruleset page can reset the source; the check that refuses a source-less required check is not yet built"
+    },
+    {
+      "id": "F-0023",
+      "journal": "## 2026-11-08: The design record had no gate",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0024",
+      "journal": "## 2026-11-08: The Genesis gate pin recorded as fixed on 2026-10-29 is @main on main",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2026-12-08",
+      "status": "open"
+    },
+    {
+      "id": "F-0025",
+      "journal": "## 2026-11-08: builder.spec.v1 and the price table have no contract",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
     }
   ],
   "controls": [
