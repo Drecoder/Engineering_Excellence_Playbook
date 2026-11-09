@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "builder.spec.v1.schema.json",
+  "title": "builder.spec.v1",
+  "description": "One Builder task, as the orchestrator dispatches it (07_SoftwareFactory/01_Software_Factory.md §2–3; 06_AgentZone/03_Software_Factory_Intake.md). The orchestrator validates it before dispatch and the Builder validates it again on receipt; an invalid task is rejected, never repaired, and the ticket goes to Blocked with the errors. It names the exact approved version it came from (source), carries the task as data (never a prompt), the lease's fencing token, the attempt counted by the board (never by an agent), the ticket's budget, and from attempt 2 the failure delta from CI. task_sha256 is the SHA-256 of the task object serialized as compact, key-sorted, ASCII JSON; a consumer recomputes it and refuses a mismatch. Trace context travels in message headers, not in this body.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "ticket_key", "run_id", "issued_at", "source", "repository", "work_branch", "lease", "attempt", "task", "task_sha256", "budget"],
+  "properties": {
+    "schema_version": { "const": "builder.spec.v1" },
+    "task_id": {
+      "$ref": "#/$defs/id",
+      "description": "The task, and the notepad's task_id. In the MVP one ticket is one task, so it equals ticket_key."
+    },
+    "ticket_key": { "$ref": "#/$defs/ticket_key" },
+    "run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The orchestrator run that dispatched it; every token_record.v1 the Builder emits for this task carries it."
+    },
+    "issued_at": { "$ref": "#/$defs/utc" },
+    "source": {
+      "description": "The approval this task is bound to: a spec.approved event on the backbone, or, on the MVP path, the owner's move of the ticket to Ready.",
+      "oneOf": [
+        { "$ref": "#/$defs/spec_event_source" },
+        { "$ref": "#/$defs/board_source" }
+      ]
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_name", "base_branch"],
+      "properties": {
+        "full_name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}(?!\n)$",
+          "description": "owner/name on GitHub."
+        },
+        "base_branch": { "$ref": "#/$defs/branch" }
+      }
+    },
+    "work_branch": {
+      "type": "string",
+      "pattern": "^factory/[A-Z][A-Z0-9]{1,9}-[1-9][0-9]{0,6}(?!\n)$",
+      "description": "factory/<ticket_key>, named by the orchestrator so every attempt pushes to the same branch."
+    },
+    "lease": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fencing_token", "expires_at"],
+      "properties": {
+        "fencing_token": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The lease's fencing token. Every write the run makes (board, push) carries it; a write with a lower token than the store's current one is refused. Clock skew does not matter because the token, not the time, is the fence."
+        },
+        "expires_at": {
+          "$ref": "#/$defs/utc",
+          "description": "Informational for the Builder's own deadline. The lease store decides expiry: a lease is expired when now equals or passes expires_at."
+        }
+      }
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "description": "Attempt within the ticket, read from the board's counter, never from an agent. A failure on attempt 3 moves the ticket to Blocked; there is no attempt 4."
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "acceptance_criteria", "scope"],
+      "description": "The work, as data. Delimited and treated as untrusted input by the Builder's prompt.",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 20000, "description": "Markdown." },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        },
+        "acceptance_tests": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true,
+          "description": "Tests that must pass, already committed and shown to fail before the build. Optional in v1 until the owner decides who writes acceptance tests.",
+          "items": { "$ref": "#/$defs/repo_path" }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["paths"],
+          "description": "Where the Builder may write; the scope gate refuses a change outside it.",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 50,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/repo_path" }
+            }
+          }
+        }
+      }
+    },
+    "task_sha256": { "$ref": "#/$defs/digest" },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["limit_micro_usd", "spent_micro_usd", "price_table_version"],
+      "description": "The ticket's one budget, computed by the orchestrator from token_record.v1 and price_table.v1, never reported by an agent. The orchestrator does not dispatch when spent_micro_usd has reached limit_micro_usd.",
+      "properties": {
+        "limit_micro_usd": {
+          "type": "integer",
+          "minimum": 10000,
+          "description": "At least one cent, so a limit written in dollars (2 for $2.00) is refused rather than read as two micro-USD."
+        },
+        "spent_micro_usd": { "type": "integer", "minimum": 0 },
+        "price_table_version": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[1-9][0-9]{0,2}(?!\n)$",
+          "description": "The price_table.v1 version the spend was computed with."
+        }
+      }
+    },
+    "failure_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["head_sha", "ci_run_id", "decision", "failures"],
+      "description": "What failed on the previous attempt: the commit CI evaluated, its run, the Policy Engine's decision, and the failed checks. Not the whole ticket again. Present from attempt 2 only.",
+      "properties": {
+        "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}(?!\n)$" },
+        "ci_run_id": { "type": "integer", "minimum": 1 },
+        "decision": {
+          "enum": ["BLOCK", "FAIL"],
+          "description": "BLOCK from the Policy Engine, or FAIL for a failed check before it ran. PASS ends the loop and QUARANTINE goes to a person; neither bounces to the Builder."
+        },
+        "failures": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["check", "summary"],
+            "properties": {
+              "check": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "summary": { "type": "string", "minLength": 1, "maxLength": 4000 }
+            }
+          }
+        },
+        "notepad_manifest": {
+          "$ref": "#/$defs/digest",
+          "description": "The sealed notepad version of the previous attempt, when the notepad runs."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "attempt": { "const": 1 } }, "required": ["attempt"] },
+      "then": { "properties": { "failure_delta": false } },
+      "else": { "required": ["failure_delta"] }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}(?!\n)$"
+    },
+    "ticket_key": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,9}-[1-9][0-9]{0,6}(?!\n)$",
+      "description": "Same pattern as token_record.v1's ticket_key."
+    },
+    "utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z(?!\n)$",
+      "description": "UTC, with Z."
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}(?!\n)$"
+    },
+    "branch": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!/)(?!.*//)[A-Za-z0-9][A-Za-z0-9._/-]{0,199}(?<!/)(?!\n)$"
+    },
+    "repo_path": {
+      "type": "string",
+      "maxLength": 512,
+      "pattern": "^(?!.*\\.\\.)(?!/)(?!.*//)[A-Za-z0-9._][A-Za-z0-9._/-]{0,511}(?!\n)$",
+      "description": "Relative to the repository root: no leading slash, no .., no empty segment."
+    },
+    "spec_event_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "event_id", "spec_id", "spec_version", "object"],
+      "properties": {
+        "kind": { "const": "spec.approved" },
+        "event_id": { "type": "string", "format": "uuid" },
+        "spec_id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}(?!\n)$" },
+        "spec_version": { "type": "integer", "minimum": 1 },
+        "object": { "$ref": "claim_check.v1.schema.json" }
+      }
+    },
+    "board_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ticket_key", "approved_by", "approved_at"],
+      "description": "MVP path: the owner's move of the ticket to Ready is the approval. The orchestrator reads it from the issue's changelog, not from a field anyone can edit. Its ticket_key equals the task's ticket_key; a consumer refuses a mismatch.",
+      "properties": {
+        "kind": { "const": "board" },
+        "ticket_key": { "$ref": "#/$defs/ticket_key" },
+        "approved_by": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The board account ID that moved the ticket to Ready." },
+        "approved_at": { "$ref": "#/$defs/utc" }
+      }
+    }
+  }
+}

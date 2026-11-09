@@ -1,0 +1,64 @@
+{
+  "schema_version": "builder.spec.v1",
+  "task_id": "KAN-14",
+  "ticket_key": "KAN-14",
+  "run_id": "1b2c3d4e-5f60-4172-8384-95a6b7c8d9e0",
+  "issued_at": "2026-11-08T23:10:00Z",
+  "source": {
+    "kind": "spec.approved",
+    "event_id": "3c4d5e6f-7081-4293-a4b5-c6d7e8f90a1b",
+    "spec_id": "orchestrator-slice-1",
+    "spec_version": 2,
+    "object": {
+      "uri": "s3://example-spec-store/specs/orchestrator-slice-1/v2.json",
+      "sha256": "sha256:abababababababababababababababababababababababababababababababab",
+      "size_bytes": 4096,
+      "media_type": "application/json"
+    }
+  },
+  "repository": {
+    "full_name": "Drecoder/factory-orchestrator",
+    "base_branch": "main"
+  },
+  "work_branch": "factory/KAN-14",
+  "lease": {
+    "fencing_token": 8,
+    "expires_at": "2026-11-08T23:25:00Z"
+  },
+  "attempt": 2,
+  "task": {
+    "title": "Orchestrator: ignore Ready tickets without the factory label",
+    "description": "The orchestrator leases only tickets in Ready that carry the `factory` label. Any other Ready ticket is left alone: no lease, no Builder call, no board write.",
+    "acceptance_criteria": [
+      "A Ready ticket without the factory label causes no lease, no Builder call and zero writes.",
+      "A Ready ticket with the factory label is leased once."
+    ],
+    "acceptance_tests": [
+      "test/acceptance/ignores-unlabelled.test.ts"
+    ],
+    "scope": {
+      "paths": [
+        "src/",
+        "test/"
+      ]
+    }
+  },
+  "task_sha256": "sha256:fc9a2668dca875f72907bc84b80add70c0030a0ba3fde0d03857d742aeb14f0d",
+  "budget": {
+    "limit_micro_usd": 2000000,
+    "spent_micro_usd": 64762,
+    "price_table_version": "2026-11-08.1"
+  },
+  "failure_delta": {
+    "head_sha": "8e5b264000000000000000000000000000000000",
+    "ci_run_id": 40912345678,
+    "decision": "BLOCK",
+    "failures": [
+      {
+        "check": "PR gates / TypeScript gates",
+        "summary": "1 of 8 acceptance tests failed: ignores-unlabelled.test.ts expected 0 board writes, got 1."
+      }
+    ],
+    "notepad_manifest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+  }
+}
