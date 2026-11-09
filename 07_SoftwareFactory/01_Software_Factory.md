@@ -104,6 +104,9 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 | Builder | rig | The rig-scan gate and `features.v1`, before the pull request opens | **Built** |
 | Builder | Compliance authority | The scoping skill reads the registry; the submission carries CI-signed evidence | **Partial**: the authority runs as a CLI; the scoping skill is in progress |
 | Compliance authority | Deployment guard | `release_token.v1`, on its own authenticated path | **Partial**: the guard is built, not wired into the apply pipeline |
+| Orchestrator | Run record | Every Builder attempt: spec, transcript, diff, attested CI result and cost, keyed by ticket and lease token | **Design** (KAN-62) |
+| Run record | Proof journal | Drafted CAPA entries from QUARANTINE, Blocked, budget, dead-letter and fence refusals, merged by the owner | **Design** (KAN-60) |
+| Proof journal | Builder | `prior_findings`: a register slice matched to the ticket's scope, with the spec | **Design** (KAN-60) |
 | People | Merge, then apply | Branch protection; the apply pipeline with its own identity | **Built** |
 
 ### The fix loop
@@ -125,6 +128,10 @@ change; CI evaluates it; the owner approves the merge.
   is the only judgment step.
 - **A quarantine is the owner's.** The ticket moves to Human with the `quality-quarantine` label,
   and nothing bounces it until the owner decides.
+- **Every attempt is recorded, and the loop learns.** Each attempt is kept in the run record.
+  The factory drafts a Proof journal and CAPA register entry from each QUARANTINE, Blocked,
+  budget, dead-letter or fence refusal; the owner merges it, and the Builder receives the matching
+  findings as `prior_findings` with its next spec (design: KAN-60, KAN-62).
 
 ### The board ticket's format (MVP path)
 
