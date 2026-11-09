@@ -446,6 +446,7 @@ journal entries are unchanged.
 - **Status:** fixed for the management account; the member-account guardrail is tracked by F-0016.
 
 ## 2026-11-08: The branch-protection incident was never journaled
+
 Rule: a merge to a protected branch needs a pull request and a human, enforced by branch protection with no bypass (AGENTS.md → Security Rules; INC-001).
 Problem: the three repositories that hold the factory's main branches had no protection, so a direct push or an unreviewed merge was possible. INC-001 was recorded on 2026-10-26 and stayed open for thirteen days with no journal entry and no register row, so the production-readiness check did not see it.
 Detection: a person, reviewing the build kickoff against the register.
@@ -458,6 +459,7 @@ Status: fixed.
 Residual: approvals are 0 until agents act under their own identities; the designed-to-fail direct push is not yet run.
 
 ## 2026-11-08: A required check could be met by any app
+
 Rule: a gate counts only as the required check from the central factory, and an agent cannot change its evaluator (AGENTS.md → Security Rules).
 Problem: the six required checks on Genesis were created with source "Any source". A status with the same name, posted by any app installed on the repository, would have satisfied the check.
 Detection: a person, reviewing the ruleset page before saving it.
@@ -470,6 +472,7 @@ Status: fixed.
 Residual: a later edit in the ruleset page can reset the source, and Genesis's page cannot select GitHub Actions.
 
 ## 2026-11-08: The design record had no gate
+
 Rule: every service has a design record, valid against service_design_record.v1 and passing design_record_rules.v1 (AGENTS.md → Application Architecture Rules).
 Problem: the central gates do not validate a repository's design record. The orchestrator's record was checked by hand: valid against the schema, 0 of 20 rules failing, and DR-012 failing on a designed-to-fail case. A record that breaks a rule would merge.
 Detection: a person, while adding the record.
@@ -481,6 +484,7 @@ Evidence: factory-orchestrator PR #1 (design/service_design_record.v1.json); tes
 Status: open.
 
 ## 2026-11-08: The Genesis gate pin recorded as fixed on 2026-10-29 is @main on main
+
 Rule: every repository calls the central gate by full commit SHA, never a tag or a branch (AGENTS.md → CI Rules).
 Problem: Genesis's gate caller on main (commit 667eb1b) names sovereign-vpc-gcp's gates.yml at @main. Any change merged to that repository's main changes Genesis's evaluator without a review in Genesis. The 2026-10-29 entry records this pin as corrected to a full SHA (Genesis #3).
 Detection: a person, reading the caller while building the orchestrator's CI.
@@ -492,6 +496,7 @@ Evidence: Genesis main 667eb1b; Genesis PR #2 (.github/copilot-instructions.md);
 Status: open.
 
 ## 2026-11-08: builder.spec.v1 and the price table have no contract
+
 Rule: contracts have one home, and every agent input and output is a versioned schema validated at runtime (AGENTS.md → Reuse Rules and Agent Rules).
 Problem: the Builder's input, builder.spec.v1, is named in the factory's docs but has no schema in the playbook's schemas/. The price table that turns token records into spend has none either. The orchestrator's dispatch and budget tests cannot be written against a contract.
 Detection: a person, while drafting KAN-14 slice 1's acceptance tests.
