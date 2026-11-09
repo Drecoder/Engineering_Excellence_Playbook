@@ -79,8 +79,13 @@ accepted change come from records, not estimates.
   agent, attempt, model, provider, start time, and prompt, cached and completion tokens. The record
   carries counts, never a cost.
 - **Cost is computed by the ledger,** from the record and a versioned price table kept in version
-  control. Each computed cost names the price-table version it used, so a price change never
-  rewrites history.
+  control (`price_table.v1`, `schemas/price_table.v1.schema.json`). Each computed cost names the
+  price-table version it used, so a price change never rewrites history.
+- **Integer money, one rounding rule.** Rates are micro-USD per million tokens, keyed by provider and
+  model exactly as the record names them. A call costs its three token counts times their rates,
+  divided by one million and rounded up, per call. A call with no matching row is unpriced and fails
+  closed: no further model call for that ticket, never a price of zero. Every consumer runs the
+  shared vectors in `schemas/examples/budget/spend_vectors.json`.
 - **The ledger is append-only and idempotent.** A record is keyed by `run_id` and `call_id`; a
   resent record changes nothing, and a correction is a new record, never an edit.
 - **Writes are authenticated.** Only the agents' own roles can write; a record that fails its

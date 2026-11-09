@@ -1,0 +1,77 @@
+{
+  "description": "Spend vectors for price_table.v1 and the one-budget-per-ticket rule (AGENTS.md → Agent Rules). Prices come from examples/price_table.v1.example.json. Expected values are worked by hand from the rule in price_table.v1's description: ceil((prompt_tokens × prompt + cached_tokens × cached + completion_tokens × completion) / 1,000,000) micro-USD per call. Every consumer (the cost ledger, the orchestrator) runs these vectors in its own language.",
+  "price_table": "examples/price_table.v1.example.json",
+  "calls": [
+    {
+      "name": "the token_record.v1 example: 1,761,900,000 / 1e6 = 1761.9, rounded up",
+      "provider": "example-provider", "model_id": "example-small-model-v1",
+      "prompt_tokens": 4250, "cached_tokens": 8192, "completion_tokens": 850,
+      "micro_usd": 1762
+    },
+    {
+      "name": "exactly one million prompt tokens",
+      "provider": "example-provider", "model_id": "example-small-model-v1",
+      "prompt_tokens": 1000000, "cached_tokens": 0, "completion_tokens": 0,
+      "micro_usd": 150000
+    },
+    {
+      "name": "one completion token rounds up to one micro-USD",
+      "provider": "example-provider", "model_id": "example-small-model-v1",
+      "prompt_tokens": 0, "cached_tokens": 0, "completion_tokens": 1,
+      "micro_usd": 1
+    },
+    {
+      "name": "no tokens cost nothing",
+      "provider": "example-provider", "model_id": "example-small-model-v1",
+      "prompt_tokens": 0, "cached_tokens": 0, "completion_tokens": 0,
+      "micro_usd": 0
+    },
+    {
+      "name": "the same model on another provider has its own price: 316,840,000 / 1e6, rounded up",
+      "provider": "example-self-hosted", "model_id": "example-small-model-v1",
+      "prompt_tokens": 4250, "cached_tokens": 8192, "completion_tokens": 850,
+      "micro_usd": 317
+    },
+    {
+      "name": "large model: 30,000,000,000 + 3,000,000,000 + 30,000,000,000 over 1e6",
+      "provider": "example-provider", "model_id": "example-large-model-v1",
+      "prompt_tokens": 10000, "cached_tokens": 10000, "completion_tokens": 2000,
+      "micro_usd": 63000
+    },
+    {
+      "name": "a model with no row is unpriced, never zero",
+      "provider": "example-provider", "model_id": "unknown-model",
+      "prompt_tokens": 1, "cached_tokens": 0, "completion_tokens": 0,
+      "micro_usd": null
+    },
+    {
+      "name": "model IDs match exactly, not by prefix or case",
+      "provider": "example-provider", "model_id": "Example-Small-Model-v1",
+      "prompt_tokens": 1, "cached_tokens": 0, "completion_tokens": 0,
+      "micro_usd": null
+    }
+  ],
+  "ticket_spend": {
+    "description": "A resent record (same run_id and call_id) counts once; records for another ticket do not count.",
+    "ticket_key": "KAN-14",
+    "records": [
+      { "run_id": "0a1b2c3d-4e5f-4061-8273-8495a6b7c8d9", "call_id": "6f1e2d3c-4b5a-4968-8776-655443322110", "ticket_key": "KAN-14", "provider": "example-provider", "model_id": "example-small-model-v1", "prompt_tokens": 4250, "cached_tokens": 8192, "completion_tokens": 850 },
+      { "run_id": "0a1b2c3d-4e5f-4061-8273-8495a6b7c8d9", "call_id": "6f1e2d3c-4b5a-4968-8776-655443322110", "ticket_key": "KAN-14", "provider": "example-provider", "model_id": "example-small-model-v1", "prompt_tokens": 4250, "cached_tokens": 8192, "completion_tokens": 850 },
+      { "run_id": "1b2c3d4e-5f60-4172-8384-95a6b7c8d9e0", "call_id": "7a2e3d4c-5b6a-4979-8887-766554433221", "ticket_key": "KAN-14", "provider": "example-provider", "model_id": "example-large-model-v1", "prompt_tokens": 10000, "cached_tokens": 10000, "completion_tokens": 2000 },
+      { "run_id": "1b2c3d4e-5f60-4172-8384-95a6b7c8d9e0", "call_id": "8b3f4e5d-6c7b-4a8a-9998-877665544332", "ticket_key": "KAN-15", "provider": "example-provider", "model_id": "example-large-model-v1", "prompt_tokens": 10000, "cached_tokens": 10000, "completion_tokens": 2000 }
+    ],
+    "micro_usd": 64762
+  },
+  "budget_states": {
+    "description": "At 80% of the limit the ticket is flagged and the Builder is still called; at 100% no new model call is made and the ticket moves to Blocked. Both thresholds are inclusive.",
+    "limit_micro_usd": 2000000,
+    "cases": [
+      { "spent_micro_usd": 0, "state": "ok" },
+      { "spent_micro_usd": 1599999, "state": "ok" },
+      { "spent_micro_usd": 1600000, "state": "flagged" },
+      { "spent_micro_usd": 1999999, "state": "flagged" },
+      { "spent_micro_usd": 2000000, "state": "exhausted" },
+      { "spent_micro_usd": 2100000, "state": "exhausted" }
+    ]
+  }
+}

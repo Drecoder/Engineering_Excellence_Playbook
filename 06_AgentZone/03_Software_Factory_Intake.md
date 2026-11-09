@@ -86,8 +86,12 @@ Recorded here until decided, each by a reviewed change to this document:
 
 - Whether deep dives stay a read-only mode of the Builder or become a separate analyst role.
 - Whether the reviewer must be a different person from the architect (a two-person rule).
-- Where an approved spec is decomposed into Builder tasks (`builder.spec.v1`): before review, so
-  reviewers approve the breakdown, or after.
+- Where an approved spec is decomposed into Builder tasks (`builder.spec.v1`,
+  `schemas/builder.spec.v1.schema.json`): before review, so reviewers approve the breakdown, or
+  after. The contract binds each task to its approval either way: a `spec.approved` event, or on the
+  MVP path the owner's move to Ready.
+- Who writes a ticket's acceptance tests. Until decided, `builder.spec.v1` accepts a task without
+  `acceptance_tests`.
 - **MVP path vs the event backbone.** Until the backbone exists, the MVP uses a simpler path: the
   architect (a person or an agent) posts the spec to the board's Backlog, the owner's move to Ready
   is the approval, and `jira-orchestrator` polls the board (`07_SoftwareFactory/01_Software_Factory.md`).
