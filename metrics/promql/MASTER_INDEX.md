@@ -121,3 +121,20 @@ See `06_AgentZone/09_Adaptive_Harness.md`. Status: proposed; nothing emits these
 | **Thrash (steering changes per task)** | `histogram_quantile(0.90, sum by (le) (rate(harness_steering_changes_per_task_bucket[7d])))` |
 | **Knowledge Promotions** | `sum by (kind) (increase(knowledge_promotions_total[30d]))` |
 | **Knowledge in RED Standing** | `sum(knowledge_records{standing="RED", status="active"})` |
+
+## 11. Factory Orchestrator
+
+See `factory-orchestrator` (`src/telemetry.ts`, `design/service_design_record.v1.json`). `outcome`
+is `dispatched`, `skipped`, `stopped`, `fenced` or `error`; `path` is `pickup` or `bounce`; `input`
+is `poll`, `spec.approved` or `ci.completed`. The orchestrator's Governor is `orchestrator.handle`
+(limit 1); its saturation and jitter use §3. Ticket keys are on spans only, never on these metrics.
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Dispatch Availability (SLI)** | `sum(rate(orchestrator_dispatch_total{outcome=~"dispatched\|skipped"}[5m])) / sum(rate(orchestrator_dispatch_total[5m]))` (SLO 99.5%, 30 days) |
+| **Dispatch Latency (SLI)** | `sum(rate(orchestrator_dispatch_duration_seconds_bucket{le="2"}[5m])) / sum(rate(orchestrator_dispatch_duration_seconds_count[5m]))` (SLO 99% within 2 s, 30 days) |
+| **Dispatch Outcomes** | `sum by (outcome, path) (increase(orchestrator_dispatch_total[1d]))` |
+| **Fenced Writes** | `sum(increase(orchestrator_dispatch_total{outcome="fenced"}[1d]))` (a stale run was refused: the fence worked, and it is a Builder journal trigger) |
+| **Request Rate (RED)** | `sum by (input) (rate(orchestrator_handle_requests_total[5m]))` |
+| **Request Errors (RED)** | `sum(rate(orchestrator_handle_requests_total{result="error"}[5m])) / sum(rate(orchestrator_handle_requests_total[5m]))` |
+| **Request Latency P99 (RED)** | `histogram_quantile(0.99, sum by (le) (rate(orchestrator_handle_duration_seconds_bucket[5m])))` |
