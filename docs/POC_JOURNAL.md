@@ -531,3 +531,65 @@ journal entries are unchanged.
 - **Evidence:** Genesis at `667eb1b` (`bootstrap/aws/main.tf`, empty `environments/staging/aws/`);
   KAN-14.
 - **Status:** open.
+
+## 2026-11-08: The branch-protection incident was never journaled
+
+Rule: a merge to a protected branch needs a pull request and a human, enforced by branch protection with no bypass (AGENTS.md → Security Rules; INC-001).
+Problem: the three repositories that hold the factory's main branches had no protection, so a direct push or an unreviewed merge was possible. INC-001 was recorded on 2026-10-26 and stayed open for thirteen days with no journal entry and no register row, so the production-readiness check did not see it.
+Detection: a person, reviewing the build kickoff against the register.
+Root cause: the incident record and the journal are written separately, and nothing requires one to name the other. The register check counts journal entries, not incident records.
+Correction: an active ruleset "Protect Main Branch" with no bypass actors on the playbook (26828664), Genesis (26828926) and factory-orchestrator (26829160): a pull request is required, deletion and force pushes are blocked, and the gate checks are required.
+Preventive action (planned, not implemented): an incident record names its journal entry, and the register check refuses an incident record that no entry names.
+Verification: the three rulesets read back active, with an empty bypass list, on 2026-11-08. A direct push refused by the ruleset has not yet been shown, so this is fixed, not proven.
+Evidence: docs/incidents/2026-10-26-INC-001-no-branch-protection.md; rulesets 26828664, 26828926, 26829160; factory-orchestrator PR #1.
+Status: fixed.
+Residual: approvals are 0 until agents act under their own identities; the designed-to-fail direct push is not yet run.
+
+## 2026-11-08: A required check could be met by any app
+
+Rule: a gate counts only as the required check from the central factory, and an agent cannot change its evaluator (AGENTS.md → Security Rules).
+Problem: the six required checks on Genesis were created with source "Any source". A status with the same name, posted by any app installed on the repository, would have satisfied the check.
+Detection: a person, reviewing the ruleset page before saving it.
+Root cause: the ruleset page offered no GitHub Actions source for these checks, so the default was kept, and nothing checks the source of a required check.
+Correction: all six checks set to integration_id 15368 (GitHub Actions) through the API. The read-back on 2026-11-08 shows 15368 on every one of them.
+Preventive action (planned, not implemented): a check that reads each protected branch's ruleset and refuses any required check without integration_id 15368.
+Verification: the ruleset read-back on 2026-11-08 (Genesis, 26828926). A designed-to-fail case has not been run, so this is fixed, not proven.
+Evidence: rulesets 26828926, 26828664, 26829160.
+Status: fixed.
+Residual: a later edit in the ruleset page can reset the source, and Genesis's page cannot select GitHub Actions.
+
+## 2026-11-08: The design record had no gate
+
+Rule: every service has a design record, valid against service_design_record.v1 and passing design_record_rules.v1 (AGENTS.md → Application Architecture Rules).
+Problem: the central gates do not validate a repository's design record. The orchestrator's record was checked by hand: valid against the schema, 0 of 20 rules failing, and DR-012 failing on a designed-to-fail case. A record that breaks a rule would merge.
+Detection: a person, while adding the record.
+Root cause: the rules and the reference checker (tests/contracts/design_record_reference.py) exist in the playbook, but the central gate has no step that calls them.
+Correction: the orchestrator's record was validated locally; nothing validates it on CI yet.
+Preventive action (planned): KAN-55, a central gate step that applies the rules at the playbook's pinned commit and fails closed.
+Verification: pending.
+Evidence: factory-orchestrator PR #1 (design/service_design_record.v1.json); tests/contracts/design_record_reference.py.
+Status: open.
+
+## 2026-11-08: The Genesis gate pin recorded as fixed on 2026-10-29 is @main on main
+
+Rule: every repository calls the central gate by full commit SHA, never a tag or a branch (AGENTS.md → CI Rules).
+Problem: Genesis's gate caller on main (commit 667eb1b) names sovereign-vpc-gcp's gates.yml at @main. Any change merged to that repository's main changes Genesis's evaluator without a review in Genesis. The 2026-10-29 entry records this pin as corrected to a full SHA (Genesis #3).
+Detection: a person, reading the caller while building the orchestrator's CI.
+Root cause: not established from a shallow clone. The 2026-10-29 correction had no check behind it: its preventive action was repository visibility, and no check reads caller pins, so a regression raised no signal. Genesis's own instructions (added in its PR #2) say "not even @main", so the rule is written but not enforced.
+Correction: none yet.
+Preventive action (planned): KAN-54, a pin check in the central gates, or a playbook contract test, that fails a caller pinned to a branch or tag, shown failing on a fixture; then Genesis's caller is repinned by a reviewed pull request.
+Verification: pending.
+Evidence: Genesis main 667eb1b; Genesis PR #2 (.github/copilot-instructions.md); the 2026-10-29 entry above; KAN-54.
+Status: open.
+
+## 2026-11-08: builder.spec.v1 and the price table have no contract
+
+Rule: contracts have one home, and every agent input and output is a versioned schema validated at runtime (AGENTS.md → Reuse Rules and Agent Rules).
+Problem: the Builder's input, builder.spec.v1, is named in the factory's docs but has no schema in the playbook's schemas/. The price table that turns token records into spend has none either. The orchestrator's dispatch and budget tests cannot be written against a contract.
+Detection: a person, while drafting KAN-14 slice 1's acceptance tests.
+Root cause: the boundary was described in the docs before its contract was written, and no check lists contracts that are named but undefined.
+Correction: none yet.
+Preventive action (planned): a playbook pull request that adds both schemas, an example of each, and contract tests, each with a case that must fail.
+Verification: pending.
+Evidence: 07_SoftwareFactory/01_Software_Factory.md; 06_AgentZone/03_Software_Factory_Intake.md; KAN-14.
+Status: open.
