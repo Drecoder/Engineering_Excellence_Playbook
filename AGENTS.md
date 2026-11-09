@@ -339,6 +339,16 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   repositories only. An App's private key is held non-exportable in Cloud KMS; the agent signs its
   App token through KMS with its federated identity, every signature is audit-logged, and no one
   holds the key file (`06_AgentZone/01_Agent_Standards.md` §8).
+- **Target design: agents hold no execution authority.** The agentic plane (orchestration, agents,
+  their models and stores) runs in its own cloud account and holds no identity in the plane that
+  runs CI, applies infrastructure, or deploys. Agents reach that plane only by opening pull
+  requests (`ARCHITECTURE.md` §4a).
+- **Agents cannot change their evaluator.** An agent's GitHub App has no `workflows` permission, and
+  CODEOWNERS requires a human code owner on `.github/`, the gate pin, `.ci/quality.v1.json`, and
+  `.ci/exceptions.v1.json`. Accounts that can change branch protection or App permissions are held
+  to the standard of a cloud admin role.
+- **Pull-request gate runners hold no deploy authority.** They run agent-written code, so their
+  identity has no deploy, apply, or secret access and is separate from the apply pipeline's.
 - **CI least privilege:** workflows default to `permissions: contents: read` and grant more per
   job. Shared reusable workflows are reachable only by the owning user/org (never public), receive
   secrets explicitly (never `secrets: inherit`), and are pinned by callers to a full commit SHA.
@@ -446,6 +456,11 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   Federation), never static keys.
 - **Deterministic gates first.** A model's verdict never overrides a failing CLI gate
   (`tflint`, `checkov`, no-destroy check).
+- **Agents produce claims, never evidence.** Authoritative evidence is signed by the CI attester's
+  identity; anything an agent reports about its own work stays `CLAIMED`, however it is repeated or
+  forwarded. An inbound webhook is acted on only after its signature is verified and its result is
+  re-read from the source. A merge is approved on the diff and the signed evidence, never on the
+  agent's summary.
 - **Target design: the adaptive harness weighs evidence, never authorizes**
   (`06_AgentZone/09_Adaptive_Harness.md`, proposed). An agent's harness picks its next bounded step
   from organizational knowledge, the reliability states of the services involved and of itself
