@@ -1,0 +1,45 @@
+{
+  "schema_version": "policy_evaluation_request.v1",
+  "repo": "Drecoder/jira-orchestrator",
+  "commit": "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+  "merge_base": "1f0c6b2d9a4e8f7a3c5b1d0e2f4a6c8e0b2d4f6a",
+  "policy": {
+    "path": "quality_policy.v1.json",
+    "sha256": "8b98cac8e5dc4515ad58b957c8691328aab741e478d41bc56db1ee0356ab47cb",
+    "policy_version": "2.2.0"
+  },
+  "candidate": {
+    "path": "candidate.quality_metrics.v1.json",
+    "sha256": "79836fe2f7d2feb1f44c1287d29c0423a03ffe00af87d5467cd09746c79d0d4a"
+  },
+  "baseline": {
+    "path": "baseline.quality_metrics.v1.json",
+    "sha256": "ff07c3d29a422eec15af3b136511bfa167b16f60d8f18511132c434f694a8f1d"
+  },
+  "changes": [
+    {
+      "path": "src/lease.ts",
+      "status": "modified",
+      "hunks": [
+        [
+          5,
+          9
+        ],
+        [
+          40,
+          48
+        ]
+      ]
+    },
+    {
+      "path": "test/lease.test.ts",
+      "status": "modified",
+      "hunks": [
+        [
+          1,
+          30
+        ]
+      ]
+    }
+  ]
+}

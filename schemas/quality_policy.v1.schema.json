@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quality_policy.v1.schema.json",
+  "title": "quality_policy.v1",
+  "description": "The Policy Engine's thresholds and rule set (00_UniversalStandards/17_Quality_Policy_Engine.md). The playbook's policy is schemas/quality_policy.v1.json. A policy that fails this schema is rejected whole, never repaired.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_version", "description", "thresholds", "vulnerabilities", "rules"],
+  "properties": {
+    "schema_version": { "const": "quality_policy.v1" },
+    "policy_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\n)$" },
+    "description": { "type": "string", "minLength": 1 },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["crap_green_max", "crap_red_above", "complexity_red_above", "mutation_red_below", "mutation_green_min", "new_function_crap_max", "new_function_coverage_min"],
+      "properties": {
+        "crap_green_max": { "type": "number", "exclusiveMinimum": 1 },
+        "crap_red_above": { "type": "number", "exclusiveMinimum": 1 },
+        "complexity_red_above": { "type": "integer", "minimum": 1 },
+        "mutation_red_below": { "type": "number", "minimum": 0, "maximum": 1 },
+        "mutation_green_min": { "type": "number", "minimum": 0, "maximum": 1 },
+        "new_function_crap_max": { "type": "number", "exclusiveMinimum": 1 },
+        "new_function_coverage_min": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "vulnerabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quarantine_severities", "quarantine_kev", "block_new_severities"],
+      "properties": {
+        "quarantine_severities": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/severity" } },
+        "quarantine_kev": { "type": "boolean" },
+        "block_new_severities": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/severity" }, "description": "Must include unknown: a vulnerability whose severity the audit tool does not report is treated as blocking, never as harmless." }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "decision", "stage", "title"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^QP-[0-9]{3}(?!\n)$" },
+          "decision": { "enum": ["BLOCK", "QUARANTINE"] },
+          "stage": { "enum": ["evidence", "red", "ratchet", "yellow"] },
+          "title": { "type": "string", "minLength": 1 },
+          "stops_evaluation": { "const": true, "description": "The evidence cannot be trusted, so no metric is read and no other rule is applied." }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "severity": { "enum": ["critical", "high", "moderate", "low", "unknown"] }
+  }
+}

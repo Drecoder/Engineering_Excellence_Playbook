@@ -1,0 +1,40 @@
+{
+  "schema_version": "quality_policy.v1",
+  "policy_version": "2.2.0",
+  "description": "The thresholds and rules the Policy Engine applies to a change (00_UniversalStandards/17_Quality_Policy_Engine.md). A request names this file by path, policy_version and SHA-256; the engine refuses a mismatch. Thresholds are exact decimals compared without rounding. Changing a threshold or what a rule checks is a new policy_version through a reviewed pull request; a new kind of rule is a new schema version.",
+  "thresholds": {
+    "crap_green_max": 15,
+    "crap_red_above": 30,
+    "complexity_red_above": 20,
+    "mutation_red_below": 0.5,
+    "mutation_green_min": 0.8,
+    "new_function_crap_max": 15,
+    "new_function_coverage_min": 0.8
+  },
+  "vulnerabilities": {
+    "quarantine_severities": ["critical"],
+    "quarantine_kev": true,
+    "block_new_severities": ["moderate", "high", "unknown"]
+  },
+  "rules": [
+    { "id": "QP-001", "decision": "BLOCK", "stage": "evidence", "title": "The request, policy, candidate and baseline each validate against their schemas.", "stops_evaluation": true },
+    { "id": "QP-002", "decision": "BLOCK", "stage": "evidence", "title": "Every input file's SHA-256 matches the request, and the policy's version matches the request.", "stops_evaluation": true },
+    { "id": "QP-003", "decision": "BLOCK", "stage": "evidence", "title": "The candidate is the request's repository and commit; the baseline is the same repository and language at the merge base.", "stops_evaluation": true },
+    { "id": "QP-004", "decision": "BLOCK", "stage": "evidence", "title": "Every module that is not new in this change has a baseline record, and a changed module with functions has baseline mutation counts (anti-laundering: a missing baseline never passes)." },
+    { "id": "QP-005", "decision": "BLOCK", "stage": "evidence", "title": "Every changed path is measured or excluded with a reason, and each measured module's evidence is complete and consistent: unique module paths and function names, start line not after end line, at least one instrumented line, lines hit not above lines instrumented, and mutation counts for every module with functions." },
+    { "id": "QP-006", "decision": "BLOCK", "stage": "evidence", "title": "The candidate and baseline were measured in the same toolchain image with the same tool versions.", "stops_evaluation": true },
+    { "id": "QP-010", "decision": "QUARANTINE", "stage": "red", "title": "No vulnerability of a quarantine severity, and none in the CISA KEV catalog, is present." },
+    { "id": "QP-011", "decision": "QUARANTINE", "stage": "red", "title": "No new or changed function has a CRAP score above crap_red_above." },
+    { "id": "QP-012", "decision": "QUARANTINE", "stage": "red", "title": "No new or changed function has a complexity above complexity_red_above." },
+    { "id": "QP-013", "decision": "QUARANTINE", "stage": "red", "title": "A new module's mutation score, or a modified module's score that falls below the boundary in this change, is not below mutation_red_below." },
+    { "id": "QP-020", "decision": "BLOCK", "stage": "ratchet", "title": "No existing function's CRAP score rises above its baseline." },
+    { "id": "QP-021", "decision": "BLOCK", "stage": "ratchet", "title": "A module's mutation score does not fall below its baseline, and a module with mutants in the baseline still has a score." },
+    { "id": "QP-022", "decision": "BLOCK", "stage": "ratchet", "title": "A module's complexity, summed over its existing functions, does not rise above its baseline." },
+    { "id": "QP-023", "decision": "BLOCK", "stage": "ratchet", "title": "A module's line coverage, over its existing functions, does not fall below its baseline." },
+    { "id": "QP-024", "decision": "BLOCK", "stage": "ratchet", "title": "The change introduces no vulnerability of a block_new severity that the baseline does not have." },
+    { "id": "QP-025", "decision": "BLOCK", "stage": "ratchet", "title": "Every new function has a CRAP score of at most new_function_crap_max." },
+    { "id": "QP-026", "decision": "BLOCK", "stage": "ratchet", "title": "Every new function has line coverage of at least new_function_coverage_min." },
+    { "id": "QP-030", "decision": "BLOCK", "stage": "yellow", "title": "No changed existing function has a CRAP score above crap_green_max." },
+    { "id": "QP-031", "decision": "BLOCK", "stage": "yellow", "title": "A new module's mutation score, or a modified module's score that falls below the boundary in this change, is at least mutation_green_min." }
+  ]
+}

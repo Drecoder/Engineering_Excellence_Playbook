@@ -16,7 +16,23 @@ const md = new MarkdownIt({ html: false, linkify: false, typographer: true });
 const book = JSON.parse(fs.readFileSync(path.join(OUT, "book.json"), "utf8"));
 
 /** Docs whose $...$ is LaTeX math (everywhere else a dollar sign is just a dollar sign). */
-const MATH_FILES = new Set(["docs/PHYSICS_OF_FLOW.md", "00_UniversalStandards/04_CONCURRENCY_GOVERNORS.md"]);
+const MATH_FILES = new Set([
+  "docs/PHYSICS_OF_FLOW.md",
+  "00_UniversalStandards/04_CONCURRENCY_GOVERNORS.md",
+  "00_UniversalStandards/17_Quality_Policy_Engine.md",
+]);
+
+// Math is rendered here with KaTeX when it is installed, so the build needs no network (the gate
+// runs it with none). Without KaTeX the page falls back to rendering math in the browser from the CDN.
+const katex = (() => {
+  try {
+    return { lib: require("katex"), css: require.resolve("katex/dist/katex.min.css") };
+  } catch {
+    return null;
+  }
+})();
+const renderMath = (tex, display) =>
+  katex ? katex.lib.renderToString(tex, { displayMode: display, throwOnError: false, output: "html" }) : esc(display ? `\\[${tex}\\]` : `\\(${tex}\\)`);
 
 function findMarkdownIt() {
   try {
@@ -92,10 +108,13 @@ function renderSource(rel, sectionNumber) {
   const math = [];
   if (MATH_FILES.has(rel)) {
     text = text
-      .replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => `@@MATH${math.push(`\\[${m}\\]`) - 1}@@`)
-      .replace(/\$([^$\n]+?)\$/g, (_, m) => `@@MATH${math.push(`\\(${m}\\)`) - 1}@@`);
+      .replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => `@@MATH${math.push(renderMath(m.trim(), true)) - 1}@@`)
+      .replace(/\$([^$\n]+?)\$/g, (_, m) => `@@MATH${math.push(renderMath(m, false)) - 1}@@`);
   }
-  let html = md.render(text).replace(/@@MATH(\d+)@@/g, (_, i) => esc(math[Number(i)]));
+  let html = md.render(text).replace(/@@MATH(\d+)@@/g, (_, i) => math[Number(i)]);
+  // Images are written relative to their own document; point them at the file so the book shows them.
+  html = html.replace(/<img src="([^":]+)"/g, (whole, src) =>
+    `<img src="${require("url").pathToFileURL(path.join(ROOT, path.dirname(rel), src)).href}"`);
   html = crossReference(html);
   return `<section class="source" id="s-${sectionNumber.replace(".", "-")}">
     <h2><span class="num">${sectionNumber}</span> ${esc(title)}</h2>
@@ -205,10 +224,13 @@ const body = [
     .join("")}</dl></article>`,
 ].join("\n");
 
-const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(book.title)}</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+const mathHead = katex
+  ? `<link rel="stylesheet" href="${require("url").pathToFileURL(katex.css).href}">`
+  : `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}]})"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}]})"></script>`;
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(book.title)}</title>
+${mathHead}
 <style>${css}</style></head><body>${body}</body></html>`;
 
 const name = preview ? "preview" : "engineering-excellence-textbook";

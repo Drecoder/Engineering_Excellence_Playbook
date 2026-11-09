@@ -33,9 +33,21 @@ done. This standard covers how good that evidence is. File-level test anti-patte
 - Coverage shows code ran; **mutation testing** shows the tests would notice if it were wrong. A
   mutation tool (Stryker for TypeScript, mutmut for Python, or equivalent) changes the code in small
   ways and checks that a test fails.
-- It runs on the changed code of a pull request, or nightly on a whole repository; the **mutation
-  score** is a metric with a floor, tracked like any other quality metric.
+- It runs on the modules a pull request changes, where the Policy Engine holds each module's score
+  to its baseline and to the zones (`17_Quality_Policy_Engine.md`), and nightly on a whole
+  repository, where the **mutation score** is a metric with a floor.
 - Surviving mutants on critical paths (authorization, money, data deletion) are findings.
+
+## 3️⃣a CRAP and the Policy Engine
+
+- Coverage alone misses risky code that is simple to cover, and complexity alone misses code that
+  is complex but well tested. **CRAP** combines them: CC² · (1 − Cov)³ + CC, per function.
+- The Policy Engine (`17_Quality_Policy_Engine.md`) applies CRAP, complexity, coverage, mutation and
+  dependency findings to a pull request: ratchets against the merge base for existing code, limits
+  for new functions, and green, yellow and red zones for new and changed code. Its decision is
+  PASS, BLOCK or QUARANTINE.
+- The floors in `.ci/quality.v1.json` stay: they hold a whole repository, the engine holds each
+  change.
 
 ## 4️⃣ Determinism
 

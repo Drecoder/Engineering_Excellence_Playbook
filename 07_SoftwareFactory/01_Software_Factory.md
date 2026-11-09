@@ -45,8 +45,8 @@ workflow, so all of them can call the private central gate.
 | `compliance-authority` | Final inspection: evidence verification, evaluation, release tokens, and the deployment guard | Service | `compliance_submission.v6` with CI-signed evidence | An append-only evaluation record and a single-use `release_token.v1` |
 | `agent-notepad` | Working memory: a folder per agent and task, a sealed, hash-chained page at each push | Service | `notepad_op.v1` operations | `notepad_manifest.v1`, named in each commit's `Notepad-Manifest` trailer |
 | `jira-orchestrator` | The dispatcher: moves one approved ticket at a time from the board through build, gates, and review | Service | Tickets the owner moved to Ready | A validated `builder.spec.v1` for the Builder, ticket transitions, Reviewer findings attached to the ticket |
-| CRAP service | Measurement: scores each changed method for complexity against coverage | Tool | A change and its coverage report | A finding for each method over the threshold, in its own journal |
-| Mutation service | Measurement: mutates the changed code to show whether the tests notice | Tool | A change and its tests | A finding for each surviving mutant, in its own journal |
+| Quality evaluator | Measurement: runs the pinned complexity, coverage, mutation and audit tools and normalizes their output (`00_UniversalStandards/17_Quality_Policy_Engine.md` §2–3) | Tool | A commit, its tests and its dependency manifests | `quality_metrics.v1` for the change and for its merge base |
+| Policy Engine | Decision: applies `quality_policy.v1` to the two metrics files, with no network, database or model | Tool | `policy_evaluation_request.v1` and the files it names by digest | `policy_decision.v1`: PASS, BLOCK or QUARANTINE, with one finding per failed rule |
 | CRAP fixer | Fixes one CRAP finding at a time, in production code only | Actor | One finding ticket and the sealed notepad page | A commit on the pull request's branch |
 | Mutation fixer | Kills one surviving mutant at a time by strengthening tests, in tests only | Actor | One finding ticket and the sealed notepad page | A commit on the pull request's branch |
 
@@ -75,7 +75,7 @@ from a path which bench they are in.
 | `notepad/` | `agent-notepad` |
 | `compliance/` | `compliance-authority` |
 | `orchestrator/` | `jira-orchestrator` |
-| `measurement/` | The CRAP and mutation services |
+| `measurement/` | The quality evaluator and the Policy Engine |
 | `platform/gcp/`, `platform/genesis/` | `sovereign-vpc-gcp`, `Genesis` |
 | `playbook/` | Worktrees of `Engineering_Excellence_Playbook` |
 | `specs/` | The factory's specs |
@@ -103,7 +103,7 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 | Intake | Builder | `spec.approved` on the Builder's queue; the spec is fetched by digest | **Design** |
 | Board | Builder (MVP path) | The orchestrator polls the Ready column, leases one ticket, and hands the Builder a validated `builder.spec.v1` | **Design** |
 | Orchestrator | Reviewer | After the gates pass, the orchestrator requests review and attaches the findings to the ticket | **Design** |
-| CRAP and mutation services | Fixers | Each finding becomes its own ticket under the change's ticket (below) | **Design** |
+| Policy Engine | Fixers | Each BLOCK finding on a function or module becomes its own ticket under the change's ticket (below); a QUARANTINE goes to the owner | **Design** |
 | Builder | Notepad | The injected `Notepad` interface; a seal at each push | **Partial**: a library with local backends, no network boundary |
 | Builder | rig | The rig-scan gate and `features.v1`, before the pull request opens | **Built** |
 | Builder | Reviewer | The pull request today; `review.requested` and `review.completed` as the target | **Built** (PR-driven); events **Design** |
@@ -114,15 +114,21 @@ event on the backbone carrying a claim check (`ARCHITECTURE.md` §5); release to
 
 ### Findings become tickets
 
-A CRAP or mutation finding is work like any other: visible on the board, leased, and counted.
+A Policy Engine finding is work like any other: visible on the board, leased, and counted.
 
-- **One ticket per finding,** under the change's ticket, naming the method or mutant and its journal
-  entry. A rerun never opens a duplicate.
+- **One ticket per finding,** under the change's ticket, naming the rule, the function or module,
+  and the decision document's digest. A rerun never opens a duplicate.
+- **The rule picks the fixer.** CRAP and complexity findings go to the CRAP fixer; coverage and
+  mutation findings to the mutation fixer; a new vulnerability to the Builder as a dependency
+  change (`17_Quality_Policy_Engine.md` §7). Evidence findings are build failures, not fixer work.
+- **A quarantine is the owner's.** The ticket moves to Human with the `quality-quarantine` label; no
+  fixer takes it until the owner decides.
 - **CRAP before mutation.** Fixing production code changes the mutants, so mutation findings wait
   until the CRAP findings on the same change are closed.
 - **Scopes are enforced, not trusted.** CI fails a CRAP fixer's change outside production code and
   a mutation fixer's change outside tests.
-- **Only the quick check reruns** after a fix: that method's score, or that one mutant.
+- **Only the quick check reruns** after a fix: that function's measurement, or that module's
+  mutants, then the engine on the new metrics.
 - **Loops end.** A finding gets 3 attempts, counted by the board's automation, never by an agent.
   The third failure sends it to the Builder; if the Builder fails too, the ticket moves to Blocked
   with its history. It never moves to the Reviewer's column, which is for finished work.

@@ -1,0 +1,1393 @@
+{
+ "description": "Conformance vectors for the Policy Engine (00_UniversalStandards/17_Quality_Policy_Engine.md). Each case applies JSON Patches (RFC 6902 add, replace, remove) to the base candidate, baseline, request or policy, rewrites the request's SHA-256 values to match the patched files (except roles in stale), withholds files named in omit, or replaces a document's bytes with raw. expect gives the decision and the sorted, unique rule ids of the findings. Every engine must reproduce every case.",
+ "candidate": "examples/policy_engine/candidate.quality_metrics.v1.json",
+ "baseline": "examples/policy_engine/baseline.quality_metrics.v1.json",
+ "request": "examples/policy_engine/request.policy_evaluation_request.v1.json",
+ "policy": "quality_policy.v1.json",
+ "cases": [
+  {
+   "name": "the base change passes: a changed function, a new function and an unchanged legacy function",
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "a new function above the CRAP limit and below the coverage minimum blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/complexity",
+      "value": 5
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/lines_hit",
+      "value": 2
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-025",
+     "QP-026"
+    ]
+   }
+  },
+  {
+   "name": "a new function below the coverage minimum blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/lines_hit",
+      "value": 6
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-026"
+    ]
+   }
+  },
+  {
+   "name": "a new function at CRAP exactly 15 and coverage exactly 80% passes",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3",
+      "value": {
+       "name": "fenceToken",
+       "start_line": 40,
+       "end_line": 48,
+       "complexity": 15,
+       "lines_instrumented": 10,
+       "lines_hit": 10
+      }
+     },
+     {
+      "op": "add",
+      "path": "/modules/1/functions/-",
+      "value": {
+       "name": "fenceCheck",
+       "start_line": 49,
+       "end_line": 58,
+       "complexity": 1,
+       "lines_instrumented": 10,
+       "lines_hit": 8
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "replace",
+      "path": "/changes/0/hunks/1",
+      "value": [
+       40,
+       58
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "a new function in the red CRAP zone quarantines",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/complexity",
+      "value": 10
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/lines_hit",
+      "value": 0
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-011",
+     "QP-025",
+     "QP-026"
+    ]
+   }
+  },
+  {
+   "name": "a new function above the complexity limit quarantines even when fully covered",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/complexity",
+      "value": 21
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-012",
+     "QP-025"
+    ]
+   }
+  },
+  {
+   "name": "a changed function pushed into the yellow zone blocks, with its ratchets",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/0/complexity",
+      "value": 6
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/0/lines_hit",
+      "value": 5
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-020",
+     "QP-022",
+     "QP-023",
+     "QP-030"
+    ]
+   }
+  },
+  {
+   "name": "a legacy module with a yellow function and a yellow mutation score, changed elsewhere, is held only by the ratchets",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 6,
+       "timeout": 0,
+       "survived": 4,
+       "no_coverage": 0
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/legacy.ts",
+       "status": "modified",
+       "hunks": [
+        [
+         50,
+         52
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "touching a legacy yellow function brings it into the zones",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 6,
+       "timeout": 0,
+       "survived": 4,
+       "no_coverage": 0
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/legacy.ts",
+       "status": "modified",
+       "hunks": [
+        [
+         10,
+         12
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-030"
+    ]
+   }
+  },
+  {
+   "name": "a hunk on a function's first line alone makes it changed",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 6,
+       "timeout": 0,
+       "survived": 4,
+       "no_coverage": 0
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/legacy.ts",
+       "status": "modified",
+       "hunks": [
+        [
+         1,
+         1
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-030"
+    ]
+   }
+  },
+  {
+   "name": "a hunk on a function's last line alone makes it changed",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 6,
+       "timeout": 0,
+       "survived": 4,
+       "no_coverage": 0
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/legacy.ts",
+       "status": "modified",
+       "hunks": [
+        [
+         40,
+         41
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-030"
+    ]
+   }
+  },
+  {
+   "name": "a legacy module already in the red mutation zone, changed elsewhere, is held by the ratchet",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 4,
+       "timeout": 0,
+       "survived": 6,
+       "no_coverage": 0
+      }
+     }
+    ],
+    "baseline": [
+     {
+      "op": "replace",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 4,
+       "timeout": 0,
+       "survived": 6,
+       "no_coverage": 0
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/legacy.ts",
+       "status": "modified",
+       "hunks": [
+        [
+         50,
+         52
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "touching a legacy function and lowering its coverage into the red zone quarantines",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2/mutation",
+      "value": {
+       "killed": 6,
+       "timeout": 0,
+       "survived": 4,
+       "no_coverage": 0
+      }
+     },
+     {
+      "op": "replace",
+      "path": "/modules/2/functions/0/lines_hit",
+      "value": 14
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/legacy.ts",
+       "status": "modified",
+       "hunks": [
+        [
+         10,
+         12
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-011",
+     "QP-020",
+     "QP-023",
+     "QP-030"
+    ]
+   }
+  },
+  {
+   "name": "an unchanged module whose coverage fell (tests deleted) is caught by the ratchet",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/0/functions/0/lines_hit",
+      "value": 20
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-020",
+     "QP-023"
+    ]
+   }
+  },
+  {
+   "name": "raising an existing function's complexity blocks even at full coverage",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/0/complexity",
+      "value": 5
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-020",
+     "QP-022"
+    ]
+   }
+  },
+  {
+   "name": "a changed module's mutation score below its baseline blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/killed",
+      "value": 20
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/survived",
+      "value": 3
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-021"
+    ]
+   }
+  },
+  {
+   "name": "a changed module's mutation score falling into the red zone quarantines",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/killed",
+      "value": 10
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/timeout",
+      "value": 0
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/survived",
+      "value": 14
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-013",
+     "QP-021"
+    ]
+   }
+  },
+  {
+   "name": "a changed module's mutation score falling into the yellow zone blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/killed",
+      "value": 18
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/timeout",
+      "value": 0
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation/survived",
+      "value": 6
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-021",
+     "QP-031"
+    ]
+   }
+  },
+  {
+   "name": "a module with mutants in the baseline and none now blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/mutation",
+      "value": {
+       "killed": 0,
+       "timeout": 0,
+       "survived": 0,
+       "no_coverage": 0
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-021"
+    ]
+   }
+  },
+  {
+   "name": "a new module with a yellow mutation score blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2",
+      "value": {
+       "path": "src/fence.ts",
+       "functions": [
+        {
+         "name": "fenceToken",
+         "start_line": 1,
+         "end_line": 10,
+         "complexity": 2,
+         "lines_instrumented": 10,
+         "lines_hit": 10
+        }
+       ],
+       "mutation": {
+        "killed": 7,
+        "timeout": 0,
+        "survived": 3,
+        "no_coverage": 0
+       }
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/fence.ts",
+       "status": "added",
+       "hunks": [
+        [
+         1,
+         10
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-031"
+    ]
+   }
+  },
+  {
+   "name": "a new module with a red mutation score quarantines",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2",
+      "value": {
+       "path": "src/fence.ts",
+       "functions": [
+        {
+         "name": "fenceToken",
+         "start_line": 1,
+         "end_line": 10,
+         "complexity": 2,
+         "lines_instrumented": 10,
+         "lines_hit": 10
+        }
+       ],
+       "mutation": {
+        "killed": 4,
+        "timeout": 0,
+        "survived": 6,
+        "no_coverage": 0
+       }
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/fence.ts",
+       "status": "added",
+       "hunks": [
+        [
+         1,
+         10
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-013"
+    ]
+   }
+  },
+  {
+   "name": "uncovered mutants count as undetected",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2",
+      "value": {
+       "path": "src/fence.ts",
+       "functions": [
+        {
+         "name": "fenceToken",
+         "start_line": 1,
+         "end_line": 10,
+         "complexity": 2,
+         "lines_instrumented": 10,
+         "lines_hit": 10
+        }
+       ],
+       "mutation": {
+        "killed": 7,
+        "timeout": 0,
+        "survived": 0,
+        "no_coverage": 3
+       }
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/fence.ts",
+       "status": "added",
+       "hunks": [
+        [
+         1,
+         10
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-031"
+    ]
+   }
+  },
+  {
+   "name": "timed-out mutants count as detected",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/2",
+      "value": {
+       "path": "src/fence.ts",
+       "functions": [
+        {
+         "name": "fenceToken",
+         "start_line": 1,
+         "end_line": 10,
+         "complexity": 2,
+         "lines_instrumented": 10,
+         "lines_hit": 10
+        }
+       ],
+       "mutation": {
+        "killed": 4,
+        "timeout": 4,
+        "survived": 2,
+        "no_coverage": 0
+       }
+      }
+     }
+    ],
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/fence.ts",
+       "status": "added",
+       "hunks": [
+        [
+         1,
+         10
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "a modified module with no baseline record blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "remove",
+      "path": "/modules/1"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-004"
+    ]
+   }
+  },
+  {
+   "name": "an unchanged module missing from the baseline blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "remove",
+      "path": "/modules/0"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-004"
+    ]
+   }
+  },
+  {
+   "name": "a changed module whose baseline has no mutation counts blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "remove",
+      "path": "/modules/1/mutation"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-004"
+    ]
+   }
+  },
+  {
+   "name": "a changed module without mutation counts blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "remove",
+      "path": "/modules/1/mutation"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "a changed path that is neither measured nor excluded blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/excluded",
+      "value": []
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "a function with no instrumented lines blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/1/lines_instrumented",
+      "value": 0
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/1/lines_hit",
+      "value": 0
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "more lines hit than instrumented blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/1/lines_hit",
+      "value": 11
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "a function that ends before it starts blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/1/end_line",
+      "value": 3
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "two functions with the same name in a module block",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/name",
+      "value": "renew"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "a module listed twice blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/modules/-",
+      "value": {
+       "path": "src/board.ts",
+       "functions": []
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-005"
+    ]
+   }
+  },
+  {
+   "name": "a renamed module is compared with its old path",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/path",
+      "value": "src/lease/lease.ts"
+     }
+    ],
+    "request": [
+     {
+      "op": "replace",
+      "path": "/changes/0",
+      "value": {
+       "path": "src/lease/lease.ts",
+       "status": "renamed",
+       "old_path": "src/lease.ts",
+       "hunks": [
+        [
+         40,
+         48
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "a renamed module whose old path has no baseline blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/path",
+      "value": "src/lease/lease.ts"
+     }
+    ],
+    "request": [
+     {
+      "op": "replace",
+      "path": "/changes/0",
+      "value": {
+       "path": "src/lease/lease.ts",
+       "status": "renamed",
+       "old_path": "src/lease-old.ts",
+       "hunks": [
+        [
+         40,
+         48
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-004"
+    ]
+   }
+  },
+  {
+   "name": "a deleted module is not evaluated",
+   "patch": {
+    "request": [
+     {
+      "op": "add",
+      "path": "/changes/-",
+      "value": {
+       "path": "src/retired.ts",
+       "status": "deleted",
+       "hunks": []
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "a baseline that is not the file the request names blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/0/lines_hit",
+      "value": 19
+     }
+    ]
+   },
+   "stale": [
+    "baseline"
+   ],
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-002"
+    ]
+   }
+  },
+  {
+   "name": "a missing input file blocks",
+   "omit": [
+    "candidate"
+   ],
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-002"
+    ]
+   }
+  },
+  {
+   "name": "a policy version that differs from the request blocks",
+   "patch": {
+    "request": [
+     {
+      "op": "replace",
+      "path": "/policy/policy_version",
+      "value": "2.3.0"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-002"
+    ]
+   }
+  },
+  {
+   "name": "a policy with a different rule set blocks",
+   "patch": {
+    "policy": [
+     {
+      "op": "replace",
+      "path": "/rules/7/decision",
+      "value": "BLOCK"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-001"
+    ]
+   }
+  },
+  {
+   "name": "a policy that lets unknown-severity vulnerabilities through blocks",
+   "patch": {
+    "policy": [
+     {
+      "op": "replace",
+      "path": "/vulnerabilities/block_new_severities",
+      "value": [
+       "moderate",
+       "high"
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-001"
+    ]
+   }
+  },
+  {
+   "name": "a candidate that fails its schema blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/0/lines_hit",
+      "value": -1
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-001"
+    ]
+   }
+  },
+  {
+   "name": "a request with a hunk that starts after it ends blocks",
+   "patch": {
+    "request": [
+     {
+      "op": "replace",
+      "path": "/changes/0/hunks/0",
+      "value": [
+       9,
+       5
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-001"
+    ]
+   }
+  },
+  {
+   "name": "a request that is not JSON blocks",
+   "raw": {
+    "request": "hello"
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-001"
+    ]
+   }
+  },
+  {
+   "name": "a candidate at another commit blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/commit",
+      "value": "0000000000000000000000000000000000000000"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-003"
+    ]
+   }
+  },
+  {
+   "name": "a baseline that is not the merge base blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "replace",
+      "path": "/commit",
+      "value": "0000000000000000000000000000000000000000"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-003"
+    ]
+   }
+  },
+  {
+   "name": "a baseline measured in another toolchain image blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "replace",
+      "path": "/toolchain/image",
+      "value": "ghcr.io/drecoder/quality-toolchain-node@sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-006"
+    ]
+   }
+  },
+  {
+   "name": "a baseline measured with another tool version blocks",
+   "patch": {
+    "baseline": [
+     {
+      "op": "replace",
+      "path": "/toolchain/tools/2/version",
+      "value": "9.2.0"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-006"
+    ]
+   }
+  },
+  {
+   "name": "a new moderate vulnerability blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/vulnerabilities/-",
+      "value": {
+       "id": "GHSA-35jh-r3h4-6jhm",
+       "package": "lodash",
+       "manifest": "package.json",
+       "severity": "moderate",
+       "kev": false
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-024"
+    ]
+   }
+  },
+  {
+   "name": "a new vulnerability of unknown severity blocks",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/vulnerabilities/-",
+      "value": {
+       "id": "GHSA-35jh-r3h4-6jhm",
+       "package": "lodash",
+       "manifest": "package.json",
+       "severity": "unknown",
+       "kev": false
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "BLOCK",
+    "rules": [
+     "QP-024"
+    ]
+   }
+  },
+  {
+   "name": "a new low vulnerability passes",
+   "patch": {
+    "candidate": [
+     {
+      "op": "add",
+      "path": "/vulnerabilities/-",
+      "value": {
+       "id": "GHSA-35jh-r3h4-6jhm",
+       "package": "lodash",
+       "manifest": "package.json",
+       "severity": "low",
+       "kev": false
+      }
+     }
+    ]
+   },
+   "expect": {
+    "decision": "PASS",
+    "rules": []
+   }
+  },
+  {
+   "name": "an existing critical vulnerability quarantines",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/vulnerabilities/0/severity",
+      "value": "critical"
+     }
+    ],
+    "baseline": [
+     {
+      "op": "replace",
+      "path": "/vulnerabilities/0/severity",
+      "value": "critical"
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-010"
+    ]
+   }
+  },
+  {
+   "name": "a vulnerability in the KEV catalog quarantines whatever its severity",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/vulnerabilities/0/kev",
+      "value": true
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-010"
+    ]
+   }
+  },
+  {
+   "name": "quarantine outranks block when both apply",
+   "patch": {
+    "candidate": [
+     {
+      "op": "replace",
+      "path": "/vulnerabilities/0/severity",
+      "value": "critical"
+     },
+     {
+      "op": "replace",
+      "path": "/modules/1/functions/3/lines_hit",
+      "value": 6
+     }
+    ]
+   },
+   "expect": {
+    "decision": "QUARANTINE",
+    "rules": [
+     "QP-010",
+     "QP-026"
+    ]
+   }
+  }
+ ]
+}

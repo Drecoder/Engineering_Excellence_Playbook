@@ -74,6 +74,7 @@ Each boundary is its own identity, so no component can approve its own work.
 | Orchestrator | Lease one approved `factory` ticket, run the agents, open finding tickets, move tickets | Edit or judge code, pick up a ticket without the `factory` label, merge |
 | Fixers | Commit one finding's fix to the pull request's branch, inside their path scope | Change files outside that scope, rule a mutant equivalent, review |
 | rig and other tools | Return typed results for typed input | Hold a loop, decide what to do next, apply |
+| Policy Engine | Read the request and the files it names by digest; return one decision | Reach the network, a model or git; read raw tool output; apply an exception; merge |
 | CI (attester) | Run the gates, sign evidence records | Sign release tokens |
 | Compliance authority | Verify evidence, evaluate criteria, sign single-use tokens | Deploy, accept a decision or status from the Builder |
 | Deployment guard | Consume a valid token once, deploy the pinned digest | Deploy anything else |

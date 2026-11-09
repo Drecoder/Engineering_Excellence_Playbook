@@ -114,6 +114,29 @@
           ]
         },
         {
+          "title": "The Quality Policy Engine",
+          "sources": [
+            "00_UniversalStandards/17_Quality_Policy_Engine.md"
+          ],
+          "objectives": [
+            "Explain why measuring a change and deciding on it are separate parts, and what each may not do",
+            "Compute a function's CRAP score and a module's mutation score from raw counts",
+            "Apply ratchets, new-function limits and zones to reach a PASS, BLOCK or QUARANTINE decision",
+            "Explain why a missing or mismatched baseline blocks instead of passing"
+          ],
+          "takeaways": [
+            "Standard tools measure; one pure program decides, and the same evidence always gets the same answer.",
+            "Existing code is held to its own past by ratchets; new and changed code is held to fixed zones.",
+            "Evidence that cannot be verified stops evaluation: nothing passes on inputs that were not checked.",
+            "Only the owner lifts a quarantine, by a fix or an expiring exception."
+          ],
+          "questions": [
+            "A function has a CRAP score of 25. A change edits one line inside it without changing the score. What does the engine decide, and why?",
+            "Why do the module complexity and coverage ratchets count only functions that already existed?",
+            "A pull request deletes a test file and changes nothing else. Which rules can still catch the regression?"
+          ]
+        },
+        {
           "title": "Distributing Standards",
           "sources": [
             "00_UniversalStandards/05_Standards_Distribution.md"
@@ -361,6 +384,28 @@
           ]
         },
         {
+          "title": "The Service Design Record",
+          "sources": [
+            "00_UniversalStandards/16_Service_Design_Record.md"
+          ],
+          "objectives": [
+            "List what a service declares in its design record before it is built",
+            "Distinguish recovery time, recovery point and availability, and check a target against failure scenarios",
+            "Choose a data class for a store and check the store against it",
+            "Explain why the relationship rules are versioned separately from the schemas"
+          ],
+          "takeaways": [
+            "The record defines nothing itself: it binds separate, versioned definitions to one service.",
+            "Recovery time is not availability: the expected downtime from the declared failure scenarios must fit the error budget.",
+            "Value data lives only in a strongly consistent class, and replication never counts as a backup."
+          ],
+          "questions": [
+            "A store is backed up every 6 hours, a backup takes 30 minutes to become restorable, and the RPO is 4 hours. Which rule fails?",
+            "Why does one outage lasting the RTO fitting the error budget not prove the availability target is achievable?",
+            "Which data class should hold ticket leases, and what does that class require of the store?"
+          ]
+        },
+        {
           "title": "Observability",
           "sources": [
             "02_BackendZone/04_Telemetry_Standards.md",
@@ -536,7 +581,10 @@
         {
           "title": "Incidents and Post-Mortems",
           "sources": [
-            "00_UniversalStandards/03_Post_Mortem_Template.md"
+            "00_UniversalStandards/03_Post_Mortem_Template.md",
+            "docs/incidents/README.md",
+            "docs/incidents/2026-10-26-INC-001-no-branch-protection.md",
+            "docs/incidents/2026-10-29-INC-002-static-admin-key-standalone-aws-account.md"
           ],
           "objectives": [
             "Write an incident record with timeline, root cause, and evidence",
@@ -737,6 +785,45 @@
             "Why is a rebase never the fix for a conflict on a reviewed branch?",
             "Which half of the merge-resolution lens is code, and which needs judgment?"
           ]
+        },
+        {
+          "title": "The Agent Notepad (Partial)",
+          "sources": [
+            "06_AgentZone/07_Agent_Notepad.md"
+          ],
+          "objectives": [
+            "Describe the notepad's layout: a notebook per agent and a folder per task",
+            "Distinguish pages in progress from sealed, read-only versions",
+            "Explain how ownership by region and least privilege keep agents out of one another's work"
+          ],
+          "takeaways": [
+            "Every push seals a read-only version named in the commit, so working notes become evidence.",
+            "People and agents write only their own regions; tool results land read-only in the caller's folder.",
+            "The notepad is injected like the model, so an agent depends on an interface, not on a store."
+          ],
+          "questions": [
+            "Why does a sealed version belong in the commit rather than in a chat transcript?",
+            "On a retry, what does a fixer receive from the notepad, and why not the whole ticket?"
+          ]
+        },
+        {
+          "title": "Telemetry-Driven Dynamics (Proposed)",
+          "sources": [
+            "06_AgentZone/08_Telemetry_Driven_Dynamics.md"
+          ],
+          "objectives": [
+            "Explain the observe, decide, act loop in which telemetry becomes a control input",
+            "State the bounds a dynamic agent must stay inside",
+            "Describe how to test an agent that steers on its own signals"
+          ],
+          "takeaways": [
+            "An agent that cannot see itself cannot be dynamic: build emit and read-back before any adaptation.",
+            "Adaptation stays strictly inside the deterministic gates and Governor ceilings, and every steering decision is evidence."
+          ],
+          "questions": [
+            "Why should a read-back return derived values rather than raw telemetry?",
+            "What makes a dynamic agent's steering decision auditable after the fact?"
+          ]
         }
       ]
     },
@@ -747,6 +834,7 @@
         {
           "title": "The Software Factory",
           "sources": [
+            "ARCHITECTURE.md",
             "07_SoftwareFactory/01_Software_Factory.md"
           ],
           "objectives": [
@@ -766,6 +854,27 @@
             "Genesis is public and the CI factory is private. What does that cost, and what are the ways out?",
             "Most handoffs are still pull requests or in-process calls. Which one would you move onto the event backbone first, and why?"
           ]
+        },
+        {
+          "title": "Measuring Progress",
+          "sources": [
+            "docs/BASELINE_2026-10-26.md",
+            "docs/PROGRAM_INCREMENTS.md"
+          ],
+          "objectives": [
+            "Read the hand-driven baseline the agent loop has to beat",
+            "Explain how the program-increment score is computed, and why only enforced, running rules count",
+            "Trace the path from proof of concept to production through each increment's exit criteria"
+          ],
+          "takeaways": [
+            "Designed, documented or open-in-review work scores nothing: only what runs on main counts.",
+            "A baseline taken before automation is the 'before' every claim of improvement is measured against.",
+            "Each increment ends with a re-grade from evidence and is accepted only when its exit criteria are met."
+          ],
+          "questions": [
+            "Why does a merged standard that nothing enforces score nothing?",
+            "Which measures would you compare to show the agent loop beats the hand-driven baseline?"
+          ]
         }
       ]
     }
@@ -780,6 +889,11 @@
       "title": "Metrics Index",
       "source": "metrics/promql/MASTER_INDEX.md",
       "intro": "Standard PromQL queries referenced throughout the book."
+    },
+    {
+      "title": "The Proof Journal",
+      "source": "docs/POC_JOURNAL.md",
+      "intro": "Every finding the playbook's rules surfaced in real work, in the order it was found, each written up as a compact post-mortem in CAPA form."
     },
     {
       "title": "Contracts",
@@ -809,6 +923,10 @@
       "Levels L0 (manual) to L4 (unattended) that a process class climbs one at a time, on evidence, and falls back down automatically."
     ],
     [
+      "Baseline (merge base)",
+      "The quality metrics of the commit a pull request branches from, measured in the same toolchain image; what the Policy Engine's ratchets compare against."
+    ],
+    [
       "Blast radius",
       "How much of a system a change can affect, approximated by the callers of the changed code."
     ],
@@ -825,8 +943,20 @@
       "A versioned, machine-readable interface shared across repositories, such as a JSON Schema."
     ],
     [
+      "CRAP score",
+      "Change Risk Anti-Patterns: CC² · (1 − Cov)³ + CC for a function with complexity CC and coverage Cov. High when code is complex and poorly tested."
+    ],
+    [
+      "Data class",
+      "A row of the playbook's table of what a store must guarantee (write acknowledgment, copies, backup, consistency, caching) for the kind of data it holds."
+    ],
+    [
       "Deployment Unit",
       "One independently planned and applied piece of infrastructure, declared persistent or ephemeral."
+    ],
+    [
+      "Design record",
+      "service_design_record.v1: a service's capacity estimate, SLIs and SLOs, recovery objectives and data classes, declared before it is built."
     ],
     [
       "DPMO",
@@ -897,12 +1027,28 @@
       "A signed record of how an artifact was built: repository, commit, workflow, and builder."
     ],
     [
+      "Quarantine",
+      "The Policy Engine's strongest decision: the change fails its gate and only the owner can release it, by a fix or an expiring exception."
+    ],
+    [
+      "Ratchet",
+      "A rule that lets a measure stay the same or improve but never get worse than its baseline."
+    ],
+    [
       "Red/Green logic",
       "A decision signal: Green proceeds, Red pauses for review or fixing."
     ],
     [
       "Reuse map",
       "A generated index of definitions agents consult before writing new code."
+    ],
+    [
+      "RPO",
+      "Recovery point objective: the most data, measured in time, a service may lose in a failure."
+    ],
+    [
+      "RTO",
+      "Recovery time objective: the longest a service may take to recover from a declared failure."
     ],
     [
       "Rule of three",
