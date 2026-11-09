@@ -47,7 +47,7 @@ dashed outline is design, and red is refused.
 | Compliance authority and deployment guard | `compliance-authority` | Decide and sign releases; consume tokens at deploy | **Partial**: CLI with local stores and keys; no network API, not in the deploy path |
 | Agent notepad | `agent-notepad` | Working memory for every agent and task | **Partial**: library with in-memory and local file backends |
 | Adaptive harness | — | Picks an agent's next bounded step from knowledge, reliability states, quality evidence and governance state (`06_AgentZone/09_Adaptive_Harness.md`) | **Design**: proposed standard; contracts specified |
-| Messaging backbone | Genesis modules (AWS first) | Object store, event stream, bridge, fan-out, work queues | **Design**: module specs pending for the agent loop |
+| Messaging backbone | Genesis modules (AWS first) | Object store, event stream, bridge, fan-out, work queues | **Design**: SNS and SQS with claim checks, in the MVP (KAN-36); module specs pending |
 
 ## 3️⃣ The Path of a Change
 
@@ -63,7 +63,7 @@ dashed outline is design, and red is refused.
 | Fix loop: the CI report goes back to the Builder, which fixes its own change; 3 attempts, $2.00 per ticket | `07_SoftwareFactory/01_Software_Factory.md` §3 | **Design** (KAN-14, KAN-19); today the Builder fixes through the pull request |
 | Merge conflicts: detect, route, resolve, check | `06_AgentZone/06_Merge_Conflicts.md` | **Design**: today a person resolves them, or asks a coding agent to |
 | Agent notepad: a folder per agent and task, sealed at each push | `06_AgentZone/07_Agent_Notepad.md` | **Partial**: the service core is built as a library; agents do not use it yet |
-| Merge | `AGENTS.md` → Agent Rules, Security Rules | **Built**: human approval via branch protection |
+| Merge | `AGENTS.md` → Agent Rules, Security Rules | **Gap**: no platform repository's `main` is protected, so human approval holds by habit, not enforcement (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`) |
 | Evaluation, release token, deploy | `06_AgentZone/02_Compliance_Engine.md` | **Partial**: authority and guard built as a CLI; not yet in the deploy path |
 | Apply | `03_InfrastructureZone/01_IaC_Standards.md` | **Built**: post-merge pipeline with its own identity; agents only plan |
 
@@ -84,6 +84,8 @@ Each boundary is its own identity, so no component can approve its own work.
 | rig and other tools | Return typed results for typed input | Hold a loop, decide what to do next, apply |
 | Policy Engine | Read the request and the files it names by digest; return one decision | Reach the network, a model or git; read raw tool output; apply an exception; merge |
 | CI (attester) | Run the gates, sign evidence records | Sign release tokens |
+| Pull-request gate runners | Run a pull request's checks on agent-written code, ephemeral and unprivileged | Hold deploy, apply or secret access; share the apply pipeline's identity |
+| CI webhook ingress | Verify GitHub's signature, re-read the check result from GitHub, store the report as a claim check | Treat a received payload as evidence before re-reading it; call the execution plane |
 | Compliance authority | Verify evidence, evaluate criteria, sign single-use tokens | Deploy, accept a decision or status from the Builder |
 | Deployment guard | Consume a valid token once, deploy the pinned digest | Deploy anything else |
 | Apply pipeline | Apply a merged, approved plan | Run on an agent's request |
@@ -96,6 +98,55 @@ Each boundary is its own identity, so no component can approve its own work.
   calls models and plans but cannot apply; publishing and applying belong to their own pipeline
   identities.
 - **Agents never notify people;** they set labels, and a notification service routes them.
+
+## 4️⃣a Separation of Cognition from Execution Authority
+
+The factory separates the ability to reason about, propose, and build a change from the authority
+to evaluate, certify, approve, and execute it. Agents never hold the second kind, so they cannot
+redefine the standards, certify their own work, or grant themselves deployment rights. **Design**:
+owner decision, 2026-11-08.
+
+| Plane | Where | Holds | Never holds |
+| :--- | :--- | :--- | :--- |
+| Cognitive (agentic) | AWS | The orchestrator, the Builder and its models, retrieval, the claim-check store, the event bus | Any identity in the execution plane; authority to evaluate, approve, apply, or deploy |
+| Execution (service) | GCP (`sovereign-vpc-gcp`) | CI with its Policy Engine and attester, the compliance authority and deployment guard, apply, the services | Agent identities |
+| Seam | GitHub | Pull requests, required checks, branch protection, CODEOWNERS | — |
+| Human | The owner | Approval of every merge and every protected change | — |
+
+Genesis governs both planes.
+
+### Four flows
+
+| Flow | Path | Carries | Authority it carries |
+| :--- | :--- | :--- | :--- |
+| Change | Agentic plane → GitHub → execution plane | A pull request | None: a proposal, run by CI in isolation |
+| Verification | GitHub → the agentic plane's webhook ingress | A check result | None until the signature is verified and the result is re-read from GitHub |
+| Observability | Agentic plane → the execution plane's collector | Traces, metrics, logs | None: send-only |
+| Coordination | Agentic plane ↔ Jira | Ticket status and specs | None: moving a ticket starts work and approves nothing; ticket text is untrusted input, and work enters only as an approved spec fetched by digest |
+
+### Three controls on the seam
+
+GitHub is part of the trusted computing boundary, not only a transport. So is every account that
+can change its settings, held to the same standard as a cloud admin role, and a change to a
+protection rule is itself a protected change.
+
+| Path an agent could use | Control | Status |
+| :--- | :--- | :--- |
+| Change its evaluator: workflows, the `gates.yml` pin, `.ci/quality.v1.json`, `.ci/exceptions.v1.json` | Agent GitHub Apps have no `workflows` permission; CODEOWNERS requires a human code owner on those paths | **Design**: CODEOWNERS exist in two repositories but are not enforced (INC-001); App permissions not yet audited (KAN-30) |
+| Run its code with execution authority | Pull-request gate runners are ephemeral and unprivileged, run tests with no network, and hold an identity with no deploy, apply, or secret access, separate from the apply pipeline's | **Partial**: runners are ephemeral per job; the factory still runs on the runner image (§7); identity separation not yet verified |
+| Merge around the gates | Protected `main`: a pull request, the gate checks, and the owner's code-owner review are required, with no bypass for admins | **Gap**: no platform repository's `main` is protected (INC-001, open; the playbook's `main` checked unprotected on 2026-11-08) |
+
+### One evidence rule
+
+**Authoritative evidence is signed by the CI attester's identity.** Everything else, including any
+report an agent makes about its own work, stays at tier `CLAIMED` (§6); repeating, forwarding, or
+receiving a claim never promotes it. The rule rests on the signing identity, not on which cloud
+produced the result.
+
+### The human gate
+
+The owner approves on the diff and the signed CI evidence, never on the agent's summary: a pull
+request's description is a claim like any other.
 
 ## 5️⃣ Data and Messaging
 
