@@ -293,6 +293,46 @@
       "found": "2026-11-08",
       "due": "2027-02-06",
       "status": "open"
+    },
+    {
+      "id": "F-0026",
+      "journal": "## 2026-11-08: The orchestrator's fence survived dropping its token check",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0027",
+      "journal": "## 2026-11-08: The board ticket's format had no contract",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0028",
+      "journal": "## 2026-11-09: The orchestrator's SLIs query metrics its code never emits",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-09",
+      "due": "2027-02-07",
+      "status": "open"
+    },
+    {
+      "id": "F-0029",
+      "journal": "## 2026-11-09: AWS infrastructure has no Terragrunt root or state backend to land in",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-09",
+      "due": "2027-02-07",
+      "status": "open"
     }
   ],
   "controls": [

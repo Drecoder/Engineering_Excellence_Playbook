@@ -41,7 +41,7 @@ dashed outline is design, and red is refused.
 | Central CI factory | `sovereign-vpc-gcp` (`.github/workflows/gates.yml`) | One reusable workflow running every repo's gates, including the acceptance tests and the Policy Engine | **Partial**: rework and scanners in review; runner image not digest-pinned; the Policy Engine is not wired in (KAN-43) |
 | rig | `rig` | Deterministic tool: static and trace `ARCH-*` checks and features for the Builder's pre-PR scan | **Built**; trace checks in review |
 | Builder | `aws-builder-agent` | Actor: turns an approved task into a pull request | **Built** (PR-driven); compliance scoping skill **Design** |
-| Orchestrator | `jira-orchestrator` | Leases one ticket, hands the Builder the spec, reads the CI result, bounces up to the attempt limit, stops at the budget | **Design** (KAN-14) |
+| Orchestrator | `factory-orchestrator` | Leases one ticket, hands the Builder the spec, reads the CI result, bounces up to the attempt limit, stops at the budget | **Partial** (KAN-14): decision logic and fenced lease pass on in-memory fakes (#2 merged; fence fix in review, #3); no Jira, DynamoDB or GitHub adapters, no telemetry, not deployed |
 | Quality evaluator and Policy Engine | — | Run in CI: normalize tool output to `quality_metrics.v1`, then decide PASS, BLOCK or QUARANTINE (`00_UniversalStandards/17_Quality_Policy_Engine.md`) | **Design**: reference engine and 54 vectors specified; service not built (KAN-18, KAN-41) |
 | Intake (wizard, deep dives, grooming) | — | Requirement → approved spec | **Design** |
 | Compliance authority and deployment guard | `compliance-authority` | Decide and sign releases; consume tokens at deploy | **Partial**: CLI with local stores and keys; no network API, not in the deploy path |
@@ -51,7 +51,7 @@ dashed outline is design, and red is refused.
 
 ## 3️⃣ The Path of a Change
 
-![Path of a change: the orchestrator hands one ticket's spec to the Builder; CI runs the tests, scanners, acceptance tests and Policy Engine, and a failing report goes back to the Builder (up to 3 attempts within $2.00, then Blocked); on a pass the owner approves the merge, then the apply pipeline; the spec lives in an object store fetched by digest; signed CI evidence goes to an independent compliance authority whose single-use token the deployment guard consumes. Every box is its own identity.](docs/architecture/sheet-2-path-of-a-change.svg)
+![Path of a change: the orchestrator hands one ticket's spec to the Builder; CI runs the tests, scanners, acceptance tests and Policy Engine, and a failing report goes back to the Builder (up to 3 attempts within $2.00, then Blocked); on a pass the owner approves the merge, then the apply pipeline; the spec lives in an object store fetched by digest; signed CI evidence goes to an independent compliance authority whose single-use token the deployment guard consumes. Every box is its own identity. Learning loop (design): every attempt goes to a run record; the factory drafts Proof journal and CAPA register entries from QUARANTINE, Blocked, budget, dead-letter and fence refusals for the owner to merge; and the Builder gets prior findings with its spec.](docs/architecture/sheet-2-path-of-a-change.svg)
 
 | Stage | Standard | Status |
 | :--- | :--- | :--- |
@@ -66,6 +66,8 @@ dashed outline is design, and red is refused.
 | Merge | `AGENTS.md` → Agent Rules, Security Rules | **Gap**: no platform repository's `main` is protected, so human approval holds by habit, not enforcement (`docs/incidents/2026-10-26-INC-001-no-branch-protection.md`) |
 | Evaluation, release token, deploy | `06_AgentZone/02_Compliance_Engine.md` | **Partial**: authority and guard built as a CLI; not yet in the deploy path |
 | Apply | `03_InfrastructureZone/01_IaC_Standards.md` | **Built**: post-merge pipeline with its own identity; agents only plan |
+| Run record: every Builder attempt (spec, transcript, diff, attested CI result, cost), keyed by ticket and lease token | `07_SoftwareFactory/01_Software_Factory.md` §3 | **Design** (KAN-62) |
+| Learning loop: the factory drafts Proof journal and CAPA register entries from loop outcomes, the owner merges them, and the Builder reads matching prior findings | `docs/POC_JOURNAL.md`; `07_SoftwareFactory/01_Software_Factory.md` §3 | **Design** (KAN-60): the journal and register are enforced in CI; the factory does not write or read them yet |
 
 **Owner decision, 2026-11-07 (KAN-14):** the Builder and CI loop is the factory, and the owner's
 merge approval is its only judgment step. The Reviewer agent, the CRAP and mutation fixers, and

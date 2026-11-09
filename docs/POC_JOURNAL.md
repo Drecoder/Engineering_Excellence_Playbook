@@ -445,6 +445,93 @@ journal entries are unchanged.
 - **Evidence:** the permission set's inline policy; the denied `iam:CreateUser` call; this branch.
 - **Status:** fixed for the management account; the member-account guardrail is tracked by F-0016.
 
+## 2026-11-08: The orchestrator's fence survived dropping its token check
+
+- **Rule:** a passing suite counts only if its tests could fail, and a surviving mutant on a
+  critical path is a finding (`00_UniversalStandards/14_Test_Quality.md` §3); leases decide who may
+  act, so the fence is a critical path.
+- **Problem:** a hand mutant that fences board writes and pushes on the lease owner alone, without
+  the token, passed all 30 tests on factory-orchestrator #2 (`e0ff447`). The fence's correctness
+  then rests on owner IDs never repeating across runs, an invariant no test states.
+- **Detection:** a hand-made mutant during the build session; a person, because no mutation gate
+  runs in CI yet.
+- **Root cause:** the stale-run tests (acceptance tests 6 and 7) change the token and the owner
+  together, so no case holds the owner fixed and varies only the token; and the central factory
+  has no mutation gate (StrykerJS is listed as To build in `17_Quality_Policy_Engine.md`).
+- **Correction (planned):** a contract test where a lease held with token T2 and owner O refuses a
+  write carrying the stale token T1 and the same owner O (KAN-14 item 9). Killing the mutant
+  removes the need for an equivalence ruling.
+- **Preventive action (planned):** a StrykerJS gate in the central factory (KAN-58), so a surviving
+  mutant on a changed module is reported by a control, not found by a person.
+- **Verification:** pending: the new test must fail against the owner-only mutant and pass against
+  the real fence; KAN-58's fixture must fail on a surviving mutant.
+- **Evidence:** factory-orchestrator #2 at `e0ff447`; KAN-14; KAN-58.
+- **Status:** open.
+
+## 2026-11-08: The board ticket's format had no contract
+
+- **Rule:** contracts have one home, the playbook (`AGENTS.md` → Reuse Rules); work enters only as
+  an approved spec (`AGENTS.md` → Agent Rules).
+- **Problem:** the orchestrator's board port expects structured fields (title, task, acceptance
+  criteria, scope, repository and base branch, approval), but nothing said how a Jira issue
+  carries them. The Jira adapter, not yet built, would have invented the format, and a ticket
+  written to a guessed format would be rejected or, worse, read wrongly.
+- **Detection:** preparing the dry-run ticket (KAN-59); a person.
+- **Root cause:** the MVP board path describes the trigger (the owner's move to Ready) but not the
+  ticket's body (`06_AgentZone/03_Software_Factory_Intake.md`, `07_SoftwareFactory/01_Software_Factory.md`).
+- **Correction:** the format is now written down: fixed `##` sections parsed strictly, with no
+  custom fields, in `07_SoftwareFactory/01_Software_Factory.md` §3 (this change) and KAN-14.
+- **Preventive action (planned):** the Jira adapter's contract tests: one rejection case per
+  missing, empty, duplicated or malformed section, and KAN-59's real body as the valid case.
+- **Verification:** pending until the adapter and its tests exist.
+- **Evidence:** factory-orchestrator `src/ports.ts` (`BoardTicket`); KAN-14; KAN-59; this change.
+- **Status:** open.
+
+## 2026-11-09: The orchestrator's SLIs query metrics its code never emits
+
+- **Rule:** telemetry ships with the first line of code, and evidence is telemetry (`AGENTS.md` →
+  Observability Rules); the Build stage implements with telemetry from the first commit
+  (`00_UniversalStandards/01_Deliverable_Lifecycle.md`).
+- **Problem:** the orchestrator's design record defines its SLIs and SLO burn-rate alerts on
+  metrics such as `orchestrator_dispatch_total`, but slice 1's code has no OpenTelemetry SDK and
+  emits no metric, trace or log. Wired as it is, every alert would read an empty input.
+- **Detection:** checking the build against the playbook before the real adapters; a person.
+- **Root cause:** slice 1's acceptance tests cover the business rules only; nothing ties the metric
+  names in a design record to what the code emits, so a record can promise signals the code never
+  produces and every gate still passes.
+- **Correction (planned):** telemetry before the real adapters: a shared `traced` wrapper, the RED
+  metrics the design record names, and the Governor metrics (KAN-14 slice 2).
+- **Preventive action (planned):** a test that a run of the acceptance suite emits every metric an
+  SLI in the design record queries, so the record and the code cannot drift apart.
+- **Verification:** pending: the test must fail on the code at `e0ff447` and pass once telemetry
+  lands.
+- **Evidence:** factory-orchestrator `design/service_design_record.v1.json`; `package.json` (no
+  OpenTelemetry dependency) at `e0ff447`.
+- **Status:** open.
+
+## 2026-11-09: AWS infrastructure has no Terragrunt root or state backend to land in
+
+- **Rule:** use Terragrunt to orchestrate Terraform, including bootstrap units (`AGENTS.md` → IaC
+  Rules); AWS state lives in an S3 backend in a dedicated account
+  (`03_InfrastructureZone/01b_AWS_Specifics.md`).
+- **Problem:** Genesis's `bootstrap/aws` is bare Terraform (a VPC and the GitHub OIDC provider)
+  with no remote state; its `environments/*/aws` files are empty; no `root.hcl` exists. The
+  orchestrator's stores (lease and run tables, its role) and the messaging backbone (KAN-36) have
+  nowhere to apply, so the dry run cannot reach real AWS.
+- **Detection:** placing the orchestrator's stores unit; a person.
+- **Root cause:** an ordering gap. Genesis's bootstrap slice is pending for the agent loop
+  (`07_SoftwareFactory/01_Software_Factory.md` §3), and the agent loop's own AWS stores need that
+  bootstrap first. No step in the plan runs first.
+- **Correction:** none yet. The stores unit is drafted as a portable module and a staging unit that
+  includes `root.hcl`; nothing is applied.
+- **Preventive action (planned):** the owner decides whether the AWS bootstrap slice (state bucket,
+  `root.hcl`, plan and apply identities) is built by hand as an MVP bench, later rebuilt by the
+  agent loop as the workshop rules allow, and records the decision in this playbook.
+- **Verification:** pending: a `terragrunt plan` of the bootstrap and of the stores unit in CI.
+- **Evidence:** Genesis at `667eb1b` (`bootstrap/aws/main.tf`, empty `environments/staging/aws/`);
+  KAN-14.
+- **Status:** open.
+
 ## 2026-11-08: The branch-protection incident was never journaled
 
 Rule: a merge to a protected branch needs a pull request and a human, enforced by branch protection with no bypass (AGENTS.md → Security Rules; INC-001).
