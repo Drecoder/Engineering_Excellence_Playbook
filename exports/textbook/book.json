@@ -864,18 +864,21 @@
             "Map each zone of the playbook to the bench in the factory that applies it",
             "Name each factory repository, its kind (rules, infrastructure, actor, tool, service), and what it takes in and puts out",
             "Trace a change from approved spec to deployed digest across the benches",
-            "Explain why the playbook describes the factory but depends on none of its repositories"
+            "Explain why the playbook describes the factory but depends on none of its repositories",
+            "Explain how a board ticket becomes a validated builder.spec.v1 on the MVP path, and why the parser rejects instead of repairing"
           ],
           "takeaways": [
             "The playbook says how we build; the factory is the workshop where it is done, for anything.",
             "Every bench is its own identity, and none approves its own work.",
             "Contracts live only in the playbook; benches vendor them and never redefine them.",
-            "The factory is held to its own rules: a bench that cannot meet the playbook is not built."
+            "The factory is held to its own rules: a bench that cannot meet the playbook is not built.",
+            "On the MVP path the ticket is the task: fixed sections, parsed strictly, and a ticket that does not parse never reaches a lease or the Builder."
           ],
           "questions": [
             "Which bench would you change to add a new kind of evidence to a release, and which contracts move with it?",
             "Genesis is public and the CI factory is private. What does that cost, and what are the ways out?",
-            "Most handoffs are still pull requests or in-process calls. Which one would you move onto the event backbone first, and why?"
+            "Most handoffs are still pull requests or in-process calls. Which one would you move onto the event backbone first, and why?",
+            "The orchestrator's lease can fence its own store but not Jira, which cannot check a token. What does the orchestrator have to check before each board write, and what is still left uncovered?"
           ]
         },
         {
@@ -1014,6 +1017,10 @@
       "When a decision is uncertain or its inputs are missing, take the safest, highest-scrutiny path."
     ],
     [
+      "Fencing token",
+      "A number that increases each time a lease is granted. A write carrying an older token is refused, so a worker that stalled and lost its lease cannot overwrite newer work."
+    ],
+    [
       "Governor",
       "A bound on concurrent work that provides backpressure and sheds load past P99."
     ],
@@ -1028,6 +1035,10 @@
     [
       "Jidoka",
       "Toyota's principle of automation that detects a problem and stops itself, adopted before a process runs unattended."
+    ],
+    [
+      "Lease",
+      "A time-limited claim that one worker holds on a piece of work. Expiry is checked in each write's condition, never by a clock sweep."
     ],
     [
       "Least privilege",
