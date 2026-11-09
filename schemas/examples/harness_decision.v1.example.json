@@ -1,0 +1,72 @@
+{
+  "schema_version": "harness_decision.v1",
+  "decision_id": "0b7c3f2e-9a41-4f6e-8d2a-5c1e7b9d3a10",
+  "run_id": "6f1d2c3b-4a5e-4b7c-9d8e-0f1a2b3c4d5e",
+  "ticket_key": "KAN-18",
+  "stage": "evaluate",
+  "previous": {
+    "decision_id": "5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d",
+    "outcome": "completed"
+  },
+  "inputs": {
+    "governance": {
+      "repo": "Drecoder/jira-orchestrator",
+      "policy_version": "2.2.0",
+      "capability_boundary": "builder-app:jira-orchestrator:write-pr-branch",
+      "attempt": 1,
+      "max_attempts": 3,
+      "budget_spent_fraction": 0.42
+    },
+    "quality": {
+      "decision": "PASS",
+      "policy_decision_sha256": "3d4c2b1a0f9e8d7c6b5a49382716051f3e2d1c0b9a8f7e6d5c4b3a2918070605",
+      "rules": [],
+      "survivors_on_changed_lines": 0,
+      "evaluation": {
+        "commit": "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d",
+        "merge_base": "1f0c6b2d9a4e8f7a3c5b1d0e2f4a6c8e0b2d4f6a",
+        "candidate_sha256": "79836fe2f7d2feb1f44c1287d29c0423a03ffe00af87d5467cd09746c79d0d4a",
+        "baseline_sha256": "ff07c3d29a422eec15af3b136511bfa167b16f60d8f18511132c434f694a8f1d",
+        "toolchain_image": "ghcr.io/drecoder/quality-toolchain-node@sha256:4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f"
+      }
+    },
+    "reliability": [
+      {
+        "subject_kind": "service",
+        "subject": "jira-orchestrator",
+        "state": "UNKNOWN",
+        "reason": "no SLOs in its design record yet (SD-07)",
+        "evaluated_at": "2026-11-08T02:40:00Z"
+      },
+      {
+        "subject_kind": "harness",
+        "subject": "builder-harness",
+        "state": "GREEN",
+        "reason": "burn-rate pairs evaluated within their short windows; none firing",
+        "evaluated_at": "2026-11-08T02:40:00Z",
+        "slo_ids": [
+          "builder-harness-decision-latency",
+          "builder-harness-availability"
+        ]
+      }
+    ],
+    "knowledge": [
+      {
+        "record_id": "8a9b0c1d-2e3f-4a5b-8c6d-7e8f9a0b1c2d",
+        "evidence_tier": "VERIFIED",
+        "standing": "GREEN"
+      }
+    ],
+    "telemetry_window": {
+      "start": "2026-11-08T02:35:00Z",
+      "end": "2026-11-08T02:40:00Z"
+    }
+  },
+  "action": {
+    "kind": "escalate_to_human",
+    "reason": "PASS, but the target service's reliability state is UNKNOWN; UNKNOWN never becomes GREEN, so a person decides whether to advance",
+    "decided_by": "rule",
+    "table_row": 10
+  },
+  "recorded_at": "2026-11-08T02:40:01Z"
+}

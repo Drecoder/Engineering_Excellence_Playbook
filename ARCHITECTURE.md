@@ -44,6 +44,7 @@ dashed outline is design, and red is refused.
 | Intake (wizard, deep dives, grooming) | — | Requirement → approved spec | **Design** |
 | Compliance authority and deployment guard | `compliance-authority` | Decide and sign releases; consume tokens at deploy | **Partial**: CLI with local stores and keys; no network API, not in the deploy path |
 | Agent notepad | `agent-notepad` | Working memory for every agent and task | **Partial**: library with in-memory and local file backends |
+| Adaptive harness | — | Picks an agent's next bounded step from knowledge, reliability states, quality evidence and governance state (`06_AgentZone/09_Adaptive_Harness.md`) | **Design**: proposed standard; contracts specified |
 | Messaging backbone | Genesis modules (AWS first) | Object store, event stream, bridge, fan-out, work queues | **Design**: module specs pending for the agent loop |
 
 ## 3️⃣ The Path of a Change
