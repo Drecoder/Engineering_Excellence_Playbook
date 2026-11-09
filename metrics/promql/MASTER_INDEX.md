@@ -131,10 +131,10 @@ is `poll`, `spec.approved` or `ci.completed`. The orchestrator's Governor is `or
 
 | Goal | PromQL Query |
 | :--- | :--- |
-| **Dispatch Availability (SLI)** | `sum(rate(orchestrator_dispatch_total{outcome=~"dispatched\|skipped"}[5m])) / sum(rate(orchestrator_dispatch_total[5m]))` (SLO 99.5%, 30 days) |
+| **Dispatch Availability (SLI)** | `sum(rate(orchestrator_dispatch_total{outcome=~"dispatched\|skipped\|stopped\|fenced"}[5m])) / sum(rate(orchestrator_dispatch_total[5m]))` (SLO 99.5%, 30 days) |
 | **Dispatch Latency (SLI)** | `sum(rate(orchestrator_dispatch_duration_seconds_bucket{le="2"}[5m])) / sum(rate(orchestrator_dispatch_duration_seconds_count[5m]))` (SLO 99% within 2 s, 30 days) |
 | **Dispatch Outcomes** | `sum by (outcome, path) (increase(orchestrator_dispatch_total[1d]))` |
-| **Fenced Writes** | `sum(increase(orchestrator_dispatch_total{outcome="fenced"}[1d]))` (a stale run was refused: the fence worked, and it is a Builder journal trigger) |
+| **Fenced Writes** | `sum(increase(orchestrator_dispatch_total{outcome="fenced"}[1d]))` (a stale run was refused: the fence worked, so it counts as good in the SLI; it is also a Builder journal trigger) |
 | **Request Rate (RED)** | `sum by (input) (rate(orchestrator_handle_requests_total[5m]))` |
 | **Request Errors (RED)** | `sum(rate(orchestrator_handle_requests_total{result="error"}[5m])) / sum(rate(orchestrator_handle_requests_total[5m]))` |
 | **Request Latency P99 (RED)** | `histogram_quantile(0.99, sum by (le) (rate(orchestrator_handle_duration_seconds_bucket[5m])))` |
