@@ -8,6 +8,8 @@ This standard builds on `02_BackendZone/04_Telemetry_Standards.md` (the signals)
 _GOVERNORS.md` (the first feedback primitive), `01_Agent_Standards.md` (actors read tool-emitted
 telemetry), and `10_Autonomy_by_Evidence.md` (a process adapts on measured signals). The enforceable
 subset belongs in `AGENTS.md` → **Observability Rules** and **Agent Rules**. Status: proposed.
+`09_Adaptive_Harness.md` extends this loop with organizational knowledge, reliability states and the
+Policy Engine's quality evidence, under the same bounds.
 
 ---
 

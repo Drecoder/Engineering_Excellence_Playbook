@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 600" width="780" height="600" role="img" aria-labelledby="title">
+  <title id="title">The adaptive harness (proposed). Four inputs feed it: long-term memory from the retrieval index, short-term memory of live operational state, deterministic quality evidence from the Evaluator and the Policy Engine, and governance state. A decision table picks one bounded action, which may route work to the Builder or advance it as far as the independent authorization layer, never past it. Loop A adapts execution within one task; Loop B promotes validated, attributed outcomes from sealed decision records into the index across tasks.</title>
+  <style>
+  :root, svg { --sheet: #f9fafb; --ink: #1b2733; --ink-2: #3b4a59; --muted: #64758a; --rule: #c9d1da;
+    --accent: #b35c00; --block: #b42318; color: #1b2733; }
+  @media (prefers-color-scheme: dark) {
+    :root, svg { --sheet: #151c24; --ink: #dce5ee; --ink-2: #b6c3d0; --muted: #8b9cae; --rule: #2b3642;
+      --accent: #e9a24c; --block: #f2786d; color: #dce5ee; }
+  }
+  .bg { fill: var(--sheet); }
+  .box { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.3; }
+  .box.design { stroke: var(--muted); stroke-dasharray: 5 4; }
+  .box.frame { fill: none; stroke: var(--ink); stroke-width: 2; }
+  .tick { fill: var(--accent); }
+  .sep { stroke: var(--rule); stroke-width: 1; }
+  .t { fill: var(--ink); font-family: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif; font-weight: 600; font-size: 13px; }
+  .design-t { fill: var(--muted); }
+  .s { fill: var(--muted); font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 10px; }
+  .band { fill: var(--ink); font-family: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: 0.1em; }
+  .lbl { fill: var(--ink-2); font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; font-size: 11px; }
+  .lbl.warn { fill: var(--block); }
+  .lbl.key { fill: var(--accent); font-weight: 600; }
+  .arrow { stroke: var(--ink); stroke-width: 1.3; fill: none; }
+  .arrow.design { stroke: var(--muted); stroke-dasharray: 5 4; }
+  .arrow.blocked { stroke: var(--block); stroke-dasharray: 5 4; }
+  .xmark { stroke: var(--block); stroke-width: 2.2; }
+  </style>
+  <rect class="bg" x="0" y="0" width="780" height="600"/>
+  <defs>
+    <marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+  </defs>
+
+  <!-- column bands -->
+  <text class="band" x="20" y="22">INPUTS</text>
+  <text class="band" x="290" y="22">HARNESS (ACTOR)</text>
+  <text class="band" x="540" y="22">TOOLS AND AUTHORITY</text>
+
+  <!-- inputs -->
+  <rect class="box design" x="20" y="36" width="230" height="58"/>
+  <text class="t design-t" x="32" y="58">Long-term memory</text>
+  <text class="s" x="32" y="76">retrieval index · sealed records</text>
+  <text class="s" x="32" y="88">evidence tier · practice standing</text>
+
+  <rect class="box design" x="20" y="110" width="230" height="58"/>
+  <text class="t design-t" x="32" y="132">Short-term memory</text>
+  <text class="s" x="32" y="150">context · notepad · read-back</text>
+  <text class="s" x="32" y="162">service and harness states</text>
+
+  <rect class="box design" x="20" y="184" width="230" height="58"/>
+  <text class="t design-t" x="32" y="206">Quality evidence</text>
+  <text class="s" x="32" y="224">quality_metrics.v1</text>
+  <text class="s" x="32" y="236">policy_decision.v1</text>
+
+  <rect class="box" x="20" y="258" width="230" height="58"/>
+  <text class="t" x="32" y="280">Governance state</text>
+  <text class="s" x="32" y="298">ticket · stage · budget</text>
+  <text class="s" x="32" y="310">policy version · permissions</text>
+
+  <!-- harness -->
+  <rect class="box design" x="290" y="110" width="210" height="132"/>
+  <text class="t design-t" x="304" y="134">Adaptive harness</text>
+  <text class="s" x="304" y="154">rules pick the action class</text>
+  <text class="s" x="304" y="168">a model may only propose</text>
+  <text class="s" x="304" y="182">within the allowed set</text>
+  <line class="sep" x1="304" y1="194" x2="486" y2="194"/>
+  <text class="s" x="304" y="212">records harness_decision.v1</text>
+  <text class="s" x="304" y="226">span harness.decide</text>
+
+  <path class="arrow design" d="M250,65 L270,65 L270,150 L288,150" marker-end="url(#ah4)"/>
+  <path class="arrow design" d="M250,139 L288,139" marker-end="url(#ah4)"/>
+  <path class="arrow design" d="M250,213 L270,213 L270,190 L288,190" marker-end="url(#ah4)"/>
+  <path class="arrow" d="M250,287 L276,287 L276,226 L288,226" marker-end="url(#ah4)"/>
+
+  <!-- bounded actions -->
+  <rect class="box design" x="290" y="276" width="210" height="84"/>
+  <text class="t design-t" x="304" y="298">One bounded action</text>
+  <text class="s" x="304" y="316">pace · concurrency ≤ ceiling</text>
+  <text class="s" x="304" y="330">retry · rung · tool · route</text>
+  <text class="s" x="304" y="344">pause · stop · escalate · advance</text>
+  <path class="arrow design" d="M395,242 L395,274" marker-end="url(#ah4)"/>
+
+  <!-- tools and authority -->
+  <rect class="box design" x="540" y="36" width="220" height="58"/>
+  <text class="t design-t" x="552" y="58">Evaluator</text>
+  <text class="s" x="552" y="76">runs pinned tools · normalizes</text>
+  <text class="s" x="552" y="88">measures, decides nothing</text>
+
+  <rect class="box design" x="540" y="110" width="220" height="58"/>
+  <text class="t design-t" x="552" y="132">Policy Engine</text>
+  <text class="s" x="552" y="150">PASS · BLOCK · QUARANTINE</text>
+  <text class="s" x="552" y="162">authoritative for quality</text>
+  <path class="arrow design" d="M650,94 L650,108" marker-end="url(#ah4)"/>
+
+  <rect class="box" x="540" y="184" width="220" height="58"/><polygon class="tick" points="746,184 760,184 760,198"/>
+  <text class="t" x="552" y="206">Authorization</text>
+  <text class="s" x="552" y="224">person's review · protected main</text>
+  <text class="s" x="552" y="236">compliance authority · tokens</text>
+
+  <rect class="box" x="540" y="276" width="220" height="58"/>
+  <text class="t" x="552" y="298">Builder</text>
+  <text class="s" x="552" y="316">change code and tests</text>
+  <text class="s" x="552" y="328">fixes its own change from CI</text>
+
+  <!-- policy decision back to quality evidence -->
+  <path class="arrow design" d="M540,139 L520,139 L520,100 L265,100 L265,198 L252,198" marker-end="url(#ah4)"/>
+  <text class="lbl" x="300" y="95">the decision, as evidence</text>
+
+  <!-- route to builder; advance up to authorization -->
+  <path class="arrow design" d="M500,318 L538,318" marker-end="url(#ah4)"/>
+  <text class="lbl" x="503" y="312">route</text>
+  <path class="arrow design" d="M500,290 L522,290 L522,224 L538,224" marker-end="url(#ah4)"/>
+  <text class="lbl key" x="430" y="268">advance: up to here, never past</text>
+  <path class="arrow design" d="M760,305 L772,305 L772,65 L762,65" marker-end="url(#ah4)"/>
+
+  <!-- what the harness cannot do -->
+  <rect class="box frame" x="540" y="372" width="220" height="76"/>
+  <text class="t" x="552" y="394">Never from the harness</text>
+  <text class="lbl warn" x="552" y="412">override BLOCK · lift QUARANTINE</text>
+  <text class="lbl warn" x="552" y="427">change thresholds · merge · deploy</text>
+  <text class="lbl warn" x="552" y="442">widen scope, rights or ceilings</text>
+  <path class="arrow blocked" d="M500,345 L560,372"/>
+  <line class="xmark" x1="523" y1="350" x2="535" y2="362"/><line class="xmark" x1="535" y1="350" x2="523" y2="362"/>
+
+  <!-- loops -->
+  <line class="sep" x1="20" y1="468" x2="760" y2="468"/>
+  <text class="band" x="20" y="490">LOOP A · RUNTIME ADAPTATION · ONE TASK</text>
+  <text class="lbl" x="20" y="508">telemetry and quality evidence → decision table → one bounded action → execution → new telemetry and evidence</text>
+  <text class="lbl" x="20" y="524">short-term memory only · never writes long-term memory</text>
+
+  <text class="band" x="20" y="552">LOOP B · ORGANIZATIONAL LEARNING · ACROSS TASKS</text>
+  <text class="lbl" x="20" y="570">sealed decision records and outcomes → causal attribution → standing → promotion → retrieval</text>
+  <text class="lbl" x="20" y="586">validated history only · never acts on a running task · neither loop changes model weights</text>
+</svg>

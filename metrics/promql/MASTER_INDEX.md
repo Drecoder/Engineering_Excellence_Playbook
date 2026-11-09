@@ -107,3 +107,17 @@ emits these from its decision (`decision` is `PASS`, `BLOCK` or `QUARANTINE`; `r
 | **Quarantine Rate** | `sum(increase(policy_engine_decisions_total{decision="QUARANTINE"}[7d])) / sum(increase(policy_engine_decisions_total[7d]))` |
 | **Findings by Rule** | `sum by (rule) (increase(policy_engine_findings_total[7d]))` |
 | **Evidence Failures** | `sum(increase(policy_engine_findings_total{rule=~"QP-00[1-6]"}[1d]))` (a normalizer or baseline problem, not the code) |
+
+## 10. Adaptive Harness
+
+See `06_AgentZone/09_Adaptive_Harness.md`. Status: proposed; nothing emits these yet. `action` is a
+`harness_decision.v1` action kind; `state` is `GREEN`, `RED` or `UNKNOWN`.
+
+| Goal | PromQL Query |
+| :--- | :--- |
+| **Decisions by Action** | `sum by (action) (increase(harness_decisions_total[1d]))` |
+| **Escalations to a Person** | `sum(increase(harness_decisions_total{action="escalate_to_human"}[7d])) / sum(increase(harness_decisions_total[7d]))` |
+| **Time Spent Not GREEN** | `avg by (subject) (harness_reliability_state{state!="GREEN"})` |
+| **Thrash (steering changes per task)** | `histogram_quantile(0.90, sum by (le) (rate(harness_steering_changes_per_task_bucket[7d])))` |
+| **Knowledge Promotions** | `sum by (kind) (increase(knowledge_promotions_total[30d]))` |
+| **Knowledge in RED Standing** | `sum(knowledge_records{standing="RED", status="active"})` |

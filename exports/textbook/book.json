@@ -824,6 +824,29 @@
             "Why should a read-back return derived values rather than raw telemetry?",
             "What makes a dynamic agent's steering decision auditable after the fact?"
           ]
+        },
+        {
+          "title": "The Adaptive Harness (Proposed)",
+          "sources": [
+            "06_AgentZone/09_Adaptive_Harness.md"
+          ],
+          "objectives": [
+            "Name the four inputs the harness weighs, and the parts it may never override",
+            "Distinguish short-term operational state from long-term organizational knowledge, and say when one may be promoted into the other",
+            "Determine a reliability state (GREEN, RED or UNKNOWN) for a service, the harness itself or a practice, from existing SLO and burn-rate definitions",
+            "Use the decision table to find the bounded actions allowed for a given set of evidence"
+          ],
+          "takeaways": [
+            "The harness chooses how execution proceeds, never whether anything ships: its action vocabulary cannot approve, merge, deploy or edit policy.",
+            "Semantic similarity finds candidates; only verified, attributed outcomes establish trust.",
+            "UNKNOWN never becomes GREEN, missing quality evidence never passes, and an empty input is never healthy.",
+            "Runtime adaptation and organizational learning are separate loops joined only by sealed decision records; neither changes model weights."
+          ],
+          "questions": [
+            "A change gets PASS, the harness is GREEN and the target service has no SLOs. Which row of the decision table applies, and what may the harness do?",
+            "A practice was cited in a change that later caused an incident in a different component of the same service. Is the defect attributed to the practice? Why or why not?",
+            "Why must a transient tool failure never lower confidence in an engineering practice?"
+          ]
         }
       ]
     },
@@ -911,6 +934,10 @@
       "A component that holds a loop and makes decisions, such as an agent. Contrast with tool."
     ],
     [
+      "Adaptive harness",
+      "The loop that picks an agent's next bounded step from knowledge, reliability states, quality evidence and governance state, without authorizing anything."
+    ],
+    [
       "Adversarially verified",
       "The final verification stage: every known bypass path, the exception path, and the authorization boundary have been tested against the real cloud."
     ],
@@ -929,6 +956,10 @@
     [
       "Blast radius",
       "How much of a system a change can affect, approximated by the callers of the changed code."
+    ],
+    [
+      "Causal attribution",
+      "Counting a defect against a knowledge record only through a recorded chain: a decision cited the record, led to a change, and a defect record names that change."
     ],
     [
       "Claim check",
@@ -1007,6 +1038,10 @@
       "L = lambda W: items in a system equal arrival rate times residence time."
     ],
     [
+      "Memory promotion",
+      "Turning a sealed, validated and attributed short-term outcome into a long-term knowledge record; transient events are never promoted."
+    ],
+    [
       "Model ladder",
       "Ordered model rungs from cheapest to strongest; a difficulty score selects the cheapest that fits."
     ],
@@ -1037,6 +1072,10 @@
     [
       "Red/Green logic",
       "A decision signal: Green proceeds, Red pauses for review or fixing."
+    ],
+    [
+      "Reliability state",
+      "GREEN, RED or UNKNOWN for a named subject (a service, the harness or a practice), from existing SLO and burn-rate definitions; UNKNOWN is never treated as GREEN."
     ],
     [
       "Reuse map",

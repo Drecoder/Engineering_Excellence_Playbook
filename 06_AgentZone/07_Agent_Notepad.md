@@ -186,6 +186,9 @@ Four memory states, each with its own writer, lifetime, and trust:
   pushes, abandoned pull requests, mechanical conflict hunks.
 - **When memories disagree:** playbook rules first, then a person's decision, then `VERIFIED` and
   `OBSERVED` entries, then claims, then the model's general knowledge.
+- **Promotion and standing:** what may enter the index, when an outcome counts as verified, how a
+  defect is attributed to a record, and how reliability orders retrieval are in
+  `09_Adaptive_Harness.md` §3–5 (`knowledge_record.v1`).
 - **Weights are not a memory path.** Nothing an agent does at runtime changes model weights;
   fine-tuning from the record stays closed unless decided as a protected change.
 
