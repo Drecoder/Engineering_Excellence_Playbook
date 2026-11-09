@@ -1,0 +1,29 @@
+{
+  "schema_version": "price_table.v1",
+  "version": "2026-11-08.1",
+  "effective_from": "2026-11-08T00:00:00Z",
+  "currency": "USD",
+  "prices": [
+    {
+      "provider": "example-provider",
+      "model_id": "example-small-model-v1",
+      "basis": "list_price",
+      "rates": { "prompt": 150000, "cached": 75000, "completion": 600000 },
+      "source": "Example rates for the contract tests; not a real provider's prices."
+    },
+    {
+      "provider": "example-provider",
+      "model_id": "example-large-model-v1",
+      "basis": "list_price",
+      "rates": { "prompt": 3000000, "cached": 300000, "completion": 15000000 },
+      "source": "Example rates for the contract tests; not a real provider's prices."
+    },
+    {
+      "provider": "example-self-hosted",
+      "model_id": "example-small-model-v1",
+      "basis": "self_hosted_estimate",
+      "rates": { "prompt": 20000, "cached": 20000, "completion": 80000 },
+      "source": "Example: measured spot compute cost per token; not a real measurement."
+    }
+  ]
+}

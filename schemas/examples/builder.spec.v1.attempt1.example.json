@@ -1,0 +1,46 @@
+{
+  "schema_version": "builder.spec.v1",
+  "task_id": "KAN-14",
+  "ticket_key": "KAN-14",
+  "run_id": "0a1b2c3d-4e5f-4061-8273-8495a6b7c8d9",
+  "issued_at": "2026-11-08T22:30:00Z",
+  "source": {
+    "kind": "board",
+    "ticket_key": "KAN-14",
+    "approved_by": "712020:0f1e2d3c-example-account",
+    "approved_at": "2026-11-08T21:05:12Z"
+  },
+  "repository": {
+    "full_name": "Drecoder/factory-orchestrator",
+    "base_branch": "main"
+  },
+  "work_branch": "factory/KAN-14",
+  "lease": {
+    "fencing_token": 7,
+    "expires_at": "2026-11-08T22:45:00Z"
+  },
+  "attempt": 1,
+  "task": {
+    "title": "Orchestrator: ignore Ready tickets without the factory label",
+    "description": "The orchestrator leases only tickets in Ready that carry the `factory` label. Any other Ready ticket is left alone: no lease, no Builder call, no board write.",
+    "acceptance_criteria": [
+      "A Ready ticket without the factory label causes no lease, no Builder call and zero writes.",
+      "A Ready ticket with the factory label is leased once."
+    ],
+    "acceptance_tests": [
+      "test/acceptance/ignores-unlabelled.test.ts"
+    ],
+    "scope": {
+      "paths": [
+        "src/",
+        "test/"
+      ]
+    }
+  },
+  "task_sha256": "sha256:fc9a2668dca875f72907bc84b80add70c0030a0ba3fde0d03857d742aeb14f0d",
+  "budget": {
+    "limit_micro_usd": 2000000,
+    "spent_micro_usd": 0,
+    "price_table_version": "2026-11-08.1"
+  }
+}
