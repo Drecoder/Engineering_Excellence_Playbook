@@ -38,7 +38,7 @@
           <rect class="box" x="20" y="40" width="200" height="44"/>
           <text class="t" x="34" y="60">rig</text><text class="xs" x="34" y="75">main pins b62752b</text>
           <rect class="box design" x="20" y="100" width="200" height="44"/>
-          <text class="t" x="34" y="120">jira-orchestrator</text><text class="xs" x="34" y="135">KAN-14 · not built</text>
+          <text class="t" x="34" y="120">factory-orchestrator</text><text class="xs" x="34" y="135">KAN-14 · partial</text>
           <rect class="box" x="20" y="160" width="200" height="44"/>
           <text class="t" x="34" y="180">aws-builder-agent</text><text class="xs" x="34" y="195">install-bubblewrap (pending)</text>
           <rect class="box" x="20" y="220" width="200" height="44"/>
