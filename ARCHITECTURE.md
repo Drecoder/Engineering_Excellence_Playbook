@@ -41,7 +41,7 @@ dashed outline is design, and red is refused.
 | Central CI factory | `sovereign-vpc-gcp` (`.github/workflows/gates.yml`) | One reusable workflow running every repo's gates, including the acceptance tests and the Policy Engine | **Partial**: rework and scanners in review; runner image not digest-pinned; the Policy Engine is not wired in (KAN-43) |
 | rig | `rig` | Deterministic tool: static and trace `ARCH-*` checks and features for the Builder's pre-PR scan | **Built**; trace checks in review |
 | Builder | `aws-builder-agent` | Actor: turns an approved task into a pull request | **Built** (PR-driven); compliance scoping skill **Design** |
-| Orchestrator | `jira-orchestrator` | Leases one ticket, hands the Builder the spec, reads the CI result, bounces up to the attempt limit, stops at the budget | **Design** (KAN-14) |
+| Orchestrator | `factory-orchestrator` | Leases one ticket, hands the Builder the spec, reads the CI result, bounces up to the attempt limit, stops at the budget | **Partial** (KAN-14): decision logic and fenced lease pass on in-memory fakes, in review (#2); no Jira, DynamoDB or GitHub adapters, no telemetry, not deployed |
 | Quality evaluator and Policy Engine | — | Run in CI: normalize tool output to `quality_metrics.v1`, then decide PASS, BLOCK or QUARANTINE (`00_UniversalStandards/17_Quality_Policy_Engine.md`) | **Design**: reference engine and 54 vectors specified; service not built (KAN-18, KAN-41) |
 | Intake (wizard, deep dives, grooming) | — | Requirement → approved spec | **Design** |
 | Compliance authority and deployment guard | `compliance-authority` | Decide and sign releases; consume tokens at deploy | **Partial**: CLI with local stores and keys; no network API, not in the deploy path |

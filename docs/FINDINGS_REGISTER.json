@@ -236,6 +236,46 @@
       "closed": "2026-11-03",
       "verification": "the owner's permission set denies creating users, access keys and console passwords, and re-activating a key; iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03; 08_Governance_Guardrails.md section 3 and 01b_AWS_Specifics.md updated",
       "residual": "the service control policy for workloads is proven only once a member account is vended (F-0016)"
+    },
+    {
+      "id": "F-0021",
+      "journal": "## 2026-11-08: The orchestrator's fence survived dropping its token check",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0022",
+      "journal": "## 2026-11-08: The board ticket's format had no contract",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0023",
+      "journal": "## 2026-11-09: The orchestrator's SLIs query metrics its code never emits",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-09",
+      "due": "2027-02-07",
+      "status": "open"
+    },
+    {
+      "id": "F-0024",
+      "journal": "## 2026-11-09: AWS infrastructure has no Terragrunt root or state backend to land in",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-09",
+      "due": "2027-02-07",
+      "status": "open"
     }
   ],
   "controls": [
