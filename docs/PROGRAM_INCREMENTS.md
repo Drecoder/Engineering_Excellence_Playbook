@@ -174,10 +174,41 @@ escaping the gate, total cost per accepted change, and recovery time after a fai
 and dogfood runs are reused rather than paying for new ones. The result is published with its
 method, sample size, and limits.
 
-## 8️⃣ Risks
+## 8️⃣ The Learning Loop: CAPA Graph and Risk-Weighted Learning
+
+The proof journal's third role, the *feedback mechanism*, is designed but not wired. This track wires
+it (`06_AgentZone/10_CAPA_Graph_and_Risk_Weighted_Learning.md`, proposed): the journal and register
+become a property graph, every rule, defect pattern and component gets a risk weight W(N), and, only
+after a protected decision, an agent is fine-tuned on its own corrected mistakes.
+
+It scores nothing by itself: points come from what it makes enforceable (unenforced rules found and
+closed, preventive actions shown not to prevent). It is sequenced behind the hard stop: nothing in it
+is built until CRAP and mutation analysis run in the central CI. The graph and the weights come first
+because they are useful without any training and cost almost nothing to run. Fine-tuning comes last,
+because it needs data the factory does not have yet: 29 journal entries are a taxonomy, not a
+training set.
+
+| ID | PI | Story | Done when | Depends on |
+| :--- | :--- | :--- | :--- | :--- |
+| LL-1 | PI-1 | Codify the standard | Owner-approved; the standard moves from codification to test design | — |
+| LL-2 | PI-2 | Machine-readable register references | The register's next contract version carries `rule_ids`, `components`, `fingerprints` and `recurs`; all existing rows backfilled through a reviewed change; contract tests pass | LL-1 |
+| LL-3 | PI-2 | Graph projection and advisory report | A job, at zero when idle, rebuilds the graph from `main`, checks every invariant, seals a digest-named snapshot, and reports unenforced rules, recurrence after `proven`, and control coverage from evidence as spans, logs and metrics | LL-2; the Policy Engine enforcing in CI |
+| LL-4 | PI-3 | Calibrate W(N) | On a held-out later window, W ranks the nodes that recurred above those that did not and beats severity alone; parameters in a versioned policy file with the calibration report. Until then W steers nothing | LL-3; enough findings to hold out a window |
+| LL-5 | PI-3 | Harvest preference pairs | Admitted pairs (verified corrections of the agent's own `code` or `config` failures, human-approved merges, no secrets, no evaluator paths) are built from sealed run records with full provenance | The notepad sealing run records; event handoff |
+| LL-6 | PI-4 | First risk-weighted fine-tune of the open-weight Builder | Decision D1 taken as a protected change; at least 500 admitted pairs across 10 rules; the adapter passes every golden task (including an evasive designed-to-fail task) and every promotion criterion of the standard's §8, and is promoted on the ladder by a human-approved change | LL-4, LL-5, D1 |
+
+**Exit for the track:** a defect class the factory used to repeat stops recurring, and the graph
+shows which loop stopped it: a new control (rules, through people) or a tuned adapter (weights,
+through the same gates).
+
+## 9️⃣ Risks
 
 - **Branch protection is the swing factor:** without it, no stage passes about 75. The plan now
   allows it on private repositories; it waits on the approver identity (Open Decisions).
+- **Learning from too little, or from the wrong signal:** fine-tuning on a few dozen findings would
+  overfit, and training against the same detectors that label the data teaches evasion. The pair
+  floor, time-split evaluation, escaped-defect tracking and evasive golden tasks guard against both
+  (LL-6).
 - **Genesis depends on the agent loop,** and the Builder cannot yet write workflow YAML or Markdown.
   That capability is a PI-2 prerequisite for PI-3.
 - **Cost:** a live telemetry backend and cloud backends add monthly spend; each rule is met with
@@ -189,6 +220,8 @@ Recorded here until decided, each by a reviewed change to this document:
 
 - **PI length:** two weeks while most work is hand-built, or four to six weeks once the agent loop
   and pilot users take part.
+- **Opening fine-tuning from the record (D1):** a protected change; until decided it stays closed
+  (`06_AgentZone/07_Agent_Notepad.md` §7), and LL-6 does not start.
 
 ## Decided
 

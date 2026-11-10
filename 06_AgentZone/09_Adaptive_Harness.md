@@ -399,6 +399,7 @@ Conflicts with existing standards are recorded here, not resolved by editing tho
 | Telemetry-driven dynamics | PROPOSED | The standard (`08`) |
 | Reliability-aware retrieval | PROPOSED | This standard and `knowledge_record.v1`. No index is built. |
 | Quality-aware harness behavior | PROPOSED | This standard, `harness_decision.v1` and diagram sheet 4 |
+| CAPA graph and risk weights (Loop B's source of sealed reliability records) | PROPOSED | `10_CAPA_Graph_and_Risk_Weighted_Learning.md`. Weights steer nothing until calibrated (§4) |
 | Runtime integrations (telemetry read-back, Policy Engine service, retrieval index, harness) | PROPOSED | None built |
 
 | Stage | State |
