@@ -475,6 +475,14 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   recorded chain, transient failures are never promoted, and a practice exists only when a person
   approves it in a reviewed playbook change. No numeric retrieval weight is used before it is
   calibrated.
+- **Target design: the CAPA record is a graph, and its risk weights steer nothing until calibrated**
+  (`06_AgentZone/10_CAPA_Graph_and_Risk_Weighted_Learning.md`, proposed). The journal and register
+  are projected, never edited, into a property graph whose snapshot is rebuilt deterministically and
+  sealed. Each rule, defect pattern and component gets a risk weight W(N) from severity, recurrence,
+  centrality and temporal decay; it is reported, and used for nothing until calibrated. Fine-tuning
+  stays closed until decided as a protected change; when open, an agent trains only on verified
+  corrections of its own mistakes, never on claims, transient failures or its evaluator's files, and
+  a tuned model ships only as a human-approved ladder change after its golden tasks pass.
 - **Golden tasks.** Each agent keeps a fixed set of golden tasks (including at least one
   designed-to-fail task) that must pass before a change to its prompt, tools, or model ships.
 

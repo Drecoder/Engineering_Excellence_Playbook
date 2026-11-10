@@ -47,6 +47,7 @@ dashed outline is design, and red is refused.
 | Compliance authority and deployment guard | `compliance-authority` | Decide and sign releases; consume tokens at deploy | **Partial**: CLI with local stores and keys; no network API, not in the deploy path |
 | Agent notepad | `agent-notepad` | Working memory for every agent and task | **Partial**: library with in-memory and local file backends |
 | Adaptive harness | — | Picks an agent's next bounded step from knowledge, reliability states, quality evidence and governance state (`06_AgentZone/09_Adaptive_Harness.md`) | **Design**: proposed standard; contracts specified |
+| CAPA graph and risk-weighted learning | — | Projects the proof journal and CAPA register into a graph, computes risk weights W(N), and (after a protected decision) fine-tunes an agent on its own verified corrections (`06_AgentZone/10_CAPA_Graph_and_Risk_Weighted_Learning.md`) | **Design**: proposed standard; fine-tuning closed |
 | Messaging backbone | Genesis modules (AWS first) | Object store, event stream, bridge, fan-out, work queues | **Design**: SNS and SQS with claim checks, in the MVP (KAN-36); module specs pending |
 
 ## 3️⃣ The Path of a Change
