@@ -190,8 +190,8 @@ training set.
 
 | ID | PI | Story | Done when | Depends on |
 | :--- | :--- | :--- | :--- | :--- |
-| LL-1 | PI-1 | Codify the standard | Owner-approved; the standard moves from codification to test design | — |
-| LL-2 | PI-2 | Machine-readable register references | The register's next contract version carries `rule_ids`, `components`, `fingerprints` and `recurs`; all existing rows backfilled through a reviewed change; contract tests pass | LL-1 |
+| LL-1 | PI-1 | Codify the standard | **Done 2026-11-10** (#69): owner-approved; the standard moved to test design | — |
+| LL-2 | PI-2 | Machine-readable register references | The register's next contract version carries `rule_ids`, `components`, `fingerprints` and `recurs`; all existing rows backfilled through a reviewed change; contract tests pass. Shipped as `findings_register.v2`, which also names the register's agent (KAN-60) | LL-1 |
 | LL-3 | PI-2 | Graph projection and advisory report | A job, at zero when idle, rebuilds the graph from `main`, checks every invariant, seals a digest-named snapshot, and reports unenforced rules, recurrence after `proven`, and control coverage from evidence as spans, logs and metrics | LL-2; the Policy Engine enforcing in CI |
 | LL-4 | PI-3 | Calibrate W(N) | On a held-out later window, W ranks the nodes that recurred above those that did not and beats severity alone; parameters in a versioned policy file with the calibration report. Until then W steers nothing | LL-3; enough findings to hold out a window |
 | LL-5 | PI-3 | Harvest preference pairs | Admitted pairs (verified corrections of the agent's own `code` or `config` failures, human-approved merges, no secrets, no evaluator paths) are built from sealed run records with full provenance | The notepad sealing run records; event handoff |

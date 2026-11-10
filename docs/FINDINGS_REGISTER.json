@@ -1,5 +1,135 @@
 {
-  "schema_version": "findings_register.v1",
+  "schema_version": "findings_register.v2",
+  "agent": "builder",
+  "components": [
+    {
+      "id": "playbook",
+      "kind": "repository",
+      "name": "Engineering_Excellence_Playbook",
+      "depends_on": []
+    },
+    {
+      "id": "gcp-ci-project",
+      "kind": "cloud-project",
+      "name": "the GCP project that holds the CI runners and their state",
+      "depends_on": []
+    },
+    {
+      "id": "aws-account",
+      "kind": "cloud-account",
+      "name": "the AWS account (the organization's management account)",
+      "depends_on": []
+    },
+    {
+      "id": "sovereign-vpc-gcp",
+      "kind": "repository",
+      "name": "sovereign-vpc-gcp (the central CI factory and platform modules)",
+      "depends_on": [
+        {
+          "component": "playbook",
+          "kind": "contract"
+        },
+        {
+          "component": "gcp-ci-project",
+          "kind": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "genesis",
+      "kind": "repository",
+      "name": "Genesis",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        },
+        {
+          "component": "playbook",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "id": "factory-orchestrator",
+      "kind": "repository",
+      "name": "factory-orchestrator",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        },
+        {
+          "component": "playbook",
+          "kind": "contract"
+        },
+        {
+          "component": "genesis",
+          "kind": "build"
+        },
+        {
+          "component": "aws-account",
+          "kind": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "coqui-tts",
+      "kind": "repository",
+      "name": "coqui-tts",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        }
+      ]
+    },
+    {
+      "id": "aws-builder-agent",
+      "kind": "repository",
+      "name": "aws-builder-agent (the Builder)",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        },
+        {
+          "component": "playbook",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "id": "gcp-reviewer-agent",
+      "kind": "repository",
+      "name": "gcp-reviewer-agent (the Reviewer)",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        },
+        {
+          "component": "playbook",
+          "kind": "contract"
+        }
+      ]
+    },
+    {
+      "id": "agent-notepad",
+      "kind": "repository",
+      "name": "agent-notepad",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        },
+        {
+          "component": "playbook",
+          "kind": "contract"
+        }
+      ]
+    }
+  ],
   "findings": [
     {
       "id": "F-0001",
@@ -11,7 +141,18 @@
       "due": "2027-01-26",
       "status": "fixed",
       "closed": "2026-10-28",
-      "verification": "coqui-tts fd4d39c, 57e51ba; reports/phase1-equivalence-20261028T061544Z.json passes"
+      "verification": "coqui-tts fd4d39c, 57e51ba; reports/phase1-equivalence-20261028T061544Z.json passes",
+      "refs": {
+        "rule_ids": [
+          "00_UniversalStandards/06_Module_Refactor_Framework.md#Stage 1: Create Seams (No Behavior Change)"
+        ],
+        "components": [
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "behavior-never-verified"
+        ]
+      }
     },
     {
       "id": "F-0002",
@@ -23,7 +164,18 @@
       "due": "2027-01-26",
       "status": "fixed",
       "closed": "2026-10-28",
-      "verification": "coqui-tts 57e51ba; hardened run: 4 of 4 slides, exit 0"
+      "verification": "coqui-tts 57e51ba; hardened run: 4 of 4 slides, exit 0",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Container Rules"
+        ],
+        "components": [
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "write-to-read-only-root"
+        ]
+      }
     },
     {
       "id": "F-0003",
@@ -35,7 +187,19 @@
       "due": "2026-11-04",
       "status": "fixed",
       "closed": "2026-10-28",
-      "verification": "coqui-tts 4ce148f; Trivy no longer reports CVE-2025-32434"
+      "verification": "coqui-tts 4ce148f; Trivy no longer reports CVE-2025-32434",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules",
+          "SEC-012"
+        ],
+        "components": [
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "critical-cve-in-image"
+        ]
+      }
     },
     {
       "id": "F-0004",
@@ -47,7 +211,18 @@
       "due": "2026-11-27",
       "status": "fixed",
       "closed": "2026-10-28",
-      "verification": "sovereign-vpc-gcp #31 e323a06; agent-notepad: 130 packages, all licensed"
+      "verification": "sovereign-vpc-gcp #31 e323a06; agent-notepad: 130 packages, all licensed",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "check-never-shown-to-fail"
+        ]
+      }
     },
     {
       "id": "F-0005",
@@ -59,7 +234,18 @@
       "due": "2027-04-26",
       "status": "fixed",
       "closed": "2026-10-28",
-      "verification": "sovereign-vpc-gcp #31 8a6a506; same verdicts, denied-license fixture still blocks"
+      "verification": "sovereign-vpc-gcp #31 8a6a506; same verdicts, denied-license fixture still blocks",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Reuse Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "contract-logic-copied"
+        ]
+      }
     },
     {
       "id": "F-0006",
@@ -69,7 +255,20 @@
       "detected_by": "person",
       "found": "2026-10-28",
       "due": "2027-04-26",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Reuse Rules"
+        ],
+        "components": [
+          "aws-builder-agent",
+          "gcp-reviewer-agent",
+          "agent-notepad"
+        ],
+        "fingerprints": [
+          "telemetry-setup-copied"
+        ]
+      }
     },
     {
       "id": "F-0007",
@@ -81,7 +280,20 @@
       "due": "2026-11-27",
       "status": "proven",
       "closed": "2026-10-29",
-      "verification": "coqui-tts INC-001; run 40808933067; disk preflight cases on a real runner, sovereign-vpc-gcp #35"
+      "verification": "coqui-tts INC-001; run 40808933067; disk preflight cases on a real runner, sovereign-vpc-gcp #35",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "red-check-log-unread",
+          "scan-skipped-on-full-disk"
+        ]
+      }
     },
     {
       "id": "F-0008",
@@ -93,7 +305,18 @@
       "due": "2027-01-26",
       "status": "proven",
       "closed": "2026-10-29",
-      "verification": "sovereign-vpc-gcp INC-007; fixture fails on the old gate (run 40808542665), passes on the fixed one (run 40808502279)"
+      "verification": "sovereign-vpc-gcp INC-007; fixture fails on the old gate (run 40808542665), passes on the fixed one (run 40808502279)",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "gate-change-merged-unrun"
+        ]
+      }
     },
     {
       "id": "F-0009",
@@ -106,7 +329,22 @@
       "status": "fixed",
       "closed": "2026-10-29",
       "verification": "coqui-tts 749889f; reports/phase1-equivalence-20261029T022705Z.json; image findings 749 to 214, CRITICAL 0",
-      "residual": "the source-built ffmpeg is watched by version only (F-0015)"
+      "residual": "the source-built ffmpeg is watched by version only (F-0015)",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Container Rules",
+          "SEC-012"
+        ],
+        "components": [
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "critical-cve-in-image"
+        ],
+        "recurs": [
+          "F-0003"
+        ]
+      }
     },
     {
       "id": "F-0010",
@@ -119,7 +357,18 @@
       "status": "proven",
       "closed": "2026-10-29",
       "verification": "sovereign-vpc-gcp #34, #35, #37",
-      "residual": "8 of the gate's control classes are not yet proven (see controls)"
+      "residual": "8 of the gate's control classes are not yet proven (see controls)",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "check-never-shown-to-fail"
+        ]
+      }
     },
     {
       "id": "F-0011",
@@ -132,7 +381,24 @@
       "status": "fixed",
       "closed": "2026-10-29",
       "verification": "Genesis #3: the gate now runs on Genesis (run 40887705962)",
-      "residual": "the caller pinned to a full SHA on 2026-10-29 names @main on main as of 2026-11-08: see F-0028"
+      "residual": "the caller pinned to a full SHA on 2026-10-29 names @main on main as of 2026-11-08: see F-0028",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "00_UniversalStandards/15_Central_CI.md#Pinning"
+        ],
+        "components": [
+          "genesis",
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "private-gate-unreachable",
+          "gate-caller-pinned-to-branch"
+        ],
+        "antipattern_ids": [
+          "AP-GHA-002"
+        ]
+      }
     },
     {
       "id": "F-0012",
@@ -142,7 +408,18 @@
       "detected_by": "person",
       "found": "2026-10-29",
       "due": "2026-11-28",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Governance Rules"
+        ],
+        "components": [
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "project-outside-organization"
+        ]
+      }
     },
     {
       "id": "F-0013",
@@ -155,7 +432,21 @@
       "status": "fixed",
       "closed": "2026-11-03",
       "verification": "owner signs in through IAM Identity Center with MFA (sts get-caller-identity returns the AWSReservedSSO_AdministratorAccess role); the static key is inactive and the IAM credential report shows no active access keys on any user, root with MFA; the permission set's explicit deny on creating users, access keys and console passwords, and on re-activating a key, was shown to fail: iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03",
-      "residual": "verified by hand, not yet by CI: a daily check of the credential report waits for the agent roles; the inactive key and the old IAM user are deleted after a 7-day soak; the account is the organization's management account, where service control policies do not apply, so workloads move to member accounts (F-0016)"
+      "residual": "verified by hand, not yet by CI: a daily check of the credential report waits for the agent roles; the inactive key and the old IAM user are deleted after a 7-day soak; the account is the organization's management account, where service control policies do not apply, so workloads move to member accounts (F-0016)",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules",
+          "AGENTS.md#Governance Rules",
+          "SEC-004"
+        ],
+        "components": [
+          "aws-account"
+        ],
+        "fingerprints": [
+          "long-lived-access-key",
+          "account-outside-organization"
+        ]
+      }
     },
     {
       "id": "F-0014",
@@ -168,7 +459,18 @@
       "status": "proven",
       "closed": "2026-10-29",
       "verification": "journal check on main: run 40906894231 at f2d8897; #43 (an edited entry) fails, run 40904315387",
-      "residual": "immutability against an administrator waits for the notepad's hash-chained records"
+      "residual": "immutability against an administrator waits for the notepad's hash-chained records",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "rule-without-control"
+        ]
+      }
     },
     {
       "id": "F-0015",
@@ -178,7 +480,18 @@
       "detected_by": "person",
       "found": "2026-10-29",
       "due": "2027-01-27",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "source-build-tracked-by-version-only"
+        ]
+      }
     },
     {
       "id": "F-0016",
@@ -188,7 +501,20 @@
       "detected_by": "person",
       "found": "2026-10-29",
       "due": "2026-11-28",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "docs/POC_JOURNAL.md#Format: CAPA",
+          "AGENTS.md#Security Rules",
+          "SEC-004"
+        ],
+        "components": [
+          "aws-account"
+        ],
+        "fingerprints": [
+          "prevention-is-detection-only"
+        ]
+      }
     },
     {
       "id": "F-0017",
@@ -201,7 +527,19 @@
       "status": "fixed",
       "closed": "2026-10-29",
       "verification": "on main: run 40907358453 at c256d28 (register check and metrics), contract tests run 40907358223; 29 tests, four mutants caught",
-      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run; the control-catch share counts detected_by, set by hand and not verified against evidence (F-0019)"
+      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run; the control-catch share counts detected_by, set by hand and not verified against evidence (F-0019)",
+      "refs": {
+        "rule_ids": [
+          "docs/POC_JOURNAL.md#Format: CAPA",
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "findings-unranked"
+        ]
+      }
     },
     {
       "id": "F-0018",
@@ -213,7 +551,19 @@
       "due": "2027-01-27",
       "status": "proven",
       "closed": "2026-10-29",
-      "verification": "runs on main: 40906894231 (f2d8897), 40907358453 and 40907358223 (c256d28), 40907978656 (4c7d901)"
+      "verification": "runs on main: 40906894231 (f2d8897), 40907358453 and 40907358223 (c256d28), 40907978656 (4c7d901)",
+      "refs": {
+        "rule_ids": [
+          "docs/PROGRAM_INCREMENTS.md#How the Score Is Computed"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "control-not-running-on-main",
+          "findings-unranked"
+        ]
+      }
     },
     {
       "id": "F-0019",
@@ -223,7 +573,19 @@
       "detected_by": "person",
       "found": "2026-10-29",
       "due": "2027-01-27",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "docs/PROGRAM_INCREMENTS.md#How the Score Is Computed",
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "metric-counts-attribution-not-evidence"
+        ]
+      }
     },
     {
       "id": "F-0020",
@@ -236,7 +598,20 @@
       "status": "fixed",
       "closed": "2026-11-03",
       "verification": "the owner's permission set denies creating users, access keys and console passwords, and re-activating a key; iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03; 08_Governance_Guardrails.md section 3 and 01b_AWS_Specifics.md updated",
-      "residual": "the service control policy for workloads is proven only once a member account is vended (F-0016)"
+      "residual": "the service control policy for workloads is proven only once a member account is vended (F-0016)",
+      "refs": {
+        "rule_ids": [
+          "docs/POC_JOURNAL.md#Format: CAPA",
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#Governance Rules"
+        ],
+        "components": [
+          "aws-account"
+        ],
+        "fingerprints": [
+          "guardrail-misses-target"
+        ]
+      }
     },
     {
       "id": "F-0021",
@@ -246,7 +621,18 @@
       "detected_by": "person",
       "found": "2026-11-08",
       "due": "2027-02-06",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "00_UniversalStandards/14_Test_Quality.md#Mutation Testing: Do the Tests Notice?"
+        ],
+        "components": [
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "surviving-mutant-critical-path"
+        ]
+      }
     },
     {
       "id": "F-0022",
@@ -256,7 +642,20 @@
       "detected_by": "person",
       "found": "2026-11-08",
       "due": "2027-02-06",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Reuse Rules",
+          "AGENTS.md#Agent Rules"
+        ],
+        "components": [
+          "factory-orchestrator",
+          "playbook"
+        ],
+        "fingerprints": [
+          "boundary-without-contract"
+        ]
+      }
     },
     {
       "id": "F-0023",
@@ -266,7 +665,19 @@
       "detected_by": "person",
       "found": "2026-11-09",
       "due": "2027-02-07",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules",
+          "00_UniversalStandards/01_Deliverable_Lifecycle.md#Build"
+        ],
+        "components": [
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "sli-on-unemitted-metric"
+        ]
+      }
     },
     {
       "id": "F-0024",
@@ -276,7 +687,22 @@
       "detected_by": "person",
       "found": "2026-11-09",
       "due": "2027-02-07",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#IaC Rules",
+          "03_InfrastructureZone/01b_AWS_Specifics.md#Remote State"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "no-terragrunt-root"
+        ],
+        "antipattern_ids": [
+          "AP-TG-001"
+        ]
+      }
     },
     {
       "id": "F-0025",
@@ -289,7 +715,21 @@
       "status": "fixed",
       "closed": "2026-11-08",
       "verification": "rulesets 26828664, 26828926, 26829160 read back active with an empty bypass list on 2026-11-08; INC-001 record",
-      "residual": "approvals are 0 until agents act under their own identities; the designed-to-fail direct push is not yet run"
+      "residual": "approvals are 0 until agents act under their own identities; the designed-to-fail direct push is not yet run",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "playbook",
+          "genesis",
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "no-branch-protection",
+          "incident-not-journaled"
+        ]
+      }
     },
     {
       "id": "F-0026",
@@ -302,7 +742,18 @@
       "status": "fixed",
       "closed": "2026-11-08",
       "verification": "Genesis ruleset 26828926 read back with integration_id 15368 on all six checks on 2026-11-08",
-      "residual": "a later edit in the ruleset page can reset the source; the check that refuses a source-less required check is not yet built"
+      "residual": "a later edit in the ruleset page can reset the source; the check that refuses a source-less required check is not yet built",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "required-check-any-source"
+        ]
+      }
     },
     {
       "id": "F-0027",
@@ -312,7 +763,19 @@
       "detected_by": "person",
       "found": "2026-11-08",
       "due": "2027-02-06",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Application Architecture Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "rule-without-control"
+        ]
+      }
     },
     {
       "id": "F-0028",
@@ -322,7 +785,25 @@
       "detected_by": "person",
       "found": "2026-11-08",
       "due": "2026-12-08",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "00_UniversalStandards/15_Central_CI.md#Pinning"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "gate-caller-pinned-to-branch"
+        ],
+        "antipattern_ids": [
+          "AP-GHA-002"
+        ],
+        "recurs": [
+          "F-0011"
+        ]
+      }
     },
     {
       "id": "F-0029",
@@ -332,7 +813,45 @@
       "detected_by": "person",
       "found": "2026-11-08",
       "due": "2027-02-06",
-      "status": "open"
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Reuse Rules",
+          "AGENTS.md#Agent Rules"
+        ],
+        "components": [
+          "playbook",
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "boundary-without-contract"
+        ]
+      }
+    },
+    {
+      "id": "F-0030",
+      "journal": "## 2026-11-10: The journal's CAPA fields are not checked",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-10",
+      "due": "2027-02-08",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules",
+          "docs/POC_JOURNAL.md#Format: CAPA"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "rule-without-control"
+        ],
+        "recurs": [
+          "F-0014"
+        ]
+      }
     }
   ],
   "controls": [

@@ -43,13 +43,13 @@ from, with the commit SHA it was read at) and `content_sha256`.
 | Node | Key properties | Comes from |
 | :--- | :--- | :--- |
 | `Finding` | `register_id` (`F-0001`), `found`, `due`, `closed`, `status` (open, fixed, proven), `severity`, `category`, `detected_by` (control, person) | One journal entry plus its register row |
-| `Rule` | `rule_id` (`ARCH-*`, `SEC-*`, `GOV-*`, or an `AGENTS.md` section anchor), `zone`, `blocking` (true, false) | The entry's **Rule** field, resolved (§4 step 2) |
-| `Defect` | `fingerprint` (stable hash of the pattern, the path class and the rule), `antipattern_id` (from `schemas/antipatterns.v1.json`, when one matches) | The entry's **Problem** field |
+| `Rule` | `rule_id` (`ARCH-*`, `SEC-*`, `GOV-*`, or `PATH#HEADING` for a playbook section), `zone`, `blocking` (true, false) | The register row's `refs.rule_ids`, resolved by CI (§4 step 2) |
+| `Defect` | `fingerprint` (a stable slug of the defect pattern; two findings sharing a fingerprint and a rule are the same pattern), `antipattern_id` (from `schemas/antipatterns.v1.json`, when one matches) | The register row's `refs.fingerprints` and `refs.antipattern_ids` |
 | `RootCause` | `class` (missing control, wrong control, gap in a rule, unverified assumption, process), `summary` | **Root cause** |
 | `Correction` | `commits`, `pull_requests`, `changed_paths` | **Correction** and **Evidence** |
 | `PreventiveAction` | `kind` (check, signal, rule, contract), `implements_control` | **Preventive action** |
 | `Verification` | `kind` (designed-to-fail case, test run, drill, review), `evidence_tier` (`VERIFIED`, `OBSERVED`, `CLAIMED`), `run_ids` | **Verification** and **Evidence** |
-| `Component` | `repository`, `boundary` (package, module or Terragrunt unit), `data_class` | Evidence paths and the service design record |
+| `Component` | `kind` (repository, cloud project, cloud account), `name`, later `boundary` and `data_class` | The register's component registry; its `depends_on` entries are the `DEPENDS_ON` edges |
 | `Control` | `gate`, `proven` (has a designed-to-fail case) | The register's `controls` block |
 | `Agent` | `agent` (Builder, Reviewer, …), `model`, `prompt_version`, `adapter_digest` (null until §8) | Run records and commit trailers |
 
@@ -153,9 +153,12 @@ Each step is a tool (`01_Agent_Standards.md` §1a): typed input, typed output, n
 only when called, and its snapshot lives in the object store. A graph database is added only for a
 measured reason (query latency, size, concurrent readers), recorded in the change that adds it.
 
-**Gap this exposes:** the register's **Rule** column is prose today, so step 2 has to guess. The
-register's next contract version carries `rule_ids`, `components`, `fingerprints` and `recurs`, and
-the 29 existing rows are backfilled through a reviewed change (§11, LL-2).
+**Step 2 does not guess.** The journal's **Rule** field is prose, so the references live in the
+register (`findings_register.v2`): `rule_ids`, `components`, `fingerprints`, `antipattern_ids` and
+`recurs` on every row, and a component registry with its dependencies. The register check
+(`tests/journal/register.py`) resolves each one against its source on every pull request and
+rejects one that does not resolve, so the graph never meets an unresolved reference from the
+register (LL-2).
 
 ## 5️⃣ What the Graph Is For Before Any Training
 
@@ -313,15 +316,15 @@ Recorded here, not resolved by editing other standards.
 | :--- | :--- | :--- |
 | CAPA graph data model | PROPOSED | This standard |
 | Risk weight W(N) | PROPOSED | This standard; parameters uncalibrated |
-| Ingestion pipeline | PROPOSED | The journal and register it reads, and their CI checks |
+| Ingestion pipeline | PROPOSED | The journal and register it reads; the register's references resolved by CI (`findings_register.v2`) |
 | Preference pairs and risk-weighted fine-tuning | PROPOSED, closed by D1 | This standard |
 
 | Stage | State |
 | :--- | :--- |
 | 1. Hypothesis | Done (2026-11-09) |
 | 2. Codification | This standard |
-| 3. Review | Owner review of this standard |
-| 4. Test design | Not started: contracts `capa_record.v1`, `capa_graph_snapshot.v1`, `risk_weight_policy.v1`, `preference_pair.v1`, the register's next version, conformance vectors for every §2 invariant and for W, and the calibration protocol |
+| 3. Review | Done: approved and merged (#69, 2026-11-10) |
+| 4. Test design | In progress: `findings_register.v2` with resolved references (LL-2). Still to come: `capa_record.v1`, `capa_graph_snapshot.v1`, `risk_weight_policy.v1`, `preference_pair.v1`, conformance vectors for every §2 invariant and for W, and the calibration protocol |
 | 5. Implementation | Not started; the graph and W first (roadmap LL-2 to LL-4), training only after D1 |
 | 6. Validation | Not started |
 
