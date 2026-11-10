@@ -55,7 +55,8 @@ journal moves into the notepad's filing system, where each entry is a sealed, ha
 
 The journal is the immutable record; the **[CAPA register](FINDINGS_REGISTER.json)** is each
 finding's living status: one row per entry, with its category, severity, due date, status, closure
-date, and verification (contract `schemas/findings_register.v1.schema.json`). CI checks both on
+date, verification, and the references the CAPA graph reads: rules, components, fingerprints,
+and recurrences (contract `schemas/findings_register.v2.schema.json`). CI checks both on
 every pull request and every day.
 
 | Severity | Means | Deadline |
@@ -593,3 +594,28 @@ Preventive action (planned): a playbook pull request that adds both schemas, an 
 Verification: pending.
 Evidence: 07_SoftwareFactory/01_Software_Factory.md; 06_AgentZone/03_Software_Factory_Intake.md; KAN-14.
 Status: open.
+
+## 2026-11-10: The journal's CAPA fields are not checked
+
+- **Rule:** every finding is journaled in CAPA form: rule, problem, detection, root cause,
+  correction, preventive action, verification, evidence, and status (`AGENTS.md` → Observability
+  Rules; this journal's Format: CAPA).
+- **Problem:** 8 of 29 entries do not carry the fields in the documented form. The five entries of
+  2026-11-08 use plain `Rule:` lines instead of the bold list fields, and three entries (2026-10-28
+  telemetry copies, 2026-10-29 checks proven to fail, 2026-10-29 cloud project outside the
+  organization) have no Evidence field. A reader can follow them; the CAPA graph's extract step,
+  which parses the fields strictly and rejects an entry it cannot read
+  (`06_AgentZone/10_CAPA_Graph_and_Risk_Weighted_Learning.md` §4), would reject all eight.
+- **Detection:** a person, while backfilling the register's references for `findings_register.v2`.
+- **Root cause:** the format is written in this preamble, but the journal's checks test only that
+  entries are appended and that each has a register row. Nothing reads an entry's fields. This
+  recurs the 2026-10-29 finding that the append-only rule was not enforced: the same kind of
+  journal rule with no check behind it; that preventive action covered only appending.
+- **Correction:** none yet. Entries are never rewritten, so the eight stay as they are.
+- **Preventive action (planned):** a field check in `tests/journal/` that fails a new entry missing
+  any CAPA field in the bold list form, shown failing on a fixture first, with the existing eight
+  entries listed as known exceptions rather than edited.
+- **Verification:** pending.
+- **Evidence:** the field count run against this journal on 2026-11-10; the register's
+  `findings_register.v2` references for this entry (`recurs` F-0014).
+- **Status:** open.

@@ -234,8 +234,11 @@ Telemetry ships with the first line of code, not after the feature works (see
   increment's re-grade and case study read from it. When the notepad runs, the journal moves into
   its filing system as sealed records.
 - **Every finding is ranked, timed, and tracked to closure** in the CAPA register
-  (`docs/FINDINGS_REGISTER.json`, contract `findings_register.v1`): a category, a severity on the
-  contract's written rubric, a due date, status, closure date, and verification. Remediation
+  (`docs/FINDINGS_REGISTER.json`, contract `findings_register.v2`): a category, a severity on the
+  contract's written rubric, a due date, status, closure date, and verification. The register names
+  its agent, and each row names the rules it breaks, the components it affects, its defect
+  fingerprints and any earlier finding it recurs; CI resolves every reference against its source
+  and rejects one that does not resolve. Remediation
   deadlines are mandatory: critical 7 days, high 30, medium 90, low 180 from the day it was found.
   CI refuses a later due date, and an overdue open finding fails the daily run.
 - **Control effectiveness is measured, not assumed.** Every run reports the share of control

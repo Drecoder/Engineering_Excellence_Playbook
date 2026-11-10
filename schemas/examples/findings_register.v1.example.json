@@ -1,0 +1,410 @@
+{
+  "schema_version": "findings_register.v1",
+  "findings": [
+    {
+      "id": "F-0001",
+      "journal": "## 2026-10-28: The prototype never produced any audio",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2027-01-26",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "coqui-tts fd4d39c, 57e51ba; reports/phase1-equivalence-20261028T061544Z.json passes"
+    },
+    {
+      "id": "F-0002",
+      "journal": "## 2026-10-28: A model loader that writes broke on a read-only root",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2027-01-26",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "coqui-tts 57e51ba; hardened run: 4 of 4 slides, exit 0"
+    },
+    {
+      "id": "F-0003",
+      "journal": "## 2026-10-28: A CRITICAL CVE in the speech engine's runtime",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2026-11-04",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "coqui-tts 4ce148f; Trivy no longer reports CVE-2025-32434"
+    },
+    {
+      "id": "F-0004",
+      "journal": "## 2026-10-28: The license gate found no licenses",
+      "category": "supply-chain",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2026-11-27",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "sovereign-vpc-gcp #31 e323a06; agent-notepad: 130 packages, all licensed"
+    },
+    {
+      "id": "F-0005",
+      "journal": "## 2026-10-28: The license gate carried a copy of the contract",
+      "category": "reuse",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2027-04-26",
+      "status": "fixed",
+      "closed": "2026-10-28",
+      "verification": "sovereign-vpc-gcp #31 8a6a506; same verdicts, denied-license fixture still blocks"
+    },
+    {
+      "id": "F-0006",
+      "journal": "## 2026-10-28: Telemetry code copied across services",
+      "category": "reuse",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2027-04-26",
+      "status": "open"
+    },
+    {
+      "id": "F-0007",
+      "journal": "## 2026-10-28: An image scan that ran out of disk passed for the expected CVE block",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-28",
+      "due": "2026-11-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "coqui-tts INC-001; run 40808933067; disk preflight cases on a real runner, sovereign-vpc-gcp #35"
+    },
+    {
+      "id": "F-0008",
+      "journal": "## 2026-10-28: The central gate type-checked tests before installing pytest",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-10-28",
+      "due": "2027-01-26",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "sovereign-vpc-gcp INC-007; fixture fails on the old gate (run 40808542665), passes on the fixed one (run 40808502279)"
+    },
+    {
+      "id": "F-0009",
+      "journal": "## 2026-10-29: A CRITICAL CVE removed at its source, not excepted",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "control",
+      "found": "2026-10-29",
+      "due": "2026-11-05",
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "coqui-tts 749889f; reports/phase1-equivalence-20261029T022705Z.json; image findings 749 to 214, CRITICAL 0",
+      "residual": "the source-built ffmpeg is watched by version only (F-0015)"
+    },
+    {
+      "id": "F-0010",
+      "journal": "## 2026-10-29: The central gate's checks proven to fail",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "sovereign-vpc-gcp #34, #35, #37",
+      "residual": "8 of the gate's control classes are not yet proven (see controls)"
+    },
+    {
+      "id": "F-0011",
+      "journal": "## 2026-10-29: A public repository could not call the private gate",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "control",
+      "found": "2026-10-29",
+      "due": "2026-11-28",
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "Genesis #3: the gate now runs on Genesis (run 40887705962)",
+      "residual": "the caller pinned to a full SHA on 2026-10-29 names @main on main as of 2026-11-08: see F-0028"
+    },
+    {
+      "id": "F-0012",
+      "journal": "## 2026-10-29: A cloud project outside the organization",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2026-11-28",
+      "status": "open"
+    },
+    {
+      "id": "F-0013",
+      "journal": "## 2026-10-29: A long-lived administrator key on a standalone AWS account",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2026-11-05",
+      "status": "fixed",
+      "closed": "2026-11-03",
+      "verification": "owner signs in through IAM Identity Center with MFA (sts get-caller-identity returns the AWSReservedSSO_AdministratorAccess role); the static key is inactive and the IAM credential report shows no active access keys on any user, root with MFA; the permission set's explicit deny on creating users, access keys and console passwords, and on re-activating a key, was shown to fail: iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03",
+      "residual": "verified by hand, not yet by CI: a daily check of the credential report waits for the agent roles; the inactive key and the old IAM user are deleted after a 7-day soak; the account is the organization's management account, where service control policies do not apply, so workloads move to member accounts (F-0016)"
+    },
+    {
+      "id": "F-0014",
+      "journal": "## 2026-10-29: The journal's append-only rule was not enforced",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "journal check on main: run 40906894231 at f2d8897; #43 (an edited entry) fails, run 40904315387",
+      "residual": "immutability against an administrator waits for the notepad's hash-chained records"
+    },
+    {
+      "id": "F-0015",
+      "journal": "## 2026-10-29: The source-built ffmpeg is watched by version only",
+      "category": "supply-chain",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "open"
+    },
+    {
+      "id": "F-0016",
+      "journal": "## 2026-10-29: INC-002's prevention was only an alert",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2026-11-28",
+      "status": "open"
+    },
+    {
+      "id": "F-0017",
+      "journal": "## 2026-10-29: Findings had no risk ranking or deadline",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "fixed",
+      "closed": "2026-10-29",
+      "verification": "on main: run 40907358453 at c256d28 (register check and metrics), contract tests run 40907358223; 29 tests, four mutants caught",
+      "residual": "the daily failure on an overdue finding is proven by test, not yet by a real overdue run; the control-catch share counts detected_by, set by hand and not verified against evidence (F-0019)"
+    },
+    {
+      "id": "F-0018",
+      "journal": "## 2026-10-29: The journal's controls run on main, and earlier findings were ranked",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "proven",
+      "closed": "2026-10-29",
+      "verification": "runs on main: 40906894231 (f2d8897), 40907358453 and 40907358223 (c256d28), 40907978656 (4c7d901)"
+    },
+    {
+      "id": "F-0019",
+      "journal": "## 2026-10-29: The control-catch metric measures a recorded attribution",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-10-29",
+      "due": "2027-01-27",
+      "status": "open"
+    },
+    {
+      "id": "F-0020",
+      "journal": "## 2026-11-03: The planned key guardrail would not have reached the account it guards",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-03",
+      "due": "2027-02-01",
+      "status": "fixed",
+      "closed": "2026-11-03",
+      "verification": "the owner's permission set denies creating users, access keys and console passwords, and re-activating a key; iam:CreateUser returned AccessDenied (explicit deny in an identity-based policy) on 2026-11-03; 08_Governance_Guardrails.md section 3 and 01b_AWS_Specifics.md updated",
+      "residual": "the service control policy for workloads is proven only once a member account is vended (F-0016)"
+    },
+    {
+      "id": "F-0021",
+      "journal": "## 2026-11-08: The orchestrator's fence survived dropping its token check",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0022",
+      "journal": "## 2026-11-08: The board ticket's format had no contract",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0023",
+      "journal": "## 2026-11-09: The orchestrator's SLIs query metrics its code never emits",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-09",
+      "due": "2027-02-07",
+      "status": "open"
+    },
+    {
+      "id": "F-0024",
+      "journal": "## 2026-11-09: AWS infrastructure has no Terragrunt root or state backend to land in",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-09",
+      "due": "2027-02-07",
+      "status": "open"
+    },
+    {
+      "id": "F-0025",
+      "journal": "## 2026-11-08: The branch-protection incident was never journaled",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-10-26",
+      "due": "2026-11-25",
+      "status": "fixed",
+      "closed": "2026-11-08",
+      "verification": "rulesets 26828664, 26828926, 26829160 read back active with an empty bypass list on 2026-11-08; INC-001 record",
+      "residual": "approvals are 0 until agents act under their own identities; the designed-to-fail direct push is not yet run"
+    },
+    {
+      "id": "F-0026",
+      "journal": "## 2026-11-08: A required check could be met by any app",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2026-12-08",
+      "status": "fixed",
+      "closed": "2026-11-08",
+      "verification": "Genesis ruleset 26828926 read back with integration_id 15368 on all six checks on 2026-11-08",
+      "residual": "a later edit in the ruleset page can reset the source; the check that refuses a source-less required check is not yet built"
+    },
+    {
+      "id": "F-0027",
+      "journal": "## 2026-11-08: The design record had no gate",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    },
+    {
+      "id": "F-0028",
+      "journal": "## 2026-11-08: The Genesis gate pin recorded as fixed on 2026-10-29 is @main on main",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2026-12-08",
+      "status": "open"
+    },
+    {
+      "id": "F-0029",
+      "journal": "## 2026-11-08: builder.spec.v1 and the price table have no contract",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-08",
+      "due": "2027-02-06",
+      "status": "open"
+    }
+  ],
+  "controls": [
+    {
+      "id": "C-001",
+      "name": "Python: tests type-checked before pytest is installed",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #34"
+    },
+    {
+      "id": "C-002",
+      "name": "Image: a CRITICAL finding in the runtime image blocks",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #37"
+    },
+    {
+      "id": "C-003",
+      "name": "Image rule: every service ships an image or declares why not",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #36, image-declared cases"
+    },
+    {
+      "id": "C-004",
+      "name": "Disk preflight: an unmeetable need fails at once",
+      "proven": true,
+      "evidence": "sovereign-vpc-gcp #35"
+    },
+    {
+      "id": "C-005",
+      "name": "Journal: an edited, deleted, or reordered entry is refused",
+      "proven": true,
+      "evidence": "#43, run 40904315387"
+    },
+    {
+      "id": "C-006",
+      "name": "TypeScript path of the gate",
+      "proven": false
+    },
+    {
+      "id": "C-007",
+      "name": "Go path of the gate",
+      "proven": false
+    },
+    {
+      "id": "C-008",
+      "name": "Coverage floor blocks below the floor",
+      "proven": false
+    },
+    {
+      "id": "C-009",
+      "name": "License gate refuses a denied license, inside the self-test",
+      "proven": false
+    },
+    {
+      "id": "C-010",
+      "name": "Gitleaks refuses a committed secret",
+      "proven": false
+    },
+    {
+      "id": "C-011",
+      "name": "trivy fs blocks a CRITICAL dependency",
+      "proven": false
+    },
+    {
+      "id": "C-012",
+      "name": "Semgrep blocks an ERROR finding",
+      "proven": false
+    },
+    {
+      "id": "C-013",
+      "name": "HCL checks and SEC-* policies block",
+      "proven": false
+    }
+  ]
+}

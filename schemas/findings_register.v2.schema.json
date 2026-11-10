@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "findings_register.v2.schema.json",
+  "title": "findings_register.v2",
+  "description": "The CAPA register, version 2: one row per finding in the proof journal (docs/POC_JOURNAL.md), kept at docs/FINDINGS_REGISTER.json. The journal is the immutable record of each finding; the register is its living status: risk ranking, deadline, closure, and verification. Severity rubric: critical = an exploitable security exposure or a control that admits what it must refuse (fix within 7 days); high = a control that silently does not run or checks nothing, or a governance gap that removes a guardrail (30 days); medium = a defect or missing proof with a working control around it (90 days); low = maintainability or reuse (180 days). A row's due date is at most its found date plus its severity's days, checked by tests/journal/register.py, which also fails an overdue open finding on the daily run, computes the control-effectiveness metrics, and reports production readiness: false while any critical or high finding in the security or governance category is open. Version 2 names the register's agent (KAN-60) and adds what the CAPA graph needs (06_AgentZone/10_CAPA_Graph_and_Risk_Weighted_Learning.md §2, §4): a registry of components with their dependencies, and on every finding machine-readable references to the rules it breaks, the components it affects, its defect fingerprints, matching anti-patterns, and the earlier findings it recurs. tests/journal/register.py resolves every reference against its source (rule catalogs, playbook headings, the anti-pattern catalog, this registry) and rejects one that does not resolve; nothing is guessed. findings_register.v1 stays accepted for the deprecation window stated in that check.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "agent",
+    "components",
+    "findings",
+    "controls"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "findings_register.v2"
+    },
+    "agent": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "The agent whose journal and register this is (KAN-60): builder for the factory platform's register, pentest later. Each agent reads only its own register, so finding IDs are unambiguous within it."
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every component a finding can affect. depends_on edges point from the dependent to its dependency; the graph's centrality is computed on them.",
+      "items": {
+        "$ref": "#/$defs/component"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "controls": {
+      "type": "array",
+      "description": "The gate's control classes, each proven or not: shown to fail on the defect it guards against. The share proven is a control-effectiveness metric.",
+      "items": {
+        "$ref": "#/$defs/control"
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "journal",
+        "category",
+        "severity",
+        "detected_by",
+        "found",
+        "due",
+        "status",
+        "refs"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^F-[0-9]{4}$"
+        },
+        "journal": {
+          "type": "string",
+          "pattern": "^## [0-9]{4}-[0-9]{2}-[0-9]{2}: .+$",
+          "description": "The journal entry's heading, exactly."
+        },
+        "category": {
+          "enum": [
+            "security",
+            "governance",
+            "supply-chain",
+            "ci",
+            "reliability",
+            "quality",
+            "reuse"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "detected_by": {
+          "enum": [
+            "control",
+            "person"
+          ],
+          "description": "control: a check, scanner, or test reported it; person: someone looking found it. Set by hand and not yet verified against evidence: the share recorded as found by controls is reported as an attribution, not as verified detection effectiveness."
+        },
+        "found": {
+          "type": "string",
+          "format": "date"
+        },
+        "due": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "fixed",
+            "proven"
+          ],
+          "description": "fixed: the correction and preventive action are in place; proven: a designed-to-fail case shows the control catches the defect."
+        },
+        "closed": {
+          "type": "string",
+          "format": "date"
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Where the proof is: runs, commits, pull requests, reports."
+        },
+        "residual": {
+          "type": "string",
+          "minLength": 10,
+          "description": "What a closed finding still leaves open, stated rather than implied."
+        },
+        "refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rule_ids",
+            "components",
+            "fingerprints"
+          ],
+          "description": "Machine-readable references for the CAPA graph. Each is resolved by tests/journal/register.py.",
+          "properties": {
+            "rule_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "The rules the finding breaks: a catalog ID (ARCH-NNN in architecture_rules.v1, SEC-NNN in 07_Security_In_Depth.md, GOV-NNN in governance_baseline.v1), or PATH#HEADING: a playbook Markdown file and the exact text of one of its headings, without a leading emoji number.",
+              "items": {
+                "type": "string",
+                "pattern": "^((ARCH|SEC|GOV)-[0-9]{3}|[A-Za-z0-9_./-]+\\.md#[^#\\s].*)$"
+              }
+            },
+            "components": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
+              "description": "Component ids from the registry."
+            },
+            "fingerprints": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
+              "description": "Stable slugs of the defect patterns. Two findings with a shared fingerprint and a shared rule are the same pattern."
+            },
+            "antipattern_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^AP-[A-Z0-9]+-[0-9]{3}$"
+              },
+              "description": "Matching entries of schemas/antipatterns.v1.json."
+            },
+            "recurs": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^F-[0-9]{4}$"
+              },
+              "description": "Earlier findings this one recurs: closed before this one was found, sharing a fingerprint and a rule."
+            }
+          }
+        },
+        "ticket": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]+-[0-9]+$",
+          "description": "The finding's ticket key (KAN-60 slice 4). Optional in v2; the check that requires it on open rows comes with that slice."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "open"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "closed"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "closed",
+              "verification"
+            ]
+          }
+        }
+      ]
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "proven"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^C-[0-9]{3}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 5
+        },
+        "proven": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 5
+        }
+      },
+      "if": {
+        "properties": {
+          "proven": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "evidence"
+        ]
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "depends_on"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "kind": {
+          "enum": [
+            "repository",
+            "cloud-project",
+            "cloud-account"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "description": "How the journal names it: a repository name, or a cloud project or account as described."
+        },
+        "depends_on": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "component",
+              "kind"
+            ],
+            "properties": {
+              "component": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
+              "kind": {
+                "enum": [
+                  "runtime",
+                  "build",
+                  "contract",
+                  "data"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
