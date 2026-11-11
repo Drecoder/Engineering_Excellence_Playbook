@@ -960,6 +960,29 @@
           "dependency-range-not-pinned"
         ]
       }
+    },
+    {
+      "id": "F-0037",
+      "journal": "## 2026-11-11: The playbook sync PR names the wrong source",
+      "category": "supply-chain",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Supply Chain Rules",
+          "AGENTS.md#Reuse Rules"
+        ],
+        "components": [
+          "playbook",
+          "aws-builder-agent"
+        ],
+        "fingerprints": [
+          "provenance-mislabeled"
+        ]
+      }
     }
   ],
   "controls": [

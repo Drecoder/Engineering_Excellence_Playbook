@@ -711,3 +711,28 @@ Status: open.
 - **Verification:** pending.
 - **Evidence:** aws-builder-agent `package.json` at `48edcd8`.
 - **Status:** open.
+
+## 2026-11-11: The playbook sync PR names the wrong source
+
+- **Rule:** know what goes into every artifact and prove where it came from (`AGENTS.md` → Supply
+  Chain Rules); contracts are vendored from the pinned playbook (`AGENTS.md` → Reuse Rules).
+- **Problem:** the sync pull request's title, commit message and body name
+  `peter-evans/create-pull-request@22a9089…` as the source of the vendored rules, not the
+  playbook. A reviewer cannot tell from the pull request which playbook version it adopts.
+  aws-builder-agent #9 shows it; the vendored `.playbook/README.md` in the same pull request
+  names the playbook correctly (`590f09f`, the consumer's pin).
+- **Detection:** a person, reading aws-builder-agent #9 on 2026-11-11.
+- **Root cause:** `action.yml` reads `github.action_ref` and `github.action_repository` in the
+  `with:` inputs of its nested `peter-evans/create-pull-request` step. There they name the nested
+  action, not the playbook. Only the action's own `run` step reads them correctly. No test covered
+  the action.
+- **Correction:** none yet. aws-builder-agent #9 is held unmerged.
+- **Preventive action (planned):** the vendor step publishes the playbook's ref and repository as
+  outputs, the pull-request step reads those, and a contract test fails any nested-action step that
+  reads `github.action_*`, shown failing on the action as it was. The contract tests run on changes
+  to `action.yml`.
+- **Verification:** pending: the test fails on the old action and passes on the fixed one, and the
+  next sync pull request in a consumer names the playbook commit.
+- **Evidence:** aws-builder-agent #9 (title and body, `.playbook/README.md`); `action.yml` at
+  `af9d918`.
+- **Status:** open.
