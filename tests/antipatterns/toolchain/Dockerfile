@@ -39,23 +39,23 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl unzip xz-utils libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSfLo /tmp/trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
+RUN curl -sSfL --retry 5 --retry-all-errors --connect-timeout 20 -o /tmp/trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
     && echo "${TRIVY_SHA256}  /tmp/trivy.tgz" | sha256sum -c - \
     && tar -xzf /tmp/trivy.tgz -C /usr/local/bin trivy \
-    && curl -sSfLo /tmp/tflint.zip "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip" \
+    && curl -sSfL --retry 5 --retry-all-errors --connect-timeout 20 -o /tmp/tflint.zip "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip" \
     && echo "${TFLINT_SHA256}  /tmp/tflint.zip" | sha256sum -c - \
     && unzip -q /tmp/tflint.zip -d /usr/local/bin \
-    && curl -sSfLo /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-linux-x86_64" \
+    && curl -sSfL --retry 5 --retry-all-errors --connect-timeout 20 -o /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-linux-x86_64" \
     && echo "${HADOLINT_SHA256}  /usr/local/bin/hadolint" | sha256sum -c - \
     && chmod 0755 /usr/local/bin/hadolint \
-    && curl -sSfLo /tmp/sc.txz "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+    && curl -sSfL --retry 5 --retry-all-errors --connect-timeout 20 -o /tmp/sc.txz "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
     && echo "${SHELLCHECK_SHA256}  /tmp/sc.txz" | sha256sum -c - \
     && tar -xJf /tmp/sc.txz -C /tmp \
     && mv "/tmp/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/ \
-    && curl -sSfLo /usr/local/bin/squawk "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
+    && curl -sSfL --retry 5 --retry-all-errors --connect-timeout 20 -o /usr/local/bin/squawk "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
     && echo "${SQUAWK_SHA256}  /usr/local/bin/squawk" | sha256sum -c - \
     && chmod 0755 /usr/local/bin/squawk \
-    && curl -sSfLo /tmp/pint.tgz "https://github.com/cloudflare/pint/releases/download/v${PINT_VERSION}/pint-${PINT_VERSION}-linux-amd64.tar.gz" \
+    && curl -sSfL --retry 5 --retry-all-errors --connect-timeout 20 -o /tmp/pint.tgz "https://github.com/cloudflare/pint/releases/download/v${PINT_VERSION}/pint-${PINT_VERSION}-linux-amd64.tar.gz" \
     && echo "${PINT_SHA256}  /tmp/pint.tgz" | sha256sum -c - \
     && mkdir -p /tmp/pint && tar -xzf /tmp/pint.tgz -C /tmp/pint \
     && find /tmp/pint -type f -name 'pint*' -perm -u+x -exec mv {} /usr/local/bin/pint \; \
