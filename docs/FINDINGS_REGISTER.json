@@ -876,7 +876,7 @@
       "detected_by": "person",
       "found": "2026-11-11",
       "due": "2026-12-11",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Container Rules",
@@ -889,7 +889,10 @@
         "fingerprints": [
           "runner-os-unpinned"
         ]
-      }
+      },
+      "closed": "2026-11-11",
+      "verification": "aws-builder-agent repinned to sovereign-vpc-gcp 9ef7890 (#43) in #23 (merge 1b24733); TypeScript gates with bubblewrap pass on ubuntu-24.04 on #23 and on #24 (f63b646) and #22 (4f72e40) rebased onto it",
+      "residual": "interim only: the permanent fix is KAN-66 (gates in a digest-pinned container); consumer gates run on pull requests only, so main has no run of its own"
     },
     {
       "id": "F-0034",
@@ -1131,7 +1134,7 @@
       "detected_by": "control",
       "found": "2026-11-11",
       "due": "2027-02-09",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Container Rules",
@@ -1143,7 +1146,10 @@
         "fingerprints": [
           "critical-cve-in-image"
         ]
-      }
+      },
+      "closed": "2026-11-11",
+      "verification": "aws-builder-agent #23 (merge 1b24733): image build, tests and scan pass with OpenTofu 1.12.1 and terragrunt 1.2.1 checksum-pinned on node:22-trixie-slim@sha256:8658a93e…; rerun green on #24 and #22",
+      "residual": "the base digest is bumped by hand; aws-builder-agent's Dependabot has no docker ecosystem"
     },
     {
       "id": "F-0045",
