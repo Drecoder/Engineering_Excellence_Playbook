@@ -1,0 +1,10 @@
+# Every change to the default branch needs the owner's code-owner review (Engineering
+# Excellence Playbook, AGENTS.md: main requires the person's code-owner review), so every path
+# has an owner. That also puts every pull request not opened as the owner, Dependabot's
+# included, in the owner's review queue. Enforced once a ruleset requires code-owner review.
+* @Drecoder
+
+# Named again so a later, narrower rule cannot drop them: workflows and CI configuration
+# (agents cannot change their evaluator), and vendored playbook files (05_Standards_Distribution).
+/.github/ @Drecoder
+/.ci/ @Drecoder
