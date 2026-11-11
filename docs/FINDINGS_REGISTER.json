@@ -128,6 +128,21 @@
           "kind": "contract"
         }
       ]
+    },
+    {
+      "id": "compliance-authority",
+      "kind": "repository",
+      "name": "compliance-authority",
+      "depends_on": [
+        {
+          "component": "sovereign-vpc-gcp",
+          "kind": "build"
+        },
+        {
+          "component": "playbook",
+          "kind": "contract"
+        }
+      ]
     }
   ],
   "findings": [
@@ -896,6 +911,53 @@
         ],
         "fingerprints": [
           "scale-to-zero-without-trigger"
+        ]
+      }
+    },
+    {
+      "id": "F-0035",
+      "journal": "## 2026-11-11: Playbook pin bumps cannot pass the vendored-contracts check",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Reuse Rules",
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "playbook",
+          "agent-notepad",
+          "aws-builder-agent",
+          "compliance-authority",
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "sync-runs-after-its-check"
+        ]
+      }
+    },
+    {
+      "id": "F-0036",
+      "journal": "## 2026-11-11: aws-builder-agent declares its npm dependencies as caret ranges",
+      "category": "supply-chain",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-05-10",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "aws-builder-agent"
+        ],
+        "fingerprints": [
+          "dependency-range-not-pinned"
         ]
       }
     }

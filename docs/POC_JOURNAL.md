@@ -663,3 +663,51 @@ Status: open.
 - **Verification:** pending: a job queued against an empty pool runs, and the pool returns to zero.
 - **Evidence:** sovereign-vpc-gcp #41 and #42 runs; the managed-group resize on 2026-11-11; KAN-67.
 - **Status:** open.
+
+## 2026-11-11: Playbook pin bumps cannot pass the vendored-contracts check
+
+- **Rule:** contracts have one home and are vendored as `.playbook/`, checked byte-for-byte against
+  the pin (`AGENTS.md` → Reuse Rules); pins are updated through gated pull requests (`AGENTS.md` →
+  Supply Chain Rules).
+- **Problem:** in the consumer repositories, Dependabot bumps the playbook action's pin in
+  `sync-playbook-rules.yml` without changing `.playbook/`. The consumer's "Vendored contracts match
+  the pin" check fails on that pull request, because the vendored files are only regenerated after
+  the bump merges, when the sync workflow runs on the push to `main`. Every playbook bump must
+  therefore merge red, and `main` is out of sync until a second pull request merges.
+  compliance-authority #10 fails this way, missing every contract added since `37853f5`.
+- **Detection:** a person, reading the failing check's log on compliance-authority #10 during the
+  2026-11-11 factory CI survey.
+- **Root cause:** the sync was designed as a post-merge reaction to the pin, while the check that
+  enforces it runs before the merge. Nothing produces the pin and the vendored files in the same
+  change.
+- **Correction:** none yet. compliance-authority #10 stays open until the corrected sync can
+  replace it.
+- **Preventive action (planned):** in agent-notepad, aws-builder-agent, compliance-authority and
+  coqui-tts, Dependabot ignores the playbook action, and the sync workflow takes a `ref` input on
+  `workflow_dispatch` so one pull request changes the pin and `.playbook/` together; the push
+  trigger stays as a backstop.
+- **Verification:** pending: a dispatched sync opens a pull request that passes the vendored-contracts
+  check before it merges, in each of the four repositories.
+- **Evidence:** compliance-authority #10, run 42997795613; each repository's
+  `.github/workflows/sync-playbook-rules.yml` and `.github/dependabot.yml`.
+- **Status:** open.
+
+## 2026-11-11: aws-builder-agent declares its npm dependencies as caret ranges
+
+- **Rule:** pin every input: packages by exact version in a committed lockfile, updated through
+  gated pull requests, never through floating ranges (`AGENTS.md` → Supply Chain Rules).
+- **Problem:** every dependency in aws-builder-agent's `package.json` is a `^` range (for example
+  `"@opentelemetry/api": "^1.9.1"`). The lockfile fixes what is installed today, but any
+  regeneration of it can move every package within its range without a reviewed change to the
+  declared versions.
+- **Detection:** a person, reading the manifest while preparing the repository's grouped
+  Dependabot configuration on 2026-11-11.
+- **Root cause:** not established. The other TypeScript repository, agent-notepad, declares exact
+  versions; nothing in the central gates checks the manifest for ranges.
+- **Correction:** none. The owner decided on 2026-11-11 to keep the ranges for now rather than
+  convert them in the Dependabot change.
+- **Preventive action (planned):** convert the manifest to exact versions in its own pull request,
+  and a central gate check that fails a manifest declaring a range, shown failing on a fixture.
+- **Verification:** pending.
+- **Evidence:** aws-builder-agent `package.json` at `48edcd8`.
+- **Status:** open.
