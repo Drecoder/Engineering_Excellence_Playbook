@@ -361,6 +361,10 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   public access is blocked by default; state buckets are encrypted, versioned, and access-logged.
 - **Enforced as code:** `SEC-*` policies run on every plan; a failing policy blocks the change.
   Exceptions live in a reviewed policy file with an owner and an expiry.
+- **New vulnerabilities in unchanged code are fixed automatically:** every factory repository has
+  vulnerability alerts and Dependabot security updates on, so a newly published advisory opens a fix
+  pull request that runs every gate. This complements the scanners, which catch vulnerabilities only
+  when the code changes, and short-lived federated identity, which removes long-lived keys.
 - **Gates block on critical only:** scanners block on CRITICAL severity or any CISA KEV entry;
   pass/fail checks (format, lint, type check) and `SEC-*` always block. One addition: the Policy
   Engine blocks a change that **introduces** a dependency vulnerability of moderate, high or
@@ -431,6 +435,11 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   Auto-merge is limited to process classes promoted to L3 or above under Autonomy Rules, never to
   a protected class. Agents author changes under their own App identities, never the person's;
   the Reviewer never submits an approval, and `main` requires the person's code-owner review.
+- **The one class at L3 today is `dependency_patch`** (`schemas/autonomy_policy.v1.json`). The shared
+  `dependabot-auto-merge.yml` turns on GitHub auto-merge only for a Dependabot pull request that changes
+  only dependency manifests and lockfiles with patch or minor updates, and only when `main` requires
+  status checks, since without them GitHub merges at once. GitHub Actions bumps, playbook changes and
+  major updates stay with the owner.
 - **Third-party coding agents are allowed only behind the same invariant.** A platform-external
   agent (e.g. GitHub Copilot) may **propose** — open a PR, push to a PR branch — but its output
   passes the same deterministic gates and the same human-approved merge, and never bypasses them.

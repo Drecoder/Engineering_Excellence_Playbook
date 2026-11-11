@@ -1201,6 +1201,28 @@
           "agent-acts-as-person"
         ]
       }
+    },
+    {
+      "id": "F-0047",
+      "journal": "## 2026-11-11: dependency_patch promoted to L3 below its interim evidence target",
+      "category": "governance",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-05-10",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Autonomy Rules"
+        ],
+        "components": [
+          "playbook",
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "promotion-below-evidence-target"
+        ]
+      }
     }
   ],
   "controls": [
