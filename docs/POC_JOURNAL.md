@@ -663,3 +663,76 @@ Status: open.
 - **Verification:** pending: a job queued against an empty pool runs, and the pool returns to zero.
 - **Evidence:** sovereign-vpc-gcp #41 and #42 runs; the managed-group resize on 2026-11-11; KAN-67.
 - **Status:** open.
+
+## 2026-11-11: Playbook pin bumps cannot pass the vendored-contracts check
+
+- **Rule:** contracts have one home and are vendored as `.playbook/`, checked byte-for-byte against
+  the pin (`AGENTS.md` → Reuse Rules); pins are updated through gated pull requests (`AGENTS.md` →
+  Supply Chain Rules).
+- **Problem:** in the consumer repositories, Dependabot bumps the playbook action's pin in
+  `sync-playbook-rules.yml` without changing `.playbook/`. The consumer's "Vendored contracts match
+  the pin" check fails on that pull request, because the vendored files are only regenerated after
+  the bump merges, when the sync workflow runs on the push to `main`. Every playbook bump must
+  therefore merge red, and `main` is out of sync until a second pull request merges.
+  compliance-authority #10 fails this way, missing every contract added since `37853f5`.
+- **Detection:** a person, reading the failing check's log on compliance-authority #10 during the
+  2026-11-11 factory CI survey.
+- **Root cause:** the sync was designed as a post-merge reaction to the pin, while the check that
+  enforces it runs before the merge. Nothing produces the pin and the vendored files in the same
+  change.
+- **Correction:** none yet. compliance-authority #10 stays open until the corrected sync can
+  replace it.
+- **Preventive action (planned):** in agent-notepad, aws-builder-agent, compliance-authority and
+  coqui-tts, Dependabot ignores the playbook action, and the sync workflow takes a `ref` input on
+  `workflow_dispatch` so one pull request changes the pin and `.playbook/` together; the push
+  trigger stays as a backstop.
+- **Verification:** pending: a dispatched sync opens a pull request that passes the vendored-contracts
+  check before it merges, in each of the four repositories.
+- **Evidence:** compliance-authority #10, run 42997795613; each repository's
+  `.github/workflows/sync-playbook-rules.yml` and `.github/dependabot.yml`.
+- **Status:** open.
+
+## 2026-11-11: aws-builder-agent declares its npm dependencies as caret ranges
+
+- **Rule:** pin every input: packages by exact version in a committed lockfile, updated through
+  gated pull requests, never through floating ranges (`AGENTS.md` → Supply Chain Rules).
+- **Problem:** every dependency in aws-builder-agent's `package.json` is a `^` range (for example
+  `"@opentelemetry/api": "^1.9.1"`). The lockfile fixes what is installed today, but any
+  regeneration of it can move every package within its range without a reviewed change to the
+  declared versions.
+- **Detection:** a person, reading the manifest while preparing the repository's grouped
+  Dependabot configuration on 2026-11-11.
+- **Root cause:** not established. The other TypeScript repository, agent-notepad, declares exact
+  versions; nothing in the central gates checks the manifest for ranges.
+- **Correction:** none. The owner decided on 2026-11-11 to keep the ranges for now rather than
+  convert them in the Dependabot change.
+- **Preventive action (planned):** convert the manifest to exact versions in its own pull request,
+  and a central gate check that fails a manifest declaring a range, shown failing on a fixture.
+- **Verification:** pending.
+- **Evidence:** aws-builder-agent `package.json` at `48edcd8`.
+- **Status:** open.
+
+## 2026-11-11: The playbook sync PR names the wrong source
+
+- **Rule:** know what goes into every artifact and prove where it came from (`AGENTS.md` → Supply
+  Chain Rules); contracts are vendored from the pinned playbook (`AGENTS.md` → Reuse Rules).
+- **Problem:** the sync pull request's title, commit message and body name
+  `peter-evans/create-pull-request@22a9089…` as the source of the vendored rules, not the
+  playbook. A reviewer cannot tell from the pull request which playbook version it adopts.
+  aws-builder-agent #9 shows it; the vendored `.playbook/README.md` in the same pull request
+  names the playbook correctly (`590f09f`, the consumer's pin).
+- **Detection:** a person, reading aws-builder-agent #9 on 2026-11-11.
+- **Root cause:** `action.yml` reads `github.action_ref` and `github.action_repository` in the
+  `with:` inputs of its nested `peter-evans/create-pull-request` step. There they name the nested
+  action, not the playbook. Only the action's own `run` step reads them correctly. No test covered
+  the action.
+- **Correction:** none yet. aws-builder-agent #9 is held unmerged.
+- **Preventive action (planned):** the vendor step publishes the playbook's ref and repository as
+  outputs, the pull-request step reads those, and a contract test fails any nested-action step that
+  reads `github.action_*`, shown failing on the action as it was. The contract tests run on changes
+  to `action.yml`.
+- **Verification:** pending: the test fails on the old action and passes on the fixed one, and the
+  next sync pull request in a consumer names the playbook commit.
+- **Evidence:** aws-builder-agent #9 (title and body, `.playbook/README.md`); `action.yml` at
+  `af9d918`.
+- **Status:** open.
