@@ -8,6 +8,7 @@ on:
       - "schemas/**"
       - "docs/FINDINGS_REGISTER.json"
       - "tests/contracts/**"
+      - "action.yml"
       - "tests/antipatterns/toolchain/**"
       - ".github/workflows/contracts.yml"
   push:
@@ -16,6 +17,7 @@ on:
       - "schemas/**"
       - "docs/FINDINGS_REGISTER.json"
       - "tests/contracts/**"
+      - "action.yml"
       - "tests/antipatterns/toolchain/**"
       - ".github/workflows/contracts.yml"
 
