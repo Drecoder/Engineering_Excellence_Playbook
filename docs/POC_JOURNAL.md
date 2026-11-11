@@ -934,3 +934,28 @@ Status: open.
 - **Evidence:** the authors of the pull requests above; sovereign-vpc-gcp ruleset 27052237;
   KAN-69.
 - **Status:** open.
+
+## 2026-11-11: dependency_patch promoted to L3 below its interim evidence target
+
+- **Rule:** autonomy is granted per process class through a reviewed change, one level at a time,
+  and L3 needs at least 300 defect-free events at 95% confidence (`AGENTS.md` → Autonomy Rules;
+  `schemas/autonomy_policy.v1.json` interim targets).
+- **Problem:** the owner promoted `dependency_patch` from L1 to L3 on the evidence of a run of
+  Dependabot pull requests approved without a change, about a dozen, not 300, and skipping L2.
+  The promotion is real, so the policy now differs from the evidence its own target requires.
+- **Detection:** the agent, checking the interim targets while drafting the promotion.
+- **Root cause:** human review of these pull requests was the factory's bottleneck. The owner was
+  approving single-package updates the deterministic gates already fully cover, and the review
+  added no detection (`10_Autonomy_by_Evidence.md`: the human adds no detection).
+- **Correction:** the promotion is narrowed instead of withheld. Only Dependabot pull requests that
+  change only manifests and lockfiles, with patch or minor updates, merge without a person, and
+  only after every required check on `main` is green, including CRAP and mutation
+  (sovereign-vpc-gcp `dependabot-auto-merge.yml`, 9 cases, 5 of 5 condition mutants killed). A
+  repository without required checks never auto-merges.
+- **Preventive action (planned):** count each auto-merged update as an event and each defect
+  traced to one (a revert, an incident) as a defect. Demotion is automatic on a defect or an
+  out-of-control signal, as for any class.
+- **Verification:** pending: 300 defect-free auto-merged events at 95% confidence, which closes this
+  entry; any traced defect demotes the class.
+- **Evidence:** sovereign-vpc-gcp #47; this pull request's policy change.
+- **Status:** open.
