@@ -736,3 +736,175 @@ Status: open.
 - **Evidence:** aws-builder-agent #9 (title and body, `.playbook/README.md`); `action.yml` at
   `af9d918`.
 - **Status:** open.
+
+## 2026-11-11: Six repositories have no protection on main
+
+- **Rule:** staging and prod merges need human approval, enforced by branch protection with no
+  bypass; agents cannot change their evaluator, and `main` requires the person's code-owner review
+  (`AGENTS.md` → Security Rules and Agent Rules).
+- **Problem:** sovereign-vpc-gcp, aws-builder-agent, agent-notepad, compliance-authority, coqui-tts
+  and gcp-reviewer-agent have no ruleset and no branch protection on `main`. Anyone with write
+  access can push directly, including to the central gates in sovereign-vpc-gcp, which every
+  repository runs; the CODEOWNERS files merged on 2026-11-11 are not enforced there. The Playbook,
+  Genesis and factory-orchestrator do have rulesets.
+- **Detection:** a person, checking each repository's rules on `main` (`GET
+  /repos/{repo}/rules/branches/main`) while triaging red runs on 2026-11-11.
+- **Root cause:** rulesets were added repository by repository as each was set up; nothing lists
+  which repositories lack one, and the playbook names no check for it.
+- **Correction:** none yet. The owner applies the factory-orchestrator ruleset (no deletion, no
+  force-push, pull request with code-owner review, required status checks) to the six repositories,
+  sovereign-vpc-gcp first.
+- **Preventive action (planned):** a scheduled check that fails when any factory repository's `main`
+  lacks those rules, shown failing on one that does.
+- **Verification:** pending: each of the six returns the four rule types on `main`.
+- **Evidence:** `GET /repos/Drecoder/{repo}/rules/branches/main` for each repository on 2026-11-11;
+  F-0025.
+- **Status:** open.
+
+## 2026-11-11: The sovereign-vpc-gcp apply has failed on every push since October
+
+- **Rule:** read every red check's log; failed applies are metrics with alerts (`AGENTS.md` → CI
+  Rules and Observability Rules).
+- **Problem:** every apply on `main` has failed since October (#11 through #38), so "Apply (dev)"
+  never ran: #38 merged but never reached GCP, and #39's plan fails on the missing output
+  `inference_bench_sa_email`. Live state and `main` diverged for weeks (issue #26).
+- **Detection:** a person, surveying the factory's red checks on 2026-11-11; no alert fired.
+- **Root cause:** two defects in the apply's gates call: it omits `no-image-reason`, so the image
+  rule fails closed, and the Debian 12 self-hosted runner has no Python 3.12 for `setup-python`,
+  which also causes the exit-127, missing-coverage and license-scan errors. Nothing alerts on a
+  failed apply.
+- **Correction:** sovereign-vpc-gcp #44 adds `no-image-reason` to `apply.yml`; a runner image on an
+  exact Ubuntu 24.04 image (Python 3.12 available) replaces `debian-cloud/debian-12`. Then an apply
+  lands #38, and #39 can plan.
+- **Preventive action (planned):** a failed-apply metric with an alert (the observability rule
+  above), tracked with KAN-67's runner work.
+- **Verification:** pending: an apply on `main` succeeds and #39's plan passes.
+- **Evidence:** sovereign-vpc-gcp run 41755822228 (log lines 3143 and 12818); run 41755407595 (#39);
+  issue #26; #44.
+- **Status:** open.
+
+## 2026-11-11: Genesis applies on every push to main
+
+- **Rule:** plan, never apply outside the separate post-merge pipeline with its own scoped identity;
+  Terragrunt, never bare `terraform`; Genesis merges need human approval (`AGENTS.md` → Agent, IaC
+  and Governance Rules).
+- **Problem:** `.github/workflows/terraform-apply.yml` runs `terraform apply -auto-approve` on every
+  push to `main`, with bare `terraform` and a hard-coded mock token. Today it targets a placeholder
+  endpoint and fails, but any merge triggers it, and Genesis is the repository that owns the
+  guardrails.
+- **Detection:** a person, reading Genesis's workflows while triaging its four red pull requests on
+  2026-11-11.
+- **Root cause:** the workflow predates the playbook's apply rules and was never brought under them;
+  no check lists workflows that apply on push.
+- **Correction:** planned as Genesis PR 1: the apply runs on `workflow_dispatch` only, merged before
+  any other Genesis change.
+- **Preventive action (planned):** the Terragrunt and pinned OpenTofu layout decided for Genesis,
+  with apply in its own pipeline and identity.
+- **Verification:** pending: a push to Genesis `main` starts no apply.
+- **Evidence:** Genesis `.github/workflows/terraform-apply.yml` at `main`; Terraform Apply runs on
+  `main`, latest failure at `667eb1b`.
+- **Status:** open.
+
+## 2026-11-11: A Genesis governance module file holds only a file path
+
+- **Rule:** `terragrunt hcl fmt` and `validate` pass before IaC work is done (`AGENTS.md` → IaC
+  Rules and Local Validation Commands).
+- **Problem:** `modules/governance/gcp/org_policy_identity_controls.tf` contains only the Windows
+  path `C:\WS\genesis\modules\governance\gcp\org_policy_identity_controls.tf`. The HCL gate stops on
+  it with "Invalid character", and the identity org-policy controls it should hold are missing.
+- **Detection:** a person, reading the HCL gate's log on Genesis #3 on 2026-11-11.
+- **Root cause:** not established; the path looks pasted or redirected into the file in place of its
+  contents.
+- **Correction:** none yet. The owner restores the file from the local copy, or removes it if it was
+  never meant to be committed.
+- **Preventive action (planned):** the HCL gate already fails closed on it; no new control.
+- **Verification:** pending: the HCL gate passes on Genesis.
+- **Evidence:** Genesis #3, HCL gates log.
+- **Status:** open.
+
+## 2026-11-11: Genesis CI cannot pass: no OpenTofu, no quality file, no image declaration
+
+- **Rule:** the factory installs its own pinned toolchain; each repository holds
+  `.ci/quality.v1.json`; every service ships an image or declares why not (`AGENTS.md` → CI, Test
+  Quality and Container Rules).
+- **Problem:** no Genesis pull request can pass: Terratest fails with `exec: "tofu": executable file
+  not found in $PATH`, the quality gate fails closed on the missing `.ci/quality.v1.json`, and the
+  image rule fails because the caller sets neither `image-target` nor `no-image-reason`. Genesis #1,
+  #3, #4 and #5 are all red for these reasons, besides F-0041 and F-0043.
+- **Detection:** a person, reading each red check's log on Genesis #1, #3, #4 and #5 on 2026-11-11.
+- **Root cause:** the central gates gained these requirements after Genesis's caller was written,
+  and Genesis moved to OpenTofu without the gates installing it.
+- **Correction:** planned: Genesis's caller adds `no-image-reason` and is repinned from `@main` to a
+  commit SHA (KAN-54); the central gates install pinned, checksum-verified OpenTofu; Genesis adds
+  `.ci/quality.v1.json`.
+- **Preventive action (planned):** consumer repins remain the test of each consumer (`AGENTS.md` →
+  CI Rules); the repin carries the new requirements in the same pull request, as aws-builder-agent
+  #23 does.
+- **Verification:** pending: Genesis #4's gates pass.
+- **Evidence:** Genesis #1, #3, #4 and #5 check logs, 2026-11-11.
+- **Status:** open.
+
+## 2026-11-11: Genesis's test dependencies carry two critical CVEs
+
+- **Rule:** every vulnerability scanner goes through one severity gate, and pins are updated through
+  gated pull requests (`AGENTS.md` → CI and Supply Chain Rules).
+- **Problem:** Trivy blocks every Genesis pull request on `github.com/hashicorp/go-getter` 1.7.1
+  (CVE-2024-3817) and `google.golang.org/grpc` 1.56.3 (CVE-2026-33186), both CRITICAL. Both are
+  indirect, pulled in only by Terratest 0.46.3, so they are in test code and never in what Genesis
+  deploys.
+- **Detection:** the Trivy gate, on Genesis pull requests; traced to Terratest by a person on
+  2026-11-11.
+- **Root cause:** Genesis had no Dependabot configuration, so the indirect modules were never bumped
+  (Genesis #5 adds one).
+- **Correction:** planned: bump Terratest so both modules update, or the owner turns on Dependabot
+  security updates for Genesis; Genesis #5 stays unmerged until Genesis CI is green.
+- **Preventive action (planned):** Genesis #5's Dependabot configuration (go_modules with a
+  Terratest, `golang.org/x` and grpc group).
+- **Verification:** pending: Trivy passes on Genesis.
+- **Evidence:** Genesis #4 and #5 Trivy logs; Genesis #5.
+- **Status:** open.
+
+## 2026-11-11: The aws-builder-agent runtime image carries six critical CVEs
+
+- **Rule:** an image finding is fixed at its source, never excepted; base images pinned by digest,
+  downloads by checksum, packages by exact version (`AGENTS.md` → Container and Supply Chain Rules).
+- **Problem:** the first scan of the Builder's runtime image blocks on six CRITICAL findings: Go
+  `stdlib` 1.22.7 and `grpc` 1.59.0 in the `terraform` 1.9.8 binary; `stdlib` 1.23.1, `grpc` 1.66.0
+  and `labstack/echo` 4.11.4 in the `terragrunt` 0.67.16 binary; and `zlib1g` 1.2.13
+  (CVE-2023-45853) in the `node:22-bookworm-slim` base. The same Dockerfile pins the base by tag,
+  downloads both tools without checksums, installs apt packages unversioned, and installs
+  `terraform` though the factory chose OpenTofu.
+- **Detection:** the image gate, on aws-builder-agent #23, the first pull request to set
+  `image-target`.
+- **Root cause:** the image was never scanned: the repository's gate pin predated the image rule, so
+  its toolchain versions aged without a signal.
+- **Correction:** pending the owner's choice, inside #23: OpenTofu and a current terragrunt (option
+  A) or current terraform and terragrunt (option B), each checksum-verified, with the base pinned by
+  digest.
+- **Preventive action (planned):** the image gate now runs on every pull request; Dependabot's
+  docker ecosystem watches the base digest.
+- **Verification:** pending: the image gate passes on #23 and on `main` after merge.
+- **Evidence:** aws-builder-agent #23, job 130694386871.
+- **Status:** open.
+
+## 2026-11-11: Image builds download external files with no retry
+
+- **Rule:** every remote call has a timeout and retries with backoff where idempotent (`AGENTS.md` →
+  Application Architecture Rules); read every red check's log (`AGENTS.md` → CI Rules).
+- **Problem:** two image builds fail on one transient network error: the Playbook's anti-pattern
+  toolchain image got a 504 downloading Trivy 0.71.1 from GitHub releases (red on `main` since
+  2026-11-09, because the workflow reruns only when its paths change), and coqui-tts #3 hit a
+  connection reset downloading the ffmpeg source tarball (#4, #7 and #8 fail at the same step,
+  unconfirmed).
+- **Detection:** a person, reading the red runs on 2026-11-11.
+- **Root cause:** the downloads use `curl -sSf` with no `--retry`, and nothing reruns a workflow
+  that failed on an infrastructure error.
+- **Correction:** rerun the anti-pattern catalog workflow; add `--retry 5 --retry-all-errors` with a
+  connect timeout to both downloads, keeping the checksum verification.
+- **Preventive action (planned):** the same retry on every external download in a Dockerfile; rig
+  classifies such failures as `infra`, which go to a person (`AGENTS.md` → Agent Rules).
+- **Verification:** pending: the anti-pattern catalog is green on `main`, and coqui-tts's image
+  builds.
+- **Evidence:** Playbook run 42569537837 (`curl: (22) ... 504`); coqui-tts #3 build log;
+  `tests/antipatterns/toolchain/Dockerfile`.
+- **Status:** open.
