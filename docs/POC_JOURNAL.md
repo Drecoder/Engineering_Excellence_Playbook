@@ -908,3 +908,29 @@ Status: open.
 - **Evidence:** Playbook run 42569537837 (`curl: (22) ... 504`); coqui-tts #3 build log;
   `tests/antipatterns/toolchain/Dockerfile`.
 - **Status:** open.
+
+## 2026-11-11: Agent pull requests are authored as the owner
+
+- **Rule:** agents author changes under their own App identities, never the person's, and `main`
+  requires the person's code-owner review (`AGENTS.md` → Agent Rules and Security Rules).
+- **Problem:** every pull request the coding agent opened on 2026-11-11 (for example
+  sovereign-vpc-gcp #43 and #44, aws-builder-agent #23 and #24, Playbook #72 to #75) is authored
+  by the owner's account, because the agent acts through the owner's GitHub connection. GitHub
+  never requests a review from a pull request's author, so none reaches the owner's "Needs your
+  review", and the owner cannot approve them; a ruleset that required code-owner review would
+  block every merge. Bot-authored pull requests (Dependabot, github-actions) are routed and
+  approvable correctly.
+- **Detection:** a person, comparing the inbox's "Needs your review" and "Waiting for review or
+  checks" sections on 2026-11-11.
+- **Root cause:** the per-agent GitHub App identity the rule requires does not exist yet, and the
+  agent's session has only the owner's credentials.
+- **Correction (interim containment):** the agent opens pull requests only on the owner's explicit
+  go-ahead, never merges, and states in each pull request that it is agent-authored; sovereign-vpc-gcp's
+  ruleset requires checks with 0 approvals until this is fixed.
+- **Preventive action (planned):** KAN-69, a GitHub App per agent with no `workflows` permission,
+  its key non-exportable in Cloud KMS; then every factory ruleset requires code-owner review.
+- **Verification:** pending: an agent pull request authored by the App appears in the owner's
+  "Needs your review" and merges only after the owner's approval.
+- **Evidence:** the authors of the pull requests above; sovereign-vpc-gcp ruleset 27052237;
+  KAN-69.
+- **Status:** open.

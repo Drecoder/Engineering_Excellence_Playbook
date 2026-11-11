@@ -1167,6 +1167,34 @@
           "download-without-retry"
         ]
       }
+    },
+    {
+      "id": "F-0046",
+      "journal": "## 2026-11-11: Agent pull requests are authored as the owner",
+      "category": "security",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Agent Rules",
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "playbook",
+          "sovereign-vpc-gcp",
+          "aws-builder-agent",
+          "agent-notepad",
+          "compliance-authority",
+          "coqui-tts",
+          "genesis"
+        ],
+        "fingerprints": [
+          "agent-acts-as-person"
+        ]
+      }
     }
   ],
   "controls": [
