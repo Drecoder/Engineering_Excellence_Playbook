@@ -852,6 +852,52 @@
           "F-0014"
         ]
       }
+    },
+    {
+      "id": "F-0033",
+      "journal": "## 2026-11-11: Hosted gate runners float on ubuntu-latest",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Container Rules",
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "aws-builder-agent"
+        ],
+        "fingerprints": [
+          "runner-os-unpinned"
+        ]
+      }
+    },
+    {
+      "id": "F-0034",
+      "journal": "## 2026-11-11: The self-hosted runner pool sat at zero with nothing to scale it up",
+      "category": "reliability",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#IaC Rules",
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "scale-to-zero-without-trigger"
+        ]
+      }
     }
   ],
   "controls": [

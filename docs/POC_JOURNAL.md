@@ -619,3 +619,47 @@ Status: open.
 - **Evidence:** the field count run against this journal on 2026-11-10; the register's
   `findings_register.v2` references for this entry (`recurs` F-0014).
 - **Status:** open.
+
+## 2026-11-11: Hosted gate runners float on ubuntu-latest
+
+- **Rule:** pin completely, and everything runs in a pinned container (`AGENTS.md` → Container
+  Rules); the factory installs its own pinned toolchain (`AGENTS.md` → CI Rules).
+- **Problem:** the central gates and their callers default to `ubuntu-latest`. When that label moved
+  to Ubuntu 26.04, the pinned `bubblewrap` version the gates install was no longer available, and
+  aws-builder-agent's TypeScript sandbox tests failed (aws-builder-agent #21 and #22). The gates'
+  result changed with no change to the gates or the caller.
+- **Detection:** a person, reading the red checks' logs during the 2026-11-11 factory CI survey.
+- **Root cause:** the runner OS is an input to every gate result but was left floating. The rule to
+  pin completely is applied to images, packages and actions, and nothing checks the runner label.
+- **Correction (interim containment):** sovereign-vpc-gcp pins the gates' default `runs-on` and
+  every hosted fallback in `gates.yml`, `gates-selftest.yml`, `plan.yml` and `apply.yml` to
+  `ubuntu-24.04`; aws-builder-agent then repins the gates to that merge commit.
+- **Preventive action (planned):** KAN-66, the gates run inside a container image pinned by digest,
+  so the hosted runner's OS no longer reaches the result.
+- **Verification:** pending: the pin merged on sovereign-vpc-gcp `main`, then aws-builder-agent's
+  gates green on its `main` after the repin.
+- **Evidence:** aws-builder-agent #21 and #22 gate logs; sovereign-vpc-gcp branch
+  `fix/pin-hosted-runner-ubuntu-24.04`; KAN-66.
+- **Status:** open.
+
+## 2026-11-11: The self-hosted runner pool sat at zero with nothing to scale it up
+
+- **Rule:** compute runs only when called: runners are at zero when no work is queued (`AGENTS.md`
+  → IaC Rules); queued-job age needs its own alert, and runner failures are metrics with alerts
+  (`AGENTS.md` → CI Rules and Observability Rules).
+- **Problem:** the managed groups `ci-runner-plan` and `ci-runner-apply` in `sovereign-vpc-488522`
+  were resized to zero by hand to stop idle cost. Nothing scales them up when a job is queued, so
+  sovereign-vpc-gcp #41 and #42 queued with no runner and no signal. The Terraform still declares
+  `size = 1`, so the code and the live state disagree.
+- **Detection:** a person, asking why #41 and #42 never started.
+- **Root cause:** scale-to-zero was applied by hand without the scale-from-zero half: there is no
+  trigger on a queued job, and no queued-job-age alert that would have shown the stall.
+- **Correction (interim containment):** the owner resized `ci-runner-plan` to 1 at about 15:47 UTC
+  so #41 and #42 could run, to be resized back to 0 when they finish.
+- **Preventive action (planned):** KAN-67, a signature-verified `workflow_job` webhook received by
+  Cloud Run at zero minimum instances creates one ephemeral VM per queued job, which deletes itself
+  after its job; a sweep removes stale VMs, the Terraform declares no always-on capacity, and
+  queued-job age gets an alert.
+- **Verification:** pending: a job queued against an empty pool runs, and the pool returns to zero.
+- **Evidence:** sovereign-vpc-gcp #41 and #42 runs; the managed-group resize on 2026-11-11; KAN-67.
+- **Status:** open.
