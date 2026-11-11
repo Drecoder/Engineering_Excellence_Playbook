@@ -25,6 +25,7 @@ runs:
   using: composite
   steps:
     - name: Vendor rules
+      id: vendor
       shell: bash
       env:
         SRC: ${{ github.action_path }}
@@ -54,6 +55,10 @@ runs:
         replaced on every sync. To adopt a newer rule version, bump the playbook ref in
         \`.github/workflows/sync-playbook-rules.yml\`.
         EOF
+        # github.action_* names the playbook only here, in this action's own step; in a nested
+        # action's inputs it names that action instead (F-0037). Later steps read these outputs.
+        echo "ref=$PLAYBOOK_REF" >> "$GITHUB_OUTPUT"
+        echo "repository=$PLAYBOOK_REPO" >> "$GITHUB_OUTPUT"
 
     - name: Open or update sync PR
       id: pr
@@ -62,10 +67,10 @@ runs:
         token: ${{ inputs.token }}
         branch: ${{ inputs.branch }}
         add-paths: ${{ inputs.destination }}/**
-        commit-message: "chore: sync playbook rules (${{ github.action_ref }})"
-        title: "chore: sync Engineering Excellence Playbook rules (${{ github.action_ref }})"
+        commit-message: "chore: sync playbook rules (${{ steps.vendor.outputs.ref }})"
+        title: "chore: sync Engineering Excellence Playbook rules (${{ steps.vendor.outputs.ref }})"
         body: |
-          Vendored rules from `${{ github.action_repository }}@${{ github.action_ref }}`.
+          Vendored rules from `${{ steps.vendor.outputs.repository }}@${{ steps.vendor.outputs.ref }}`.
 
           Files under `${{ inputs.destination }}/` are generated. Review the rule changes here;
           merging this PR adopts them for this repo.
