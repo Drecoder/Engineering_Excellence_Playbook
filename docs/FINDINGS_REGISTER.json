@@ -983,6 +983,218 @@
           "provenance-mislabeled"
         ]
       }
+    },
+    {
+      "id": "F-0038",
+      "journal": "## 2026-11-11: Six repositories have no protection on main",
+      "category": "security",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules",
+          "AGENTS.md#Agent Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "aws-builder-agent",
+          "agent-notepad",
+          "compliance-authority",
+          "coqui-tts",
+          "gcp-reviewer-agent"
+        ],
+        "fingerprints": [
+          "no-branch-protection"
+        ]
+      }
+    },
+    {
+      "id": "F-0039",
+      "journal": "## 2026-11-11: The sovereign-vpc-gcp apply has failed on every push since October",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "control-not-running-on-main"
+        ]
+      }
+    },
+    {
+      "id": "F-0040",
+      "journal": "## 2026-11-11: Genesis applies on every push to main",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Agent Rules",
+          "AGENTS.md#IaC Rules",
+          "AGENTS.md#Governance Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "apply-without-approval"
+        ]
+      }
+    },
+    {
+      "id": "F-0041",
+      "journal": "## 2026-11-11: A Genesis governance module file holds only a file path",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#IaC Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "file-content-replaced-by-path"
+        ]
+      }
+    },
+    {
+      "id": "F-0042",
+      "journal": "## 2026-11-11: Genesis CI cannot pass: no OpenTofu, no quality file, no image declaration",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#Test Quality Rules",
+          "AGENTS.md#Container Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "gate-requirement-unmet"
+        ]
+      }
+    },
+    {
+      "id": "F-0043",
+      "journal": "## 2026-11-11: Genesis's test dependencies carry two critical CVEs",
+      "category": "supply-chain",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Supply Chain Rules",
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "critical-cve-in-dependency"
+        ]
+      }
+    },
+    {
+      "id": "F-0044",
+      "journal": "## 2026-11-11: The aws-builder-agent runtime image carries six critical CVEs",
+      "category": "supply-chain",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Container Rules",
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "aws-builder-agent"
+        ],
+        "fingerprints": [
+          "critical-cve-in-image"
+        ]
+      }
+    },
+    {
+      "id": "F-0045",
+      "journal": "## 2026-11-11: Image builds download external files with no retry",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#Application Architecture Rules"
+        ],
+        "components": [
+          "playbook",
+          "coqui-tts"
+        ],
+        "fingerprints": [
+          "download-without-retry"
+        ]
+      }
+    },
+    {
+      "id": "F-0046",
+      "journal": "## 2026-11-11: Agent pull requests are authored as the owner",
+      "category": "security",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Agent Rules",
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "playbook",
+          "sovereign-vpc-gcp",
+          "aws-builder-agent",
+          "agent-notepad",
+          "compliance-authority",
+          "coqui-tts",
+          "genesis"
+        ],
+        "fingerprints": [
+          "agent-acts-as-person"
+        ]
+      }
     }
   ],
   "controls": [
