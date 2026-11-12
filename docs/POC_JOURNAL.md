@@ -959,3 +959,107 @@ Status: open.
   entry; any traced defect demotes the class.
 - **Evidence:** sovereign-vpc-gcp #47; this pull request's policy change.
 - **Status:** open.
+
+## 2026-11-11: A skipped required check counted as passed
+
+- **Rule:** a skipped job is not a pass (`AGENTS.md` → CI Rules: "the factory tests itself").
+- **Problem:** GitHub treats a skipped required check as passed. When "Detect stacks" failed on
+  Genesis #6, every stack job was skipped, so the pull request showed as mergeable with HCL and
+  Semgrep never having run; only secret scanning had passed.
+- **Detection:** the owner, reading the check list before a merge and refusing to merge a build
+  whose gates had skipped.
+- **Root cause:** the rulesets required individual gate jobs by name, and GitHub's merge rules
+  cannot tell a legitimate skip (a stack the repository does not have) from a gate that did not
+  run because an earlier job failed.
+- **Correction:** a Gates verdict job in the shared gates (sovereign-vpc-gcp #48). It always runs,
+  works out from the detected stacks and the inputs which jobs had to run, and fails unless every
+  one of them succeeded; a failed Detect stacks fails it outright.
+- **Preventive action:** each repository requires the one check, `gates / Gates verdict`, in place
+  of a list of job names, once it repins.
+- **Verification:** self-test `verdict`, 11 cases: every skipped or failed gate that applies fails
+  the verdict, including the failed-Detect case, and legitimate skips pass; all 6 mutants of its
+  logic killed. Live: `plan / gates / Gates verdict` passed on #48's own plan run.
+- **Evidence:** sovereign-vpc-gcp #48 (merge 74be340); Genesis #6's check list.
+- **Status:** proven. Residual: the rulesets still name the old checks until each repository
+  repins.
+
+## 2026-11-11: Genesis's ruleset required checks that never report
+
+- **Rule:** required checks must match check-run names exactly, or nothing can merge
+  (`AGENTS.md` → CI Rules; F-0038).
+- **Problem:** the ruleset applied to Genesis's `main` required status contexts that no Genesis
+  workflow reports, so every pull request would wait forever for them.
+- **Detection:** the owner, reading back the ruleset after applying it.
+- **Root cause:** the required contexts were written from the job names in the shared workflow,
+  not read from the check runs Genesis's caller actually produces (`gates / gates / …`).
+- **Correction:** the owner reapplied the ruleset with the three contexts Genesis reports.
+- **Preventive action:** rulesets require the single `gates / Gates verdict` context after each
+  repin (F-0048), so there is one name to get right instead of a list.
+- **Verification:** the owner's read-back shows the three reporting contexts.
+- **Evidence:** the owner's `gh api` ruleset read-backs, 2026-11-11.
+- **Status:** fixed.
+
+## 2026-11-11: Mutation testing crashed on every TypeScript repository
+
+- **Rule:** mutation score is tracked with a floor in CI, and each check is shown to fail on the
+  defect it guards against before it counts (`AGENTS.md` → Test Quality Rules, CI Rules).
+- **Problem:** Stryker rewrites `tsconfig.json` and loads `typescript` from its own install folder,
+  which the gate keeps apart from the repository. Every consumer has a `tsconfig.json`, so the
+  mutation gate crashed on all of them with "Cannot find package 'typescript'". It failed closed:
+  it would have blocked every TypeScript repository, never let one through.
+- **Detection:** the agent, running the gate's exact Stryker configuration on factory-orchestrator
+  and aws-builder-agent to measure their mutation floors before they repinned.
+- **Root cause:** the self-test fixture had no `tsconfig.json`, so it never exercised the path every
+  real consumer takes.
+- **Correction:** the gate installs the repository's exact `typescript` version, read from its
+  `node_modules` after `npm ci`, beside Stryker (sovereign-vpc-gcp #49).
+- **Preventive action:** a self-test case with a `tsconfig.json` and a pinned `typescript`.
+- **Verification:** the case was committed first and failed with the exact error the real
+  repositories hit; after the fix, 12 of 12 mutation cases pass.
+- **Evidence:** sovereign-vpc-gcp #49 (merge 6d595f1).
+- **Status:** proven.
+
+## 2026-11-11: An orchestrator takeover of a retried attempt is rejected to Blocked
+
+- **Rule:** invalid payloads are rejected, never repaired, so the orchestrator must build a valid
+  one (`AGENTS.md` → Agent Rules: schemas at every boundary).
+- **Problem:** when a lease expires with no CI result, the orchestrator takes it over and
+  re-dispatches the same attempt. For attempt 2 or 3, `builder.spec.v1` requires a
+  `failure_delta`, but the takeover sent none, so the spec was rejected and the ticket went to
+  Blocked instead of being re-dispatched.
+- **Detection:** a control: a test written to kill a surviving mutant of the FI-01b bound
+  ("answered attempts do not use up the takeover budget") failed with `rejected`.
+- **Root cause:** the takeover path reused the first-pickup dispatch, which sends no failure delta;
+  no test covered a takeover after a bounce.
+- **Correction:** a takeover of attempt 2 or later re-sends the failure that started the attempt,
+  read from the runs store. Fixed with FI-01b (silent takeovers bounded by unanswered dispatches)
+  and FI-04b (a bounce raises the fencing token) on factory-orchestrator branch
+  `fix/fi-01b-fi-04b-bounded-takeover`.
+- **Preventive action:** acceptance tests for each takeover path, committed failing first.
+- **Verification:** pending merge: 60 of 60 tests pass with every line of `orchestrator.ts`
+  covered; all 9 mutants of the new controls are killed; the AFDF baseline's FI-01b and FI-04b
+  injection cases now pass.
+- **Evidence:** factory-orchestrator commits 664e94f (tests) and 5f3e0e7 (fix), not yet in a
+  pull request.
+- **Status:** open.
+
+## 2026-11-11: CI jobs wait minutes for every runner to install its tools
+
+- **Rule:** compute runs only when called and scales to zero (`AGENTS.md` → IaC Rules), and the
+  owner's time is the factory's bottleneck.
+- **Problem:** the private runner pool gives each job a fresh VM, which installs its packages,
+  downloads the GitHub runner, and installs its dependencies before the job starts. Each pull
+  request's plan workflow needs two such cycles on the one VM, so three queued pull requests waited
+  about six cycles, most of it setup.
+- **Detection:** the owner, waiting on a `Plan (dev)` check that sat queued with the VM running.
+- **Root cause:** the runner image is stock Debian; everything a job needs is installed at boot,
+  every boot.
+- **Correction (planned):** bake the runner image once (packages and the checksum-verified runner)
+  and boot it by name; the startup script skips the installs when the image carries the pinned
+  runner version and installs as before on any other image. Built on sovereign-vpc-gcp branch
+  `feat/baked-runner-image`, not yet pushed.
+- **Preventive action:** the image name is the pin; a new bake changes nothing until a reviewed
+  pull request points the pool at it.
+- **Verification:** pending: a job's start time after a VM boots, before and after.
+- **Evidence:** sovereign-vpc-gcp plan runs for #46, #47 and #48 (queued 2026-11-11).
+- **Status:** open.

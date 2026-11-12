@@ -1223,6 +1223,122 @@
           "promotion-below-evidence-target"
         ]
       }
+    },
+    {
+      "id": "F-0048",
+      "journal": "## 2026-11-11: A skipped required check counted as passed",
+      "category": "ci",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2026-12-11",
+      "status": "proven",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "genesis"
+        ],
+        "fingerprints": [
+          "skipped-check-counts-as-pass"
+        ]
+      },
+      "closed": "2026-11-11",
+      "verification": "sovereign-vpc-gcp #48 (merge 74be340): self-test verdict, 11 cases including a failed Detect stacks; 6 of 6 mutants killed; Gates verdict passed live on #48's plan run",
+      "residual": "rulesets still name the old checks until each repository repins and requires gates / Gates verdict"
+    },
+    {
+      "id": "F-0049",
+      "journal": "## 2026-11-11: Genesis's ruleset required checks that never report",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "fixed",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "required-context-never-reports"
+        ]
+      },
+      "closed": "2026-11-11",
+      "verification": "the owner's ruleset read-back lists the three contexts Genesis reports",
+      "residual": "replaced by the single Gates verdict context after Genesis repins (Genesis #7)"
+    },
+    {
+      "id": "F-0050",
+      "journal": "## 2026-11-11: Mutation testing crashed on every TypeScript repository",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "proven",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Test Quality Rules",
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "tool-missing-peer-dependency"
+        ]
+      },
+      "closed": "2026-11-11",
+      "verification": "sovereign-vpc-gcp #49 (merge 6d595f1): the tsconfig case failed first with the real error, then 12 of 12 mutation cases pass",
+      "residual": "the fixture pins typescript 6.0.3; a consumer on another major version is covered by installing its own version, not by a case"
+    },
+    {
+      "id": "F-0051",
+      "journal": "## 2026-11-11: An orchestrator takeover of a retried attempt is rejected to Blocked",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-11-11",
+      "due": "2027-02-09",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Agent Rules"
+        ],
+        "components": [
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "takeover-missing-failure-delta"
+        ]
+      }
+    },
+    {
+      "id": "F-0052",
+      "journal": "## 2026-11-11: CI jobs wait minutes for every runner to install its tools",
+      "category": "reliability",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-11-11",
+      "due": "2027-05-10",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#IaC Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "runner-installs-at-every-boot"
+        ]
+      }
     }
   ],
   "controls": [
