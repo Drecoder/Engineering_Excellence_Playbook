@@ -1,12 +1,18 @@
-# Cyclic Tri-Pass Reading
+# Rotor: Cyclic Tri-Pass Reading
 
-*A reading pattern for long inputs: the model reads the same material three times, each time in a
-different rotation, so every part of it has a turn at the start, in the middle and at the end. It is
-adopted for a stage only if a benchmark shows it finds more than the simpler ways of reading.*
+*Rotor orders what every agent reads. For a long input its main pattern reads the same material
+three times, each in a different rotation, so every part has a turn at the start, in the middle and
+at the end. A stage's reading changes only if a benchmark shows the change finds more than the
+simpler ways of reading.*
 
-**Status: PROPOSED** (the playbook's *Design*: agreed target, not implemented). Nothing here is used
-by any agent. The pattern may run in a stage only after it wins that stage's benchmark (§7) and is
-promoted by a reviewed change (§8). Until then, every stage reads the way it does today. The
+**Status: PROPOSED** (the playbook's *Design*: agreed target, not implemented). **Rotor** is the
+factory step that orders what an agent reads. It sits in front of **every** agent's input, inside the
+harness boundary (`09_Adaptive_Harness.md`, KAN-47), so no input reaches a model without passing it:
+the orchestrator's, the Builder's, triage's, and the session agent's, whose prompts enter through its
+ingress hook (KAN-91). Rotor may change how a stage reads only after that stage wins its benchmark
+(§7) and is promoted by a reviewed change (§8). Until then it passes the input through unchanged
+(arm A) and records, in shadow, the plan it would have used. Every input is in its path from the
+first day, and none is changed before the evidence allows it. The
 benchmark also tests two alternatives on equal terms, end-focused windows (arm E) and a size-routed
 hybrid (arm F), so tri-pass is adopted only where nothing cheaper finds as much. The tri-pass
 ordering, the windows and the routing rule are specified exactly and tested
@@ -31,29 +37,44 @@ Two obvious fixes do not work well enough:
 
 What does work is to cut the input into **three segments** and rotate the segments (§3).
 
-## 2️⃣ Where It Applies, and Where It Never Does
+## 2️⃣ Where It Sits, and Where It May Change the Reading
 
-**In scope**, because the input is long and unstructured, missing something is costly, and no
-deterministic tool reads it for us:
+**Rotor sits in front of every agent's input.** Its size routing (arm F's rule, §7) sends a short
+input straight through, so an agent with bounded inputs pays nothing for it. A stage's reading
+changes only on promotion, and stages are benchmarked in this order:
 
 | Stage | Input | What a miss costs |
 | :--- | :--- | :--- |
+| **Session agent (first)** | The owner's prompts and the documents a session reads or updates (READMEs, standards, handoffs) | A section is skipped and the update or answer is incomplete. The first golden task is the README update of 2026-11-16 that missed a large section until the owner pointed at it |
 | Spec-to-plan intake (`03_Software_Factory_Intake.md`) | A long spec and the material it cites | A requirement left out of the plan, so the ticket is built without it |
 | Incident and log triage | Build, CI and service logs, traces, an incident's timeline | The causal line is in the middle of the log, and the triage names a symptom |
 | SecOps investigation context (`07_SoftwareFactory/02_Platform_Patterns.md`) | The events, findings and asset context of one security event | A signal that changes the decision is skipped. The pattern only reads: remediation stays a protected class, approved by a person |
 
-**Excluded, always:**
+**The Builder** is in Rotor's path like every agent. Its inputs are bounded slices (its notepad
+page, a slice of the reuse map, retrieved records), so routing sends them through unchanged, and it
+stays the latency-sensitive path. A long Builder input is benchmarked like any other stage before
+its reading changes.
+
+**Never in scope:**
 
 - **The Policy Engine.** It is pure and deterministic, with no model calls
   (`00_UniversalStandards/17_Quality_Policy_Engine.md`). There is nothing to read.
-- **The Builder's slices.** The Builder already gets bounded slices (its notepad page, a slice of the
-  reuse map, retrieved records), so there is no long middle, and it is the latency-sensitive path.
-  Three reads would multiply its cost and time for no measured gain.
 - **The Reviewer.** Retired: deterministic CI and per-ticket acceptance tests evaluate every change.
   Its rule of at most 2 model calls per review unit stands for any review unit that remains.
 
-Adding a stage to the scope is a reviewed change to this standard, and the stage needs its own
-benchmark.
+Promoting a stage, or adding one to the table, is a reviewed change to this standard, and the stage
+needs its own benchmark.
+
+**Rotor reads; it never decides.** It is a tool (`AGENTS.md` → Agent Rules): typed input, typed
+output, no loop, no judgment. It reorders the input it was given, adds and removes nothing, and
+every pass draws from the ticket's one budget with its own token records. Whether an *action* may
+run is a different check at the same harness boundary, the EEP action gate (KAN-47), which is
+deterministic and fails closed.
+
+**When Rotor is unavailable,** the input passes through unchanged with a visible warning on the
+session and a `rotor.unavailable` error metric, because reading mutates nothing and stopping every
+agent would gain nothing. The action gate never falls back this way: when it is unavailable or
+cannot decide, no action runs.
 
 ## 3️⃣ The Ordering
 
@@ -192,8 +213,10 @@ calls for, and the routing rule itself has to win the benchmark.
 
 ### Tasks
 
-- **A corpus per stage**, from the factory's own sealed material: specs for intake, `docs/incidents/`
-  and CI logs for triage, recorded security events for SecOps. The stage benchmarked first is
+- **A corpus per stage**, from the factory's own sealed material: the session agent's own prompts
+  and the documents it read or updated, with each owner correction of a missed section as a planted
+  defect (the README miss of 2026-11-16 first); specs for intake; `docs/incidents/` and CI logs for
+  triage; recorded security events for SecOps. The stage benchmarked first is
   decision D1.
 - **Three length bands per stage,** short (`L <= t_short`), medium and long (`L > t_long`), with the
   thresholds of D3. The long band is where the middle is real. Every arm runs on every band, so each
@@ -247,7 +270,7 @@ tasks demotes it.
 
 | # | Question | Until decided |
 | :--- | :--- | :--- |
-| D1 | **The first stage benchmarked:** spec-to-plan intake, incident and log triage, or SecOps context. Intake helps only if an agent architect reads long specs today; SecOps needs its corpus (D2). Proposed: triage first | The benchmark has no corpus and no run until decided; the policy file names the stage |
+| D1 | **The first stage benchmarked.** Decided 2026-11-16 by the owner: the session agent, which is already missing sections in practice. Triage next; intake when an agent architect reads long specs; SecOps when its corpus exists (D2) | Decided |
 | D2 | **The SecOps corpus.** SecOps is Run 3, so recorded security events may not exist yet | SecOps benchmark waits for its corpus |
 | D3 | **Length bands per stage:** `t_short` and `t_long` in tokens of rotating chunks. `t_long` is where the middle is real; both are arm F's routing thresholds | Fixed in the benchmark policy file at test design, before any run; arm F cannot run without them |
 | D4 | **Arm E's budgets per stage:** the focus budget and the context budget, in tokens. The context budget is at least the largest rotating chunk in the stage's corpus, or the uncovered boundaries are recorded | Fixed in the same policy file, before any run |
@@ -260,12 +283,13 @@ tasks demotes it.
 | 2. Codification | This standard, and the reference ordering with its tests |
 | 3. Review | Owner review of this standard |
 | 4. Test design | Not started: contracts `context_pass_plan.v1` (passes, windows and the routing decision) and `context_finding.v1`, the benchmark policy file (D1, D3, D4 and the promotion numbers), the per-stage corpora in three length bands, and the golden tasks |
-| 5. Implementation | Not started; triage first |
+| 5. Implementation | Not started: Rotor in the harness boundary (KAN-92), the session ingress hook (KAN-91); the session agent first |
 | 6. Validation | Not started: the benchmark of §7, per stage |
 
 ---
 
 ## Principle
 
-Read long material so that no part of it is always in the middle, cite every finding to where it
-was found, and adopt a way of reading only when it measurably finds more than a simpler one.
+Every input passes Rotor. Read long material so that no part of it is always in the middle, cite
+every finding to where it was found, and change a way of reading only when it measurably finds more
+than a simpler one.
