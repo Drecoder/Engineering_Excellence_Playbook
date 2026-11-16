@@ -882,6 +882,29 @@
           ]
         },
         {
+          "title": "Platform Patterns (Proposed)",
+          "sources": [
+            "07_SoftwareFactory/02_Platform_Patterns.md"
+          ],
+          "objectives": [
+            "Explain how a pattern attaches to any platform the factory builds through a versioned contract",
+            "Describe DataOps as the shared pipe and the Medallion layers it lands",
+            "Distinguish what FinOps, MLOps and SecOps each send back to a host",
+            "Order the factory runs and state what each depends on"
+          ],
+          "takeaways": [
+            "A pattern's logic is written once; the host, its identity and its configuration are injected.",
+            "DataOps is the trust boundary at the door: what fails validation never reaches a pattern.",
+            "SecOps remediation stays at L2 on every host, because security is a protected class.",
+            "No run starts before the run it depends on reaches its MVP."
+          ],
+          "questions": [
+            "Why does a pattern prove it is reusable only on its second host?",
+            "What would break if FinOps built its own ingestion instead of reading DataOps Gold?",
+            "Which SecOps constraint would have prevented each pentest-platform defect it cites?"
+          ]
+        },
+        {
           "title": "Measuring Progress",
           "sources": [
             "docs/BASELINE_2026-10-26.md",
