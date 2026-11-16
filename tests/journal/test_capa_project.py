@@ -4,7 +4,7 @@ written through .github/ISSUE_TEMPLATE/capa.yml, becomes its journal entry and i
 and nothing in either is written by hand.
 
 The first case is F-0089's: the hand projection of 2026-11-16 kept only the first line of each
-bullet and cut three of F-0087's fields mid-sentence. fixtures/capa/issue-87.md is #87's content in
+bullet and cut three of F-0087's fields mid-sentence. fixtures/capa/issue-87.txt is #87's content in
 the form's output, and its Problem, Root cause and Evidence span several lines.
 
     python -m unittest discover -s tests/journal -v
@@ -35,7 +35,7 @@ from journal_append_only import violations as append_only_check  # noqa: E402
 from register import check as register_check  # noqa: E402
 
 FIXTURES = HERE / "fixtures" / "capa"
-ISSUE_87 = (FIXTURES / "issue-87.md").read_text()
+ISSUE_87 = (FIXTURES / "issue-87.txt").read_text()
 URL = "https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/"
 
 
