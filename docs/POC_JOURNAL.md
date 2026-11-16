@@ -1614,3 +1614,33 @@ Status: open.
 - **Evidence:** `schemas/examples/harness/vectors.json` (`HD-057`, `RT-006`); `harness_reference.py`;
   KAN-47.
 - **Status:** fixed.
+
+## 2026-11-16: Fourteen fixed findings had no ticket, and a Done ticket sat over an open finding
+
+- **Rule:** every finding is tracked to closure (`AGENTS.md` → Observability Rules); now also
+  `AGENTS.md` → Work Tracking Rules, added with this entry: all work, development and CAPA alike,
+  is a board ticket on one workflow, and Done means merged and verified.
+- **Problem:** the register and the board disagreed in two ways. First, 14 findings were fixed with
+  no board ticket at all: F-0001 to F-0005, F-0009, F-0011, F-0017, F-0020, F-0025, F-0026, F-0044,
+  F-0049 and F-0089. Their work, two critical CVEs among it, never showed on the board. Second,
+  KAN-3 ("F-0012: Move the GCP runner project into the organization") is Done, while the register
+  still has F-0012 open (high, due 2026-11-28). Also, KAN-84, KAN-87, KAN-40, KAN-46 and KAN-58 stayed
+  open after their work merged; they were moved to Done on 2026-11-16.
+- **Detection:** a person: the owner, asking whether fixed findings had reached the board's Done
+  column, during the 2026-11-16 re-verification of every open item.
+- **Root cause (DRAFT):** no rule linked a finding to a ticket. Findings were journaled and
+  registered as the playbook requires; tickets were opened for some by hand, and neither side was
+  checked against the other.
+- **Correction:** the Work Tracking Rules, and the board's columns in
+  `07_SoftwareFactory/01_Software_Factory.md` §3. The Done tickets for the 14 findings, and the F-0012 / KAN-3
+  disagreement, are resolved on the owner's word.
+- **Preventive action (DRAFT):** a deterministic drift check in the journal workflow, like KAN-57
+  for incidents: every register row names its ticket, and the check fails on a row with none or a
+  ticket whose status disagrees. The ticket field needs a `findings_register.v3` (contracts evolve by
+  version, never by edit).
+- **Verification (DRAFT):** the check fails on a register row with no ticket (designed to fail) and
+  passes once every row names a ticket whose status matches.
+- **Evidence:** the 2026-11-16 Jira query for capa and finding labels (KAN-1, KAN-3, KAN-84 to
+  KAN-89); `docs/FINDINGS_REGISTER.json` on main at `fa47404`; the Features Map,
+  <https://claude.ai/artifact/NpwCvBoUaFQ6KPqoUaPZr5>.
+- **Status:** open.

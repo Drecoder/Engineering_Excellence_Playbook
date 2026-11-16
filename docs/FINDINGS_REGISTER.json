@@ -1826,6 +1826,28 @@
       },
       "closed": "2026-11-16",
       "verification": "HD-057 and RT-006 added to schemas/examples/harness/vectors.json; 25 of 25 hand-seeded mutants of tests/contracts/harness_reference.py fail test_harness_conformance.py and the unmutated suite passes. Host Python with the toolchain image's pins; provisional until the contract job re-runs it in the image"
+    },
+    {
+      "id": "F-0099",
+      "journal": "## 2026-11-16: Fourteen fixed findings had no ticket, and a Done ticket sat over an open finding",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules",
+          "AGENTS.md#Work Tracking Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "finding-board-drift"
+        ]
+      }
     }
   ],
   "controls": [
