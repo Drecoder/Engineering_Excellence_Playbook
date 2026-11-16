@@ -6,8 +6,8 @@ measure in the code. It does this inside the same gates it enforces, and never a
 
 **Status: PROPOSED** (the playbook's *Design*: agreed target, not implemented). This standard
 codifies an architectural hypothesis so that future implementations have something to conform to.
-Nothing here is built. The contracts it names exist as schemas with examples; their conformance
-cases, and every implementation, come after the standard is approved (§16). A documented rule is
+Nothing here is built. The contracts it names exist as schemas with examples and conformance cases
+(§16, stage 4); every implementation comes after the test design is approved. A documented rule is
 not proof of enforcement, and a proposal is not proof of implementation. It extends `08_Telemetry_Driven_Dynamics.md` (bounded steering),
 `07_Agent_Notepad.md` §7 (memory), `00_UniversalStandards/17_Quality_Policy_Engine.md` (quality
 decisions) and `01_Agent_Standards.md` §6–7 (routing, budgets). Where they and this page disagree,
@@ -407,7 +407,7 @@ Conflicts with existing standards are recorded here, not resolved by editing tho
 | 1. Hypothesis | Done: the white paper (§1–13; §14 cut off, O3) |
 | 2. Codification | This standard and its contracts |
 | 3. Review and proofing | The proofing report (Software Factory project, `claude/harness-whitepaper-proof.md`); owner review of this standard |
-| 4. Test design | Not started: §14 becomes conformance and adversarial cases, and the retrieval calibration protocol is written |
+| 4. Test design | In review: 104 conformance and adversarial cases (72 designed to fail), the reference checker and the retrieval calibration protocol (`tests/contracts/harness_conformance/README.md`). Every acceptance criterion and §14 adversarial case has a case; the owner approves before stage 5 |
 | 5. Implementation | Not started; after the standard and the test design are approved |
 | 6. Validation | Not started |
 

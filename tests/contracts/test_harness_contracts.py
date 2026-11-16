@@ -2,9 +2,9 @@
 Contract tests for the adaptive harness (06_AgentZone/09_Adaptive_Harness.md, status: proposed):
 harness_decision.v1 and knowledge_record.v1.
 
-At the codification stage these tests check only that each schema is a valid JSON Schema and that its
-example validates. The conformance cases (every decision-table row and contract constraint, with
-designed-to-fail cases) belong to the test-design stage and are added when the standard is approved.
+These tests check that each schema is a valid JSON Schema and that its example validates. The
+conformance cases (every decision-table row and contract constraint, with designed-to-fail cases) are
+in test_harness_conformance.py.
 Run inside the toolchain image:
 
     docker run --rm -v "$PWD:/work:ro" playbook-antipattern-toolchain \

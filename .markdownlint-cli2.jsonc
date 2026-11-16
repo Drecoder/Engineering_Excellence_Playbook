@@ -15,5 +15,5 @@
     "MD026": { "punctuation": ".,;:" }
   },
   "globs": ["**/*.md"],
-  "ignores": ["**/node_modules/**", ".claude/**"]
+  "ignores": ["**/node_modules/**", ".claude/**", ".ddi-harness/**"]
 }

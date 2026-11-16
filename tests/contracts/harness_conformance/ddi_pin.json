@@ -1,0 +1,12 @@
+{
+  "description": "The agent-ddi-harness contracts the harness conformance tests read, pinned by commit and SHA-256. They are read from a checkout of that commit (DDI_HARNESS_DIR, default .ddi-harness at the repository root), never copied; a missing or changed file fails the tests. Repin through a reviewed pull request.",
+  "repository": "Drecoder/agent-ddi-harness",
+  "commit": "67d5500d6fd9ec2ab2d76fcfc3f061f8655df920",
+  "files": {
+    "schemas/ddi-event.schema.json": "68fbdc044ea4d6f5954ec88f7041078ed436d196c02ac641cfa47c649fab8d7d",
+    "schemas/capa-conflict-draft.schema.json": "66d4cbb5fa49171113a5da67148fe146a4bf5fbe46d076b74be6ff022f3e692b",
+    "schemas/eep-rule.schema.json": "a64f7d0c7dfaae7506735a256764785cac8ae0263c241bdfa0d15dd57bab925a",
+    "eep-rules/habits.json": "f27469a57f56dcd404cf942fb12e7daf1725776c7b35ae61e578de1037f065db",
+    "eep-rules/capa.json": "bd5adb902746032c7598a90e688877964e45963b0c68352fbf5e6663a114aed9"
+  }
+}
