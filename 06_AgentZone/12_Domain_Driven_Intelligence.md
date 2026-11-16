@@ -94,13 +94,24 @@ are disabled seams. As measured at that commit, on its own runs:
 - three local demos, each a real `git push` through the hook: a clean change passes all three
   gates; a weak test is blocked by mutation testing with a CAPA draft that a retry updates rather
   than duplicates; a merge conflict left half-resolved is blocked, and the finished resolution
-  passes with a conflict draft naming both sides;
+  passes with a conflict draft that identifies the paths both sides changed;
 - 61 tests, including a designed-to-fail case per enforced rule and gate, and seven negative
   fixtures in which drafts and events forge CI certification and are rejected;
 - it gates its own pushes. Its first runs on itself blocked on real defects (an undeclared
   bounded-context crossing, a coverage bug that ran zero tests, five CRAP violations, 20
   surviving mutants), each fixed at the root; its first push to GitHub passed its own gate at
   CRAP worst 30.0, mutation 80% on a 40-of-528 sample, pyramid 41 unit / 20 integration.
+
+Its three mutation results come from three different populations and are never added together:
+
+- **targeted replay**, 17 of 17 killed: the surviving mutants of the first self-run that still
+  applied after the fixes, re-applied one by one. It shows those weaknesses are closed and says
+  nothing about any other mutant;
+- **sampled gate run**, 8 survived of 40 (80%): an evenly spaced sample of the 528 mutants of the
+  changed code, drawn by the pre-push gate. It estimates the whole population;
+- **full population**, every mutant with no sampling, from CI's sharded `mutation` job, whose merge
+  refuses a partial count. Pending its first run in the pinned image; only this one is a complete
+  survivor count.
 
 Those are claims of a local run, recorded in the repository. They were measured with host-installed
 Python, not in a container pinned by digest, so under the Container Rules they are provisional until
