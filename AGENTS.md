@@ -195,6 +195,26 @@ catalog in `schemas/antipatterns.v1.json`).
   negative cases in the pinned toolchain image. Promotion needs measured precision, never an
   assumption.
 
+## Work Tracking Rules
+
+All work, development and CAPA alike, is shown on one board and moves through one workflow
+(rationale and the columns in `07_SoftwareFactory/01_Software_Factory.md` §3).
+
+- **All work is a board ticket.** Development work enters as an approved spec; a CAPA finding enters
+  as its register row. Either way, the ticket exists before the work starts, even when the work is
+  done the same day. A ticket carries several findings only when one change closes them all.
+- **One workflow for every ticket:** Backlog, then Ready (only the owner moves it there), Build,
+  then Awaiting Approval on a pass, Human when the owner must decide, Blocked at the attempt or
+  budget limit, and Done. Moves follow named rules and recorded evidence, never an agent's say-so.
+- **Done means merged and verified on the default branch.** A finding's ticket also waits for the
+  register: it reaches Done only when every finding it carries is fixed or closed there, with its
+  verification. A ticket is never Done over open work.
+- **Every change cites its ticket.** Pull requests, commits, journal entries and handoffs name the
+  ticket, finding or pull request they belong to, so each piece of work traces both ways.
+- **Drift is corrected where it is found.** Finished work with no ticket, a ticket whose status
+  disagrees with its pull requests or findings, or a ticket left open after its work merged is
+  drift, corrected in the session that finds it.
+
 ## Observability Rules
 
 Telemetry ships with the first line of code, not after the feature works (see
@@ -241,12 +261,6 @@ Telemetry ships with the first line of code, not after the feature works (see
   and rejects one that does not resolve. Remediation
   deadlines are mandatory: critical 7 days, high 30, medium 90, low 180 from the day it was found.
   CI refuses a later due date, and an overdue open finding fails the daily run.
-- **Every finding is shown as work on the board.** Each register row has a board ticket, opened
-  when the finding is recorded, even when it is fixed the same day. A ticket carries several
-  findings only when one change closes them all. The ticket follows the register: it reaches Done
-  only when every finding it carries is fixed or closed there, with its verification, and a ticket
-  is never Done over an open finding. A fixed finding with no ticket, or a ticket whose status
-  disagrees with its findings, is drift, corrected in the session that finds it.
 - **Control effectiveness is measured, not assumed.** Every run reports the share of control
   classes proven to fail on their defect, the share of findings recorded as caught by a control
   rather than a person (an attribution set by hand, not yet verified against evidence), open

@@ -1814,7 +1814,8 @@
       "status": "open",
       "refs": {
         "rule_ids": [
-          "AGENTS.md#Observability Rules"
+          "AGENTS.md#Observability Rules",
+          "AGENTS.md#Work Tracking Rules"
         ],
         "components": [
           "playbook"

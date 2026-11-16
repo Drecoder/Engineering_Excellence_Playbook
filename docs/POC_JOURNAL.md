@@ -1590,7 +1590,8 @@ Status: open.
 ## 2026-11-16: Fourteen fixed findings had no ticket, and a Done ticket sat over an open finding
 
 - **Rule:** every finding is tracked to closure (`AGENTS.md` → Observability Rules); now also
-  "every finding is shown as work on the board", added by this entry.
+  `AGENTS.md` → Work Tracking Rules, added with this entry: all work, development and CAPA alike,
+  is a board ticket on one workflow, and Done means merged and verified.
 - **Problem:** the register and the board disagreed in two ways. First, 14 findings were fixed with
   no board ticket at all: F-0001 to F-0005, F-0009, F-0011, F-0017, F-0020, F-0025, F-0026, F-0044,
   F-0049 and F-0089. Their work, two critical CVEs among it, never showed on the board. Second,
@@ -1602,7 +1603,8 @@ Status: open.
 - **Root cause (DRAFT):** no rule linked a finding to a ticket. Findings were journaled and
   registered as the playbook requires; tickets were opened for some by hand, and neither side was
   checked against the other.
-- **Correction:** the rule above. The Done tickets for the 14 findings, and the F-0012 / KAN-3
+- **Correction:** the Work Tracking Rules, and the board's columns in
+  `07_SoftwareFactory/01_Software_Factory.md` §3. The Done tickets for the 14 findings, and the F-0012 / KAN-3
   disagreement, are resolved on the owner's word.
 - **Preventive action (DRAFT):** a deterministic drift check in the journal workflow, like KAN-57
   for incidents: every register row names its ticket, and the check fails on a row with none or a

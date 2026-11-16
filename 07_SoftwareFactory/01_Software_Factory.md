@@ -135,6 +135,31 @@ change; CI evaluates it; the owner approves the merge.
   budget, dead-letter or fence refusal; the owner merges it, and the Builder receives the matching
   findings as `prior_findings` with its next spec (design: KAN-60, KAN-62).
 
+### The board: one workflow for all work
+
+Development work and CAPA work share one board and one workflow (`AGENTS.md` → Work Tracking
+Rules). Only the way in differs: an approved spec, or a finding recorded in the journal and the
+register.
+
+| Column | Holds | Moved there by |
+| :--- | :--- | :--- |
+| Backlog | Recorded work: an approved spec, or a finding's ticket opened with its register row | Intake, or whoever records the finding |
+| Ready | Work the owner has started. The orchestrator leases only tickets labeled `factory` | The owner, only |
+| Build | A held lease: the branch, the local gate, the pull request, and the CI fix loop | The orchestrator, at lease |
+| Awaiting Approval | A change CI passed. The owner's merge is the only judgment left | The board's automation, on PASS |
+| Human | A step only the owner can take: a QUARANTINE, a decision, an owner-only action | The automation on QUARANTINE, or whoever names the owner's step |
+| Blocked | The attempt or budget limit reached, with the ticket's history | The board's automation |
+| Done | Merged and verified on the default branch; for a finding, fixed in the register too | After verification, never on an agent's claim |
+
+- **Who acts is always visible.** Every open ticket shows whether the owner or an agent moves it
+  next, so the owner's queue is the Human and Awaiting Approval columns.
+- **One features map mirrors the board.** A single map, keyed by ticket, finding and pull request
+  IDs, holds every open item across the factory's repositories with its status and who acts next.
+  It is synchronized with the repositories, the board and the register in every session, and every
+  handoff cites its row IDs. It is a view, never a second tracker.
+- **Review and QA are on the board but not yet in the workflow.** What they hold is an open owner
+  decision; until it is made, no rule moves a ticket there.
+
 ### The board ticket's format (MVP path)
 
 On the MVP path a factory ticket is the task. The Jira adapter reads it with no custom fields:
