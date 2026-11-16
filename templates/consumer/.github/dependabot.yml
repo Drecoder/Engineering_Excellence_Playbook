@@ -1,5 +1,11 @@
 # Copy into a consumer repo at .github/dependabot.yml (or merge into the existing one).
-# Bumps the pinned playbook version in sync-playbook-rules.yml when a new release is tagged.
+# Bumps the third-party actions in workflows (SHA pins). Two pins never move through Dependabot:
+# - the playbook action moves only through the sync workflow, with .playbook/ in the same pull
+#   request (F-0035);
+# - the central CI (Drecoder/sovereign-vpc-gcp) is private and moves only through reviewed repin
+#   pull requests; Dependabot cannot read it, and checking it fails every run with
+#   git_dependencies_not_reachable (F-0087).
+# Add the repository's package ecosystems (npm, pip, gomod, docker) below.
 
 version: 2
 updates:
@@ -7,3 +13,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "Drecoder/Engineering_Excellence_Playbook"
+      - dependency-name: "Drecoder/sovereign-vpc-gcp/*"
