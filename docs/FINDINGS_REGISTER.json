@@ -1472,6 +1472,54 @@
           "ratchet-existing-function-complexity"
         ]
       }
+    },
+    {
+      "id": "F-0059",
+      "journal": "## 2026-11-16: Dependabot bumps merged a manifest without its lockfile",
+      "category": "governance",
+      "severity": "critical",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2026-11-23",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Autonomy Rules",
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "coqui-tts",
+          "compliance-authority"
+        ],
+        "fingerprints": [
+          "manifest-without-lockfile",
+          "eligibility-admits-unlocked-change"
+        ]
+      }
+    },
+    {
+      "id": "F-0060",
+      "journal": "## 2026-11-16: The governance baseline stages guardrails that cannot run in dry run",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2026-12-16",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "GOV-002",
+          "AGENTS.md#Governance Rules"
+        ],
+        "components": [
+          "playbook",
+          "genesis"
+        ],
+        "fingerprints": [
+          "baseline-legacy-constraint-no-dry-run"
+        ]
+      }
     }
   ],
   "controls": [
