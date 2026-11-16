@@ -495,6 +495,15 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   stays closed until decided as a protected change; when open, an agent trains only on verified
   corrections of its own mistakes, never on claims, transient failures or its evaluator's files, and
   a tuned model ships only as a human-approved ladder change after its golden tasks pass.
+- **Target design: long inputs are read so no part is always in the middle, and only where it wins**
+  (`06_AgentZone/11_Cyclic_Tri_Pass_Reading.md`, proposed). Only spec-to-plan intake, incident and
+  log triage, and SecOps investigation context may use cyclic tri-pass reading; the Policy Engine,
+  the Builder's slices and the retired Reviewer never do. Chunks follow symbol, heading or event
+  boundaries; three segments rotate so each chunk is first, middle and last exactly once, and pass 1
+  is the true order. Every finding cites a chunk and lines, and a citation that does not resolve is
+  rejected. A stage adopts it only when it beats single linear reading on its golden tasks' worst-decile
+  recall and no cheaper way of reading (restated instructions, per-unit map-reduce) matches it, in a
+  reviewed promotion.
 - **Golden tasks.** Each agent keeps a fixed set of golden tasks (including at least one
   designed-to-fail task) that must pass before a change to its prompt, tools, or model ships.
 
