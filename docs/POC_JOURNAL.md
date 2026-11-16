@@ -1063,3 +1063,127 @@ Status: open.
 - **Verification:** pending: a job's start time after a VM boots, before and after.
 - **Evidence:** sovereign-vpc-gcp plan runs for #46, #47 and #48 (queued 2026-11-11).
 - **Status:** open.
+
+## 2026-11-16: Mutation testing crashed on every repository on typescript 7
+
+- **Rule:** every repository tracks its mutation score with a floor (`AGENTS.md` → Test Quality
+  Rules), and the factory fixes its own CI failures (`AGENTS.md` → CI Rules).
+- **Problem:** typescript 7, the native compiler, ships no JavaScript compiler API. Stryker parses
+  `tsconfig.json` through that API, and since F-0050 the gate installs the repository's own
+  typescript beside Stryker, so on aws-builder-agent (typescript 7.0.2) mutation crashed with
+  "ts.parseConfigFileTextToJson is not a function" before the first mutant. It failed closed, so
+  nothing passed, but the Builder could not get a mutation floor.
+- **Detection:** the agent, running the gate's exact Stryker configuration on aws-builder-agent to
+  measure its floor before the MVP repin.
+- **Root cause:** the F-0050 fix assumed every typescript release has the JavaScript API; the
+  self-test covered typescript 6 only.
+- **Correction:** for a repository on typescript 7 or later the gate puts a pinned typescript 6.0.3
+  (`STRYKER_TYPESCRIPT_API`) beside Stryker for its tsconfig parse; the repository's own typescript
+  still runs its tests (sovereign-vpc-gcp #50).
+- **Preventive action:** a self-test case for a typescript 7 repository.
+- **Verification:** pending merge: the case was committed first and failed with the exact error;
+  after the fix 13 of 13 mutation cases pass, and aws-builder-agent measured 945 of 986 mutants
+  killed (host run, provisional).
+- **Evidence:** sovereign-vpc-gcp #50 (commits f32264e, 7195458).
+- **Status:** open.
+
+## 2026-11-16: Genesis has never implemented GOV-002 (no service-account keys)
+
+- **Rule:** every `GOV-*` guardrail is implemented in Genesis from the vendored baseline, staged in
+  dry run, then enforced (`AGENTS.md` → Governance Rules); GOV-002's baseline mode is `enforce`.
+- **Problem:** `modules/governance/gcp/org_policy_identity_controls.tf`, the file meant for the
+  identity controls, was empty from Genesis's first commit and since 2026-05-09 has held only a
+  pasted Windows path. `constraints.tf` names `iam.disableServiceAccountKeyCreation` and
+  `iam.disableServiceAccountKeyUpload`, but no policy applies them. Service-account key creation
+  and upload, which the Security Rules forbid, are not denied by any org policy from Genesis.
+- **Detection:** the agent, reading the red `HCL gates` log on Genesis #7 ("Invalid character" on
+  line 1 of that file) and tracing the file's history.
+- **Root cause:** the governance module was written by hand rather than generated from the
+  baseline, and nothing compares the policies Genesis applies with the baseline's controls; until
+  Genesis #7 no gate ran on Genesis's HCL at all.
+- **Correction (planned):** Genesis #7 removes the corrupt line, so the file is valid and says what
+  is missing (containment, not a fix). A separate governance pull request implements GOV-002 from
+  the baseline in dry run, on the highest-scrutiny path with the owner's approval, then enforces it,
+  and audits which other baseline controls Genesis lacks.
+- **Preventive action:** generate Genesis's org policies from `governance_baseline.v1.json` and
+  check in CI that every control with a GCP org-policy status is applied.
+- **Verification:** pending: GOV-002 in dry run, then `adversarially_verified` (a denied key
+  creation and a denied upload), then enforced.
+- **Evidence:** Genesis #7, job 130898665766; Genesis commit b32f454.
+- **Status:** open.
+
+## 2026-11-16: The Go gate installed a hard-coded Go version
+
+- **Rule:** the factory is self-contained and installs a pinned toolchain (`AGENTS.md` → CI Rules).
+- **Problem:** both Go job shapes installed Go 1.23. Genesis's `go.mod` requires 1.26.3, so its
+  Go gate stopped at "go.mod requires go >= 1.26.3 (running go 1.23.12; GOTOOLCHAIN=local)". The
+  local toolchain setting correctly refused to download another Go; the gate never ran Genesis's
+  vet, build, tests or vulnerability scan.
+- **Detection:** the gate itself, failing closed on Genesis #7.
+- **Root cause:** the Go version was written into the workflow instead of read from the repository
+  it gates; the gate had no Go self-test.
+- **Correction:** `GATE_GO_VERSION` resolves the highest version any built `go.mod` requires (its
+  toolchain directive, else its go directive, `X.Y` meaning `X.Y.0`), and both job shapes install
+  exactly that version (sovereign-vpc-gcp #52).
+- **Preventive action:** `tests/gates/go/cases.sh` and a `go-version` self-test job.
+- **Verification:** pending merge: the 10 cases were committed first and all failed on 6d595f1;
+  with the fix 10 of 10 pass, and on Genesis the resolver gives 1.26.3.
+- **Evidence:** sovereign-vpc-gcp #52 (commits 73adfef, 820fb07); Genesis #7, job 130898665696.
+- **Status:** open.
+
+## 2026-11-16: Genesis runs its own plan and apply workflows outside the central CI
+
+- **Rule:** CI lives in one reusable workflow, with no per-repository CI; anything that touches a
+  cloud runs from the central pool (`AGENTS.md` → CI Rules).
+- **Problem:** Genesis keeps `terraform-plan.yml` and `terraform-apply.yml`. The plan workflow pins
+  actions by tag, installs `terraform` instead of the pinned OpenTofu, runs Terratest a second time
+  without OpenTofu (so its "Build and Plan" check fails on every pull request), and plans against a
+  mock token, which proves nothing.
+- **Detection:** the agent, reading the red "Build and Plan" log on Genesis #7.
+- **Root cause:** the workflows predate the central CI and were never retired when the gates came
+  in.
+- **Correction (planned):** Genesis #7 retires both; Terratest already runs in the central Go gate
+  with `install-opentofu`, and Genesis's plan and apply move to the central `iac.yml` (KAN-72,
+  KAN-73). No apply runs from Genesis until then.
+- **Preventive action:** a central check that a consumer's `.github/workflows` holds only its
+  gates caller and the shared callers.
+- **Verification:** pending: Genesis #7 green with no per-repository workflow.
+- **Evidence:** Genesis #7, job 130898607600.
+- **Status:** open.
+
+## 2026-11-16: Two factory repositories have no Dependabot security updates
+
+- **Rule:** every factory repository has vulnerability alerts and Dependabot security updates on
+  (`AGENTS.md` → Security Rules).
+- **Problem:** `setup-auto-merge-security.sh` turned them on for the repositories it lists; Genesis
+  and gcp-reviewer-agent are not among them. Genesis carries two CRITICAL vulnerabilities in
+  Terratest's indirect dependencies (`hashicorp/go-getter` 1.7.1, CVE-2024-3817;
+  `google.golang.org/grpc` 1.56.3, CVE-2026-33186) and no pull request was ever opened to fix them.
+- **Detection:** the Trivy gate blocked both on Genesis #7; the agent then compared the script's
+  repository list, as the owner ran it, with the factory repositories.
+- **Root cause:** the script's repository list was written by hand and missed two repositories.
+- **Correction (planned):** add both repositories to the script and run it; bump both dependencies
+  in Genesis #7 (go-getter 1.7.4 or later, grpc 1.79.3 or later).
+- **Preventive action:** derive the script's list from the findings register's component registry.
+- **Verification:** pending: both settings read back on, and Genesis #7's Trivy gate green.
+- **Evidence:** Genesis #7, job 130898610397 (`trivy: 71 finding(s), 2 blocking`).
+- **Status:** open.
+
+## 2026-11-16: The CRAP gate blocked the agent's own regression
+
+- **Rule:** ratchet the past: no existing function's CRAP, and no module's mutation score or
+  complexity, gets worse than its baseline (`AGENTS.md` → Test Quality Rules).
+- **Problem:** the agent's FI-01b fix put the takeover bound inside `#pickUp`, raising its
+  complexity from 5 to 8 and the module's existing-function total from 101 to 104, and its new
+  code left orchestrator.ts's mutation score at 84.2% against a base of 84.9%.
+- **Detection:** the CRAP gate (Policy Engine 2.2.0) blocked factory-orchestrator #8 on QP-020,
+  QP-021 and QP-022 on its first run. A check shown to work on a real change, not a fixture.
+- **Root cause:** the fix added branches to an existing function instead of a new one, and its
+  tests did not pin which previous result a takeover re-sends.
+- **Correction:** the takeover and dispatch tail moved into a new `#start` (existing total 100,
+  `#pickUp` 4), and four tests aimed at the surviving mutants raised orchestrator.ts to 87.2%.
+- **Preventive action:** the agent measures complexity with the gate's own script and the base's
+  mutation score before pushing a change to an existing module.
+- **Verification:** pending: the re-run of #8's CRAP and Mutation gates.
+- **Evidence:** factory-orchestrator #8 (commits 928697c, 5231e2e).
+- **Status:** open.
