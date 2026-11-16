@@ -1187,3 +1187,57 @@ Status: open.
 - **Verification:** pending: the re-run of #8's CRAP and Mutation gates.
 - **Evidence:** factory-orchestrator #8 (commits 928697c, 5231e2e).
 - **Status:** open.
+
+## 2026-11-16: Dependabot bumps merged a manifest without its lockfile
+
+- **Rule:** auto-merge is limited to a class promoted to L3 (`AGENTS.md` → Autonomy Rules); pin
+  every input in a committed lockfile (`AGENTS.md` → Supply Chain Rules).
+- **Problem:** coqui-tts merged three Dependabot bumps that changed `pyproject.toml` alone (#12
+  OpenTelemetry, #14 torchaudio, #16 pytest). The image installs from the hashed lockfiles, so it
+  kept the old versions while every gate stayed green, and `torchaudio==2.11.1` beside
+  `torch==2.6.0+cpu` cannot be resolved. compliance-authority has the same drift (pydantic,
+  pytest). Replayed against coqui-tts #13 (`torch==2.15.0`, dropping `+cpu`), the auto-merge
+  eligibility check answered "Eligible: every condition holds": a control admitting what it must
+  refuse. Nothing has auto-merged; the gap is open until sovereign-vpc-gcp #53 merges.
+- **Detection:** the owner, reviewing coqui-tts #13; the agent replayed the eligibility check and
+  compared every manifest pin with both lockfiles.
+- **Root cause:** the eligibility rule accepted any change confined to manifests and lockfiles, not
+  a manifest that moves with its lockfile; and no gate compared a manifest with the locks built from
+  it, because the build reads only the locks.
+- **Correction:** containment by the owner: #13 closed, auto-merge off on coqui-tts. coqui-tts #18
+  reverts the three manifest-only bumps and stops version updates of torch and torchaudio (security
+  updates still open). sovereign-vpc-gcp #53: eligibility refuses a manifest changed without the
+  lockfile beside it, and `GATE_LOCK_MATCH` fails a manifest pin the locks do not have.
+- **Preventive action:** both checks run in the central factory with self-tests committed failing
+  first; the same class of gap is related to F-0047 (`dependency_patch` promoted below its evidence
+  target).
+- **Verification:** pending merge: auto-merge cases 16 of 16, lockfile cases 11 of 11; on real
+  repositories coqui-tts `main` fails (9 pins), coqui-tts #18 passes, compliance-authority `main`
+  fails (3 pins).
+- **Evidence:** coqui-tts #12, #13, #14, #16, #18; sovereign-vpc-gcp #53 (commits f887418,
+  69baf77).
+- **Status:** open. This is the last hand-written entry: from here findings are opened by controls
+  as issue-backed records and projected into this journal (KAN-60, owner decision 2026-11-16).
+
+## 2026-11-16: The governance baseline stages guardrails that cannot run in dry run
+
+- **Rule:** every new or changed guardrail is staged in dry run before it is enforced
+  (`AGENTS.md` → Governance Rules).
+- **Problem:** Google Org Policy accepts a dry-run policy only for custom constraints, managed
+  constraints and four legacy ones (service usage, endpoint usage, TLS versions, TLS cipher
+  suites). The baseline's GCP controls name legacy constraints (GOV-002
+  `iam.disableServiceAccountKeyCreation` and `…Upload`; GOV-006, 007, 009, 011 and 012 likewise),
+  so the baseline's own staging rule cannot be met for them.
+- **Detection:** the agent, preparing KAN-76 slice 1 (GOV-002 in dry run), from Google's "Test
+  organization policies" limitations.
+- **Root cause:** the baseline was written against legacy constraint names without checking each
+  constraint's dry-run support.
+- **Correction (planned):** the baseline names the managed equivalents (for example
+  `iam.managed.disableServiceAccountKeyCreation`), each checked against Google's per-constraint
+  dry-run flag, and marks any control without one as a custom constraint or a documented
+  exception; owner-reviewed.
+- **Preventive action:** a contract test that refuses a baseline control whose constraint cannot be
+  dry-run.
+- **Verification:** pending: the baseline change and its contract test, then GOV-002 in dry run.
+- **Evidence:** KAN-76 comments of 2026-11-16; Genesis #8.
+- **Status:** open.
