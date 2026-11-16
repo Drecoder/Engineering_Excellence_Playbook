@@ -1613,6 +1613,27 @@
           "checklist-only-triage"
         ]
       }
+    },
+    {
+      "id": "F-0089",
+      "journal": "## 2026-11-16: The hand projection cut three sentences from F-0087's journal entry",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "projection-drops-continuation-lines"
+        ]
+      }
     }
   ],
   "controls": [

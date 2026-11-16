@@ -1350,3 +1350,50 @@ Status: open.
   (the finding); aws-builder-agent Dependabot runs 40612975761 and 43078055981 (`Handled error
   whilst
 - **Status:** open.
+
+## 2026-11-16: The hand projection cut three sentences from F-0087's journal entry
+
+- **Rule:** every finding is journaled as a compact post-mortem, and entries are added, never
+  rewritten (`AGENTS.md` → Observability Rules).
+- **Problem:** the journal entry for F-0087, merged in #88 (`f2985d4`), stops mid-sentence in three
+  fields. **Problem** ends at "The same error has failed every", **Root cause** at "treated it as a
+  setting to", and **Evidence** at "(`Handled error whilst". In the issue body of #87, each of those
+  bullets goes on in indented continuation lines; the hand projection kept only each bullet's first
+  line. The register row and the entries for F-0084, F-0085 and F-0086 are complete. #87 itself is
+  intact.
+- **Detection:** a person: the agent, reading the merged journal at the start of the next session,
+  before building the projector.
+- **Root cause (DRAFT):** the projection was a one-off script run by hand, with no test, and nothing
+  compared the projected entry with its issue. The append-only check, the register check and
+  markdownlint all passed, because a cut sentence is still valid Markdown and the heading still
+  matches its row.
+- **Correction:** this finding's journal entry restates F-0087's three cut fields in full, from #87;
+  the F-0087 entry stays as merged, because entries are never rewritten. The register row of F-0087
+  is unchanged. The three fields in full, from #87:
+  - **Problem (F-0087):** on coqui-tts `main` (`ae43a6a`, the #18 merge), one of three Dependabot
+    runs failed (check 133146961219). The github-actions updater could not fetch
+    `Drecoder/sovereign-vpc-gcp` to check the caller's pins on `gates.yml` and
+    `dependabot-auto-merge.yml`: `git_dependencies_not_reachable`. The other ecosystems succeeded.
+    The same error has failed every weekly github-actions run on aws-builder-agent since 2026-10-28
+    (runs 40612975761, 41751671110, 42936417351, 43078055981), on `gates.yml`. On 2026-11-11 it was
+    triaged in the red-check survey as "Dependabot can't reach a private repo (an owner setting)"
+    and went on a checklist as "turn on Dependabot private-repo access": no journal entry, no
+    register row, no due date, so it was never closed and is now seen on a second repository.
+  - **Root cause (F-0087, DRAFT):** the central CI is a private repository, and Dependabot has no
+    access to the owner's other private repositories. Its pins are meant to move only through
+    reviewed repin PRs, so Dependabot has nothing to update there anyway. The 2026-11-11 triage
+    treated it as a setting to toggle, without a finding, so nothing tracked it.
+  - **Evidence (F-0087):** aws-builder-agent Dependabot runs 40612975761 and 43078055981 (`Handled
+    error whilst updating Drecoder/sovereign-vpc-gcp/.github/workflows/gates.yml:
+    git_dependencies_not_reachable`); coqui-tts check run 133146961219, job log line `Handled error
+    whilst updating Drecoder/sovereign-vpc-gcp/.github/workflows/dependabot-auto-merge.yml:
+    git_dependencies_not_reachable`.
+- **Preventive action (DRAFT):** KAN-60 slice 1's projector is built test first, with #87's body as
+  a fixture: a bullet with continuation lines projects whole. A check refuses a projected entry
+  whose text, with whitespace normalized, differs from its issue's bullets.
+- **Verification (DRAFT):** the projector's test fails on the one-line-per-bullet behaviour and
+  passes on the fix; re-projecting #87 reproduces the three full fields given below.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#89](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/89)
+  (the finding); `docs/POC_JOURNAL.md` at `f2985d4`, the F-0087 entry; issue #87's body; PR #88.
+- **Status:** open.
