@@ -11,7 +11,9 @@ together.
 
 This page describes the factory's own repositories and how they work with one another. The
 platform map, trust boundaries, and status of every stage are in `ARCHITECTURE.md`; the rules for
-each bench are in the standard it links to.
+each bench are in the standard it links to. The patterns the factory attaches to every platform it
+builds (DataOps, FinOps, MLOps, SecOps), and the runs that build them, are in
+`02_Platform_Patterns.md`.
 
 ---
 
