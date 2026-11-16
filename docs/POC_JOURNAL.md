@@ -1586,3 +1586,31 @@ Status: open.
   corrects), F-0085 (apply disabled), F-0086 (same class: diagnosis without full evidence),
   sovereign-vpc-gcp #38, #39.
 - **Status:** open.
+
+## 2026-11-16: Two of the harness's first conformance cases could not fail on the defects they named
+
+- **Rule:** a control counts as proven only with a designed-to-fail case (`AGENTS.md` →
+  Observability Rules; Test Quality Rules).
+- **Problem:** the first draft of the adaptive harness's test design (KAN-47) passed all its own
+  checks. Each designed-to-fail case was caught, and each got through with its checks switched off.
+  Still, two defects in the reference checker went undetected: allowing the within-row adaptations
+  (`change_model_rung`, `reorder_work`) when the table cannot decide, and flattening retrieval
+  precedence so a person's decision no longer outranked verified evidence. No case exercised row 0
+  with one of those actions, and no retrieval case put a person's decision against a verified record.
+- **Detection:** a control: 24 defects seeded by hand into `harness_reference.py`, each run against the
+  suite. 22 were caught and 2 survived.
+- **Root cause:** the proof showed that each case depends on its check, not that each part of the
+  standard has a case. A check can be covered on one branch while another branch of the same rule has
+  no case.
+- **Correction:** `HD-057` (row 0 with a rung change) and `RT-006` (a person's decision, then verified
+  evidence, then a claim). The re-run killed both survivors, plus one more mutant that removes the
+  decision tier alone: 25 of 25 caught.
+- **Preventive action:** the test design records the mutation run alongside the proof
+  (`tests/contracts/harness_conformance/README.md` §3). A change to the reference is mutated again
+  before its cases are trusted.
+- **Verification:** the 25 mutants, each failing `test_harness_conformance.py`; the suite passes on the
+  unmutated reference. Host Python with the toolchain image's pins (`jsonschema==4.26.0`,
+  `rfc3339-validator==0.1.4`). Provisional until the contract job re-runs it in the image.
+- **Evidence:** `schemas/examples/harness/vectors.json` (`HD-057`, `RT-006`); `harness_reference.py`;
+  KAN-47.
+- **Status:** fixed.

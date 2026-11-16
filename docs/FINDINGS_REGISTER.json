@@ -1802,6 +1802,30 @@
           "diagnosis-from-latest-failure-only"
         ]
       }
+    },
+    {
+      "id": "F-0098",
+      "journal": "## 2026-11-16: Two of the harness's first conformance cases could not fail on the defects they named",
+      "category": "quality",
+      "severity": "low",
+      "detected_by": "control",
+      "found": "2026-11-16",
+      "due": "2027-05-15",
+      "status": "fixed",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules",
+          "AGENTS.md#Test Quality Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "conformance-case-misses-rule-branch"
+        ]
+      },
+      "closed": "2026-11-16",
+      "verification": "HD-057 and RT-006 added to schemas/examples/harness/vectors.json; 25 of 25 hand-seeded mutants of tests/contracts/harness_reference.py fail test_harness_conformance.py and the unmutated suite passes. Host Python with the toolchain image's pins; provisional until the contract job re-runs it in the image"
     }
   ],
   "controls": [
