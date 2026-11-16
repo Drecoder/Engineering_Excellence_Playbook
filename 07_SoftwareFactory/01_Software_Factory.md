@@ -153,7 +153,7 @@ register.
 
 - **Who acts is always visible.** Every open ticket shows whether the owner or an agent moves it
   next, so the owner's queue is the Human and Awaiting Approval columns.
-- **One features map mirrors the board.** A single map, keyed by ticket, finding and pull request
+- **The Features Map mirrors the board.** One map, keyed by ticket, finding and pull request
   IDs, holds every open item across the factory's repositories with its status and who acts next.
   It is synchronized with the repositories, the board and the register in every session, and every
   handoff cites its row IDs. It is a view, never a second tracker.
