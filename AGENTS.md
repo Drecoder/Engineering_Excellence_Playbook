@@ -241,6 +241,12 @@ Telemetry ships with the first line of code, not after the feature works (see
   and rejects one that does not resolve. Remediation
   deadlines are mandatory: critical 7 days, high 30, medium 90, low 180 from the day it was found.
   CI refuses a later due date, and an overdue open finding fails the daily run.
+- **Every finding is shown as work on the board.** Each register row has a board ticket, opened
+  when the finding is recorded, even when it is fixed the same day. A ticket carries several
+  findings only when one change closes them all. The ticket follows the register: it reaches Done
+  only when every finding it carries is fixed or closed there, with its verification, and a ticket
+  is never Done over an open finding. A fixed finding with no ticket, or a ticket whose status
+  disagrees with its findings, is drift, corrected in the session that finds it.
 - **Control effectiveness is measured, not assumed.** Every run reports the share of control
   classes proven to fail on their defect, the share of findings recorded as caught by a control
   rather than a person (an attribution set by hand, not yet verified against evidence), open

@@ -1802,6 +1802,27 @@
           "diagnosis-from-latest-failure-only"
         ]
       }
+    },
+    {
+      "id": "F-0099",
+      "journal": "## 2026-11-16: Fourteen fixed findings had no ticket, and a Done ticket sat over an open finding",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "finding-board-drift"
+        ]
+      }
     }
   ],
   "controls": [
