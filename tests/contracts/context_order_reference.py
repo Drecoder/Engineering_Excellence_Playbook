@@ -90,3 +90,97 @@ def slot_of(weights: list[int], pinned: frozenset[int] = frozenset()) -> dict[in
             for i in segs[(r + s) % k]:
                 out.setdefault(i, []).append(slot)
     return out
+
+
+# --- Arm E: chunk-aligned, end-focused windows ------------------------------------------------
+#
+# The rotating chunks, in true order, are tiled into focus groups: contiguous runs of whole chunks
+# whose total weight is at most the focus budget (a chunk heavier than the budget is a group on its
+# own). Window i reads, in order: the table of contents and the pinned chunks (the shared, cacheable
+# prefix), then context (the whole chunks just before focus group i, nearest first, as many as fit
+# in the context budget, presented in true order), then focus group i, then the restated task. So
+# every rotating chunk is in the focus slot, the end of a window before the restated task, exactly
+# once, and a defect that crosses a group boundary is read whole in the later window.
+
+
+def focus_groups(weights: list[int], focus_budget: int) -> list[list[int]]:
+    """Tile chunk indices 0..n-1, in true order, into contiguous groups of total weight at most
+    focus_budget. A group closes when the next chunk would overflow it; a chunk heavier than the
+    budget is a group of its own."""
+    if any((not isinstance(w, int)) or isinstance(w, bool) or w <= 0 for w in weights):
+        raise ValueError("every chunk weight must be a positive integer token count")
+    if (not isinstance(focus_budget, int)) or isinstance(focus_budget, bool) or focus_budget <= 0:
+        raise ValueError("the focus budget must be a positive integer token count")
+    groups: list[list[int]] = []
+    current: list[int] = []
+    used = 0
+    for i, w in enumerate(weights):
+        if current and used + w > focus_budget:
+            groups.append(current)
+            current, used = [], 0
+        current.append(i)
+        used += w
+    if current:
+        groups.append(current)
+    return groups
+
+
+def windows(weights: list[int], pinned: frozenset[int] = frozenset(), focus_budget: int = 1,
+            context_budget: int = 0) -> list[dict[str, list[int]]]:
+    """Each window as {"head": pinned chunks, "context": [...], "focus": [...]}, in true order.
+
+    The reading order of a window is head + context + focus, then the restated task. Context is the
+    run of whole rotating chunks immediately before the focus group whose total weight fits in
+    context_budget, taken nearest first and presented in true order; it stops at the first chunk
+    that does not fit, and never includes a pinned chunk.
+    """
+    n = len(weights)
+    if any(not (0 <= p < n) for p in pinned):
+        raise ValueError("a pinned index is not a chunk")
+    if (not isinstance(context_budget, int)) or isinstance(context_budget, bool) or context_budget < 0:
+        raise ValueError("the context budget must be a non-negative integer token count")
+    head = sorted(pinned)
+    rotating = [i for i in range(n) if i not in pinned]
+    groups = focus_groups([weights[i] for i in rotating], focus_budget) if rotating else []
+    out = []
+    for g in groups:
+        start = g[0]  # position in `rotating`
+        context: list[int] = []
+        used = 0
+        j = start - 1
+        while j >= 0 and used + weights[rotating[j]] <= context_budget:
+            used += weights[rotating[j]]
+            context.insert(0, rotating[j])
+            j -= 1
+        out.append({"head": list(head), "context": context, "focus": [rotating[k] for k in g]})
+    if not out:
+        out.append({"head": list(head), "context": [], "focus": []})
+    return out
+
+
+# --- Arm F: size-routed hybrid ----------------------------------------------------------------
+#
+# The arm is chosen from the rotating chunks' total token weight L and the stage's two thresholds
+# (open decision D3), fixed in the benchmark policy file before the first run:
+#     L <= t_short          -> "A"  single linear read, prefix cached
+#     t_short < L <= t_long -> "C"  parallel per-unit map-reduce
+#     L > t_long            -> the long arm, "D" (tri-pass) or "E" (end-focused windows)
+# A length on a threshold goes to the shorter band. Anything malformed fails closed to the long arm,
+# the highest-scrutiny reading (AGENTS.md -> Agent Rules: fail closed).
+
+LONG_ARMS = ("D", "E")
+
+
+def route(total_tokens, t_short: int, t_long: int, long_arm: str) -> str:
+    if long_arm not in LONG_ARMS:
+        raise ValueError(f"the long arm must be one of {LONG_ARMS}")
+    if (not isinstance(t_short, int)) or isinstance(t_short, bool) or (not isinstance(t_long, int)) \
+            or isinstance(t_long, bool) or not (0 < t_short < t_long):
+        raise ValueError("thresholds must be integers with 0 < t_short < t_long")
+    if (not isinstance(total_tokens, int)) or isinstance(total_tokens, bool) or total_tokens < 0:
+        return long_arm  # unknown or malformed length: fail closed
+    if total_tokens <= t_short:
+        return "A"
+    if total_tokens <= t_long:
+        return "C"
+    return long_arm

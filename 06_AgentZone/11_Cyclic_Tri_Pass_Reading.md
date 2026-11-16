@@ -7,8 +7,11 @@ adopted for a stage only if a benchmark shows it finds more than the simpler way
 **Status: PROPOSED** (the playbook's *Design*: agreed target, not implemented). Nothing here is used
 by any agent. The pattern may run in a stage only after it wins that stage's benchmark (§7) and is
 promoted by a reviewed change (§8). Until then, every stage reads the way it does today. The
-ordering is specified exactly and tested (`tests/contracts/context_order_reference.py`); the
-contracts it names are specified at the test-design stage (§10), not before.
+benchmark also tests two alternatives on equal terms, end-focused windows (arm E) and a size-routed
+hybrid (arm F), so tri-pass is adopted only where nothing cheaper finds as much. The tri-pass
+ordering, the windows and the routing rule are specified exactly and tested
+(`tests/contracts/context_order_reference.py`); the contracts they name are specified at the
+test-design stage (§10), not before.
 
 ---
 
@@ -132,17 +135,69 @@ metric (`AGENTS.md` → Observability Rules).
 | B. Linear with restated instructions | One pass, true order, the task restated at the end |
 | C. Parallel per-unit map-reduce | One small extraction call per rotating chunk, each also given the table of contents and the pinned chunks, in parallel, then the same synthesis as D |
 | D. Cyclic tri-pass | §3 to §5 |
+| E. Chunk-aligned, end-focused windows | Windows of whole chunks in true order, each ending on its focus group and the restated task, in parallel, then the same synthesis as D (below) |
+| F. Size-routed hybrid | Arm A, C, or a long arm (D or E), chosen by the input's length against the stage's thresholds (below) |
 
 Every arm uses the same chunks, the same prompt file and the same citation rule. Arms A and B are
-one call on the synthesis rung: the strongest model, reading once. Arms C and D run their extraction
-on the extraction rung and their synthesis on the synthesis rung. So tri-pass has to beat the
-strongest model reading the material straight through, and the cost of doing so is measured.
+one call on the synthesis rung: the strongest model, reading once. Arms C, D and E run their
+extraction on the extraction rung and their synthesis on the synthesis rung. So tri-pass has to beat
+the strongest model reading the material straight through, and the cost of doing so is measured.
+
+#### Arm E: chunk-aligned, end-focused windows
+
+"Lost in the middle" makes the middle of a read the weakest position, so a window puts what it is
+for at its end, next to the task, never in its centre.
+
+- **Windows slide over whole chunks** (§3: symbols, headings, event windows), never fixed character
+  or token spans.
+- **Focus groups:** the rotating chunks, in true order, are tiled into contiguous groups whose
+  weight is at most the stage's focus budget. A group closes when the next chunk would overflow it;
+  a chunk heavier than the budget is a group of its own.
+- **Window i reads,** in order: the table of contents and the pinned chunks (the same cacheable
+  prefix as every other arm), then its **context** (the whole chunks just before focus group i,
+  nearest first, as many as fit in the context budget, shown in true order), then **focus group i**,
+  marked as the focus, then the restated task.
+- **The guarantee:** every rotating chunk is in the focus slot, the end of a window just before the
+  task, exactly once; windows are in true order and have no seam; pinned chunks lead every window and
+  never rotate. The reference tests check this for every chunk count up to 300. A defect that crosses
+  a group boundary is read whole in the later window only when the context budget holds the chunk
+  before the boundary, so D4 sets the context budget at least as large as the stage's largest
+  rotating chunk, or records which boundaries it leaves uncovered.
+- **Citations:** a window's finding must cite a chunk in that window (its context or its focus); one
+  that cites any other chunk is **rejected, not repaired**, and counted, like any unresolved
+  citation (§5). The deterministic merge then deduplicates across windows as it does across passes.
+- **Cost:** about N × (focus + context) ÷ focus input tokens for N tokens of rotating chunks, plus
+  one prefix per window, of which the shared prefix is cached. The context budget is the overlap, so
+  it is the cost lever.
+
+#### Arm F: size-routed hybrid
+
+Short inputs have no real middle; long ones do. Arm F reads each input the cheapest way its length
+calls for, and the routing rule itself has to win the benchmark.
+
+- **The rule,** on the rotating chunks' total weight L and the stage's two thresholds (D3):
+  `L <= t_short` reads as arm A (one linear pass, prefix cached); `t_short < L <= t_long` as arm C
+  (per-unit map-reduce); `L > t_long` as the long arm. A length exactly on a threshold takes the
+  shorter band. A missing or malformed length **fails closed** to the long arm, the highest-scrutiny
+  reading (`AGENTS.md` → Agent Rules).
+- **Two variants, both reported:** F-D (the long arm is tri-pass) and F-E (the long arm is the
+  windows).
+- **Scored by replay, at no extra model cost.** Routing is deterministic, so on every task F's
+  result is exactly the result of the arm it routes to, already measured. F makes no calls of its
+  own; it needs only tasks in every length band (below).
+- **The thresholds are fixed in the benchmark policy file before the first run.** Choosing them after
+  seeing results would fit the rule to the data, so the replay refuses a policy file changed after
+  the first run's timestamp. New thresholds are a new candidate rule and need a new run on fresh
+  tasks.
 
 ### Tasks
 
 - **A corpus per stage**, from the factory's own sealed material: specs for intake, `docs/incidents/`
-  and CI logs for triage, recorded security events for SecOps. Inputs are long enough that the
-  middle is real (the length is fixed per stage at test design).
+  and CI logs for triage, recorded security events for SecOps. The stage benchmarked first is
+  decision D1.
+- **Three length bands per stage,** short (`L <= t_short`), medium and long (`L > t_long`), with the
+  thresholds of D3. The long band is where the middle is real. Every arm runs on every band, so each
+  arm's recall is known per band and arm F can be scored by replay.
 - **Planted defects at 11 positions**, at 0%, 10%, 20% and so on up to 100% of the input's
   true-order token offset, each a known, fingerprinted defect of the stage's kind: a missing
   requirement, the causal log line, the signal that changes the decision. Each position is covered
@@ -150,30 +205,38 @@ strongest model reading the material straight through, and the cost of doing so 
 - **Designed-to-fail tasks:** a finding citing a chunk that does not exist must be rejected; a defect
   that spans the seam must still be found; a defect planted in a pinned chunk must be found by every
   arm. A task with no planted defect checks false positives.
+- **For arms E and F:** a window's finding citing a chunk outside its window must be rejected; a
+  defect spanning two focus groups must still be found; a task whose length sits exactly on a
+  threshold must route to the shorter band; a task with its length withheld must route to the long
+  arm.
 
 ### Measures
 
 | Measure | How |
 | :--- | :--- |
-| Recall by position | Planted defects found, per decile position, with a 95% interval |
-| Worst-decile recall | The lowest of the 11. The headline measure: lost in the middle shows up here |
+| Recall by position | Planted defects found, per decile position and per length band, with a 95% interval |
+| Worst-decile recall | The lowest of the 11, per band, and the lowest over all bands. The headline measure: lost in the middle shows up here |
 | Precision | Findings that match a planted defect, out of all accepted findings |
 | Uncached token cost | Input and output tokens, uncached input counted separately, computed from `token_record.v1` |
-| Latency | Wall clock from the first call to the synthesis result, p50 and p90 |
+| Latency | Wall clock from the first call to the synthesis result, p50 and p90, per band |
+| Routing (arm F) | The arm each task was routed to, and per band whether that arm was the cheapest passing one |
 | Citation-rejection rate | Findings rejected by the deterministic citation check, out of all findings |
 
 ## 8️⃣ Promotion
 
-For each stage, an arm replaces today's reading only when, against arm A:
+Promotion is decided per stage, starting with the stage chosen in D1, on that stage's corpus over
+all its length bands. An arm replaces today's reading only when, against arm A:
 
-1. worst-decile recall is higher, with non-overlapping 95% intervals;
+1. worst-decile recall, over all bands, is higher with non-overlapping 95% intervals, and is not
+   lower in any band;
 2. precision is not lower;
 3. the citation-rejection rate is not higher;
 4. its cost and latency fit the stage's budget.
 
 If several arms pass, the cheapest one whose worst-decile recall is not significantly below the
-best passing arm's wins. So arm B or arm C can win, and tri-pass is adopted only where it finds
-measurably more than every cheaper way of reading.
+best passing arm's wins. So arm B, C, E or F can win, and tri-pass is adopted only where it finds
+measurably more than every cheaper way of reading. Arm F is promoted only with the thresholds frozen
+before the run, and only as the variant (F-D or F-E) that passed; it never wins on latency alone.
 The numbers each condition needs (sample sizes, the cost and latency ceilings) are fixed in a
 versioned policy file before the first run, never after seeing results, following the calibration
 rule for numeric weights (`09_Adaptive_Harness.md` §4). Promotion is a reviewed, human-approved
@@ -184,9 +247,10 @@ tasks demotes it.
 
 | # | Question | Until decided |
 | :--- | :--- | :--- |
-| D1 | **Intake's reader.** Specs are drafted by an architect, a person or an agent, and approved by the owner. The pattern helps an agent architect; whether one reads long specs today decides if the intake benchmark runs first | Intake waits; triage can run first |
+| D1 | **The first stage benchmarked:** spec-to-plan intake, incident and log triage, or SecOps context. Intake helps only if an agent architect reads long specs today; SecOps needs its corpus (D2). Proposed: triage first | The benchmark has no corpus and no run until decided; the policy file names the stage |
 | D2 | **The SecOps corpus.** SecOps is Run 3, so recorded security events may not exist yet | SecOps benchmark waits for its corpus |
-| D3 | **Input length per stage** at which the middle is real | Fixed at test design, before any run |
+| D3 | **Length bands per stage:** `t_short` and `t_long` in tokens of rotating chunks. `t_long` is where the middle is real; both are arm F's routing thresholds | Fixed in the benchmark policy file at test design, before any run; arm F cannot run without them |
+| D4 | **Arm E's budgets per stage:** the focus budget and the context budget, in tokens. The context budget is at least the largest rotating chunk in the stage's corpus, or the uncovered boundaries are recorded | Fixed in the same policy file, before any run |
 
 ## 🔟 Status
 
@@ -195,7 +259,7 @@ tasks demotes it.
 | 1. Hypothesis | Done (2026-11-16) |
 | 2. Codification | This standard, and the reference ordering with its tests |
 | 3. Review | Owner review of this standard |
-| 4. Test design | Not started: contracts `context_pass_plan.v1` and `context_finding.v1`, the benchmark policy file, the per-stage corpora, and the golden tasks |
+| 4. Test design | Not started: contracts `context_pass_plan.v1` (passes, windows and the routing decision) and `context_finding.v1`, the benchmark policy file (D1, D3, D4 and the promotion numbers), the per-stage corpora in three length bands, and the golden tasks |
 | 5. Implementation | Not started; triage first |
 | 6. Validation | Not started: the benchmark of §7, per stage |
 

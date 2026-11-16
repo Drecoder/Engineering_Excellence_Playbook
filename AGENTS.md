@@ -502,8 +502,9 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   boundaries; three segments rotate so each chunk is first, middle and last exactly once, and pass 1
   is the true order. Every finding cites a chunk and lines, and a citation that does not resolve is
   rejected. A stage adopts it only when it beats single linear reading on its golden tasks' worst-decile
-  recall and no cheaper way of reading (restated instructions, per-unit map-reduce) matches it, in a
-  reviewed promotion.
+  recall and no cheaper way of reading (restated instructions, per-unit map-reduce, chunk-aligned
+  windows that end on their focus, or a size-routed hybrid whose thresholds are fixed before the run)
+  matches it, in a reviewed promotion.
 - **Golden tasks.** Each agent keeps a fixed set of golden tasks (including at least one
   designed-to-fail task) that must pass before a change to its prompt, tools, or model ships.
 
