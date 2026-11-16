@@ -1241,3 +1241,112 @@ Status: open.
 - **Verification:** pending: the baseline change and its contract test, then GOV-002 in dry run.
 - **Evidence:** KAN-76 comments of 2026-11-16; Genesis #8.
 - **Status:** open.
+
+## 2026-11-16: The plan pool sat at zero again, and four PR gates queued over three hours with no alert
+
+- **Rule:** queued-job age needs its own alert, and runner failures are metrics with alerts
+  (`AGENTS.md` → CI Rules, Observability Rules); compute runs only when called (`AGENTS.md` → IaC
+  Rules).
+- **Problem:** `ci-runner-plan` was at target size 0 from after 2026-11-12 01:18:32 UTC (the last
+  plan job, `ci-runner-plan-8hcr-2e5f5f`) until about 07:55 UTC on 2026-11-16. The required `gates /
+  Gates (single job)` jobs of sovereign-vpc-gcp #50, #51, #52 and #53 queued with no runner; #50's
+  waited 3 h 17 min 39 s (04:39:30 to 07:57:09 UTC). Nothing alerted.
+- **Detection:** a person: the agent reading the queued checks at session start, then the owner
+  reading the group's live size.
+- **Root cause (DRAFT):** F-0034's containment, resizing by hand, is the only way the pool scales,
+  and its preventive action (KAN-67 plus a queued-job-age alert) is not built. A pool at zero and a
+  broken pool look the same from GitHub.
+- **Correction:** the owner resized `ci-runner-plan` to 1 at about 07:55 UTC;
+  `ci-runner-plan-rbs4-f87bed` picked up #50's job at 07:57:09.
+- **Preventive action (DRAFT):** a queued-job-age metric with an alert for every `sovereign-*`
+  label, built first, then the elastic plan pool (0 idle, burst to 3–4 Spot VMs on queue depth;
+  design record before build; KAN-67). The alert is also a KAN-60 trigger ("a queued job past its
+  age threshold").
+- **Verification (DRAFT):** a job queued against an empty pool raises the alert within its threshold
+  (designed-to-fail case), and the pool returns to zero after the job.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#84](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/84)
+  (the finding); runs 43805413928, 43805524210, 43818233175, 43821351066; Plan (dev) for #49
+  completed 2026-11-12T01:18:32Z; sovereign-vpc-gcp
+  `docs/incidents/2026-11-16-INC-008-plan-pool-left-at-zero.md`.
+- **Status:** open.
+
+## 2026-11-16: The apply workflow has been disabled for twelve days with no signal
+
+- **Rule:** failed applies are metrics with alerts; a failure found by a person looking is a finding
+  in itself (`AGENTS.md` → Observability Rules).
+- **Problem:** sovereign-vpc-gcp's `apply.yml` is `disabled_manually`, last changed
+  2026-11-03T19:59:17-06:00, after its last run (41755822228, 2026-11-04, failed). #47, #48 and #49
+  merged on 2026-11-12 and started no apply. INC-006's report job, which opens the "Apply failing on
+  main" issue, lives in the same workflow, so disabling it also silenced its alarm. Hand resizes of
+  the runner groups stay in place, because nothing reconciles the declared state.
+- **Detection:** a person: the agent, listing the repository's workflows while looking for the
+  runner outage.
+- **Root cause (DRAFT):** the signal for a broken apply is emitted from inside the workflow it
+  watches, so the containment for a failing apply (disabling it) also removes the signal.
+- **Correction:** none yet. Re-enabling waits on the two apply blockers (sovereign-vpc-gcp #44 and
+  the runner image). Interim (owner, 2026-11-16): `ci-runner-apply` resized to 0 by hand, recorded
+  as drift.
+- **Preventive action (DRAFT):** a scheduled check outside `apply.yml` that fails, and opens a
+  KAN-60 finding, when the apply workflow is disabled or `main`'s head has no successful apply
+  within a stated age.
+- **Verification (DRAFT):** the check fails on a fixture with the workflow disabled and on one with
+  an unapplied head, and passes once apply runs on `main`.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#85](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/85)
+  (the finding); `GET /repos/Drecoder/sovereign-vpc-gcp/actions/workflows` (`apply.yml`
+  `disabled_manually`); apply runs 41755822228 (last), none since; sovereign-vpc-gcp #47–#49 merge
+  commits.
+- **Status:** open.
+
+## 2026-11-16: The agent diagnosed the runner outage from the code, not the live state
+
+- **Rule:** read every red check's log; a failure that looks like the expected one is still read,
+  because an assumed cause hides the real one (`AGENTS.md` → CI Rules).
+- **Problem:** the handoff `claude/handoff-2026-11-16-b.md` said the plan runner "ran every other
+  job of #50 and #51 until ~04:42Z" and that the outage "isn't a sizing problem", because the unit
+  declares `size = 1`. No run supports the timeline: the last plan job finished 2026-11-12 01:18:32
+  UTC, and every job of #50 and #51 that ran went to GitHub-hosted runners. The group was at 0. The
+  owner's first queued action pointed at a VM serial log for a VM that did not exist.
+- **Detection:** a person: the agent, in the next session, listing the runner name of every
+  `sovereign-plan` job since 2026-11-01.
+- **Root cause (DRAFT):** the diagnosis read declared state and inferred the timeline from which
+  checks were green, without reading which runner ran each job or the group's live size.
+- **Correction:** the next session corrected it with the owner (2026-11-16 ~07:55 UTC) before any
+  change was made.
+- **Preventive action (DRAFT):** a runner diagnosis cites the last job each runner ran (job history,
+  `runner_name`) and the group's live target size; the queued-job-age metric (sibling finding) makes
+  the state visible without inference.
+- **Verification (DRAFT):** the next runner incident's record carries both citations.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#86](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/86)
+  (the finding); job history for runs since 2026-11-01 (all `sovereign-plan` jobs with a
+  `runner_name`); sovereign-vpc-gcp INC-008 timeline.
+- **Status:** open.
+
+## 2026-11-16: Dependabot cannot read the private central CI, so its run on main fails
+
+- **Rule:** read every red check's log; callers pin the central workflow to a full commit SHA and
+  repin through a reviewed pull request (`AGENTS.md` → CI Rules).
+- **Problem:** on coqui-tts `main` (`ae43a6a`, the #18 merge), one of three Dependabot runs failed
+  (check 133146961219). The github-actions updater could not fetch `Drecoder/sovereign-vpc-gcp` to
+  check the caller's pins on `gates.yml` and `dependabot-auto-merge.yml`:
+  `git_dependencies_not_reachable`. The other ecosystems succeeded. The same error has failed every
+- **Detection:** a person: the agent, reading every check on each `main` before re-scoring the
+  roadmap.
+- **Root cause (DRAFT):** the central CI is a private repository, and Dependabot has no access to
+  the owner's other private repositories. Its pins are meant to move only through reviewed repin
+  PRs, so Dependabot has nothing to update there anyway. The 2026-11-11 triage treated it as a
+  setting to
+- **Correction (DRAFT):** in each consumer's `.github/dependabot.yml`, the github-actions entry
+  ignores `Drecoder/sovereign-vpc-gcp/*`, with the reason written in (repins are reviewed PRs).
+  Alternative for the owner: grant Dependabot access to the private repository.
+- **Preventive action (DRAFT):** the central caller template carries the ignore, so every new
+  consumer starts with it.
+- **Verification (DRAFT):** the next Dependabot run on each consumer's `main` succeeds for
+  github-actions.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#87](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/87)
+  (the finding); aws-builder-agent Dependabot runs 40612975761 and 43078055981 (`Handled error
+  whilst
+- **Status:** open.

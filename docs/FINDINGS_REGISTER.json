@@ -1520,6 +1520,99 @@
           "baseline-legacy-constraint-no-dry-run"
         ]
       }
+    },
+    {
+      "id": "F-0084",
+      "journal": "## 2026-11-16: The plan pool sat at zero again, and four PR gates queued over three hours with no alert",
+      "category": "reliability",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2026-12-16",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#Observability Rules",
+          "AGENTS.md#IaC Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "scale-to-zero-without-trigger",
+          "queued-job-age-unalerted"
+        ]
+      }
+    },
+    {
+      "id": "F-0085",
+      "journal": "## 2026-11-16: The apply workflow has been disabled for twelve days with no signal",
+      "category": "reliability",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2026-12-16",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "apply-pipeline-disabled-unalerted",
+          "declared-live-drift"
+        ]
+      }
+    },
+    {
+      "id": "F-0086",
+      "journal": "## 2026-11-16: The agent diagnosed the runner outage from the code, not the live state",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "assumed-cause-from-code"
+        ]
+      }
+    },
+    {
+      "id": "F-0087",
+      "journal": "## 2026-11-16: Dependabot cannot read the private central CI, so its run on main fails",
+      "category": "ci",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-05-15",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "coqui-tts",
+          "aws-builder-agent",
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "dependabot-private-reusable-workflow",
+          "checklist-only-triage"
+        ]
+      }
     }
   ],
   "controls": [
