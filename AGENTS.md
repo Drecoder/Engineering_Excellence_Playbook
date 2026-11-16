@@ -495,6 +495,18 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
   stays closed until decided as a protected change; when open, an agent trains only on verified
   corrections of its own mistakes, never on claims, transient failures or its evaluator's files, and
   a tuned model ships only as a human-approved ladder change after its golden tasks pass.
+- **Target design: Rotor orders every input, and changes a reading only where it wins**
+  (`06_AgentZone/11_Cyclic_Tri_Pass_Reading.md`, proposed). Rotor sits in the harness boundary in
+  front of every agent's input, the session agent's included, and passes input through unchanged
+  until a stage is promoted; the Policy Engine has no model and is never in scope. Chunks follow
+  symbol, heading or event boundaries; three segments rotate so each chunk is first, middle and last
+  exactly once, and pass 1 is the true order. Every finding cites a chunk and lines, and a citation
+  that does not resolve is rejected. A stage is promoted only when it beats single linear reading on
+  its golden tasks' worst-decile recall and no cheaper way of reading (restated instructions,
+  per-unit map-reduce, chunk-aligned windows that end on their focus, or a size-routed hybrid whose
+  thresholds are fixed before the run) matches it, in a reviewed change. Rotor reads and never
+  decides: when it is down, input passes unchanged with a visible warning, while the action gate at
+  the same boundary fails closed.
 - **Golden tasks.** Each agent keeps a fixed set of golden tasks (including at least one
   designed-to-fail task) that must pass before a change to its prompt, tools, or model ships.
 
