@@ -1634,6 +1634,157 @@
           "projection-drops-continuation-lines"
         ]
       }
+    },
+    {
+      "id": "F-0091",
+      "journal": "## 2026-11-16: A hand scale-in to zero killed four running CI jobs",
+      "category": "reliability",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#IaC Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "scale-in-while-busy"
+        ]
+      }
+    },
+    {
+      "id": "F-0092",
+      "journal": "## 2026-11-16: The bake workflow merged three times without its real path running, and each run found the next defect",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "workflow-merged-never-run"
+        ]
+      }
+    },
+    {
+      "id": "F-0093",
+      "journal": "## 2026-11-16: The central gate's Python path never ran on the Debian self-hosted pool",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "runner-os-assumed-ubuntu"
+        ]
+      }
+    },
+    {
+      "id": "F-0094",
+      "journal": "## 2026-11-16: The agent pushed a workflow with a trigger GitHub Actions does not have",
+      "category": "quality",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-05-15",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "unverified-platform-assumption"
+        ]
+      }
+    },
+    {
+      "id": "F-0095",
+      "journal": "## 2026-11-16: An agent's local test ran a download the owner had stopped",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Agent Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "set-e-ignored-in-condition"
+        ]
+      }
+    },
+    {
+      "id": "F-0096",
+      "journal": "## 2026-11-16: An agent commit was authored as the owner because the agent copied the last commit's author",
+      "category": "security",
+      "severity": "low",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-05-15",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Agent Rules",
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "agent-acts-as-person"
+        ]
+      }
+    },
+    {
+      "id": "F-0097",
+      "journal": "## 2026-11-16: F-0039's root cause explained only the last three of sixteen failed applies",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules",
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "diagnosis-from-latest-failure-only"
+        ]
+      }
     }
   ],
   "controls": [

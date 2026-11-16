@@ -1397,3 +1397,192 @@ Status: open.
   [Drecoder/Engineering_Excellence_Playbook#89](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/89)
   (the finding); `docs/POC_JOURNAL.md` at `f2985d4`, the F-0087 entry; issue #87's body; PR #88.
 - **Status:** open.
+
+## 2026-11-16: A hand scale-in to zero killed four running CI jobs
+
+- **Rule:** compute runs only when called, and CI failures are signals, not noise (`AGENTS.md` → IaC
+  Rules, CI Rules).
+- **Problem:** at about 09:02 UTC on 2026-11-16, `ci-runner-plan` was resized by hand to 0 while
+  four runners held jobs. All four jobs failed within 42 s (09:02:07 to 09:02:49 UTC) when their VMs
+  were deleted: the gates job of #55 (`ci-runner-plan-x994-d27f22`) and of #54
+  (`ci-runner-plan-bnfq-9fba23`), and `Plan (dev)` of #53 (`ci-runner-plan-rbs4-205e3b`) and of run
+  43818233175 (`ci-runner-plan-r533-7c9ccf`). Required checks went red for a reason unrelated to the
+  code.
+- **Detection:** a person: the agent, reading the red checks; GitHub reported the runners as lost.
+- **Root cause (DRAFT):** hand resizing is the only way the pool scales (F-0034's containment), and
+  a managed instance group deletes VMs without knowing whether a runner holds a job. Nothing checks
+  that the pool is idle before scaling in.
+- **Correction:** the four runs were re-run (attempt 2) and passed.
+- **Preventive action (DRAFT):** #55's scaler never shrinks a pool while any of its runners is busy.
+  Until #55 is live, a hand scale-in to 0 happens only after the `sovereign-plan` queued and
+  in-progress counts both read 0.
+- **Verification (DRAFT):** a designed-to-fail test in #55: a scale-in requested while a runner is
+  busy leaves the target size unchanged.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#91](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/91)
+  (the finding); sovereign-vpc-gcp runs 43834264138, 43828521071, 43821351066 and 43818233175
+  (attempt 1 failed 09:02:07–09:02:49 UTC; attempt 2 passed); handoff
+  `claude/handoff-2026-11-16-e.md`. Related: F-0034 and F-0084 (open; hand resizing is their
+  containment), sovereign-vpc-gcp #55 (KAN-67).
+- **Status:** open.
+
+## 2026-11-16: The bake workflow merged three times without its real path running, and each run found the next defect
+
+- **Rule:** a control counts only when its real path has run; read every red log (`AGENTS.md` → CI
+  Rules).
+- **Problem:** `bake-runner-image.yml` is started only by hand (`workflow_dispatch`), so no PR runs
+  it. #51 merged without a run, and read the serial port after the VM stopped, so it could never
+  succeed (runs 43836324036, 43838274590: `resource ... is not ready`). #56 polled while the VM ran
+  but kept only the last read; checked by `bash -n` and a YAML parse, it failed with an empty copy
+  and no reason (run 43840809177). #57 printed the read errors; its run (43879267488) had no read
+  errors and still kept one blank line, because an empty last read replaced everything read before
+  it. Four bakes, no image; the cause of the bake VM's power-off about 3 min after boot is still
+  unknown.
+- **Detection:** a person: the agent, reading each failed bake log.
+- **Root cause (DRAFT):** a dispatch-only workflow has no PR-time execution, and the gates check its
+  syntax only. Each fix was merged with "the real test is the next run", so production was the only
+  test of the step's logic.
+- **Correction:** sovereign-vpc-gcp #59 reads the serial port from the previous response's `next`
+  offset and appends, so a late empty read loses nothing, and logs every read's size. Its step was
+  run locally against a stub `gcloud` (success: image created; `BAKE_RESULT=failed`: no image,
+  result shown).
+- **Preventive action (DRAFT):** the bake's polling logic moves into a script with tests run by the
+  gates on any PR that touches it: designed-to-fail cases for an empty final read, a missing
+  `BAKE_RESULT=ok`, and a VM that never stops. A dispatch-only workflow merges only with such a test
+  or a linked successful run.
+- **Verification (DRAFT):** the test fails on #56's last-copy logic and passes on #59's; then a bake
+  on `main` produces an image.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#92](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/92)
+  (the finding); sovereign-vpc-gcp runs 43836324036, 43838274590, 43840809177, 43879267488; PRs #51,
+  #56, #57, #59. Related: F-0052 (open; the baked image is its correction), F-0010 (proven; the fail
+  side of the same class), sovereign-vpc-gcp #51, #56, #57, #59.
+- **Status:** open.
+
+## 2026-11-16: The central gate's Python path never ran on the Debian self-hosted pool
+
+- **Rule:** every gate that applies runs and passes, and a skip is never a pass (`AGENTS.md` → CI
+  Rules).
+- **Problem:** `actions/setup-python` supports GitHub's Ubuntu images, not Debian 12. #55 was the
+  first Python-touching PR whose gates ran on `ci-runner-plan`; its single gates job failed at
+  `setup-python` and every Python step after it (run 43837740795). F-0039 named this cause on
+  2026-11-11; its correction (an Ubuntu 24.04 runner image) was never made. Other gate steps may
+  assume Ubuntu too: the bubblewrap pin is an Ubuntu package version. Not yet checked.
+- **Detection:** a person: the agent, reading #55's red gates log.
+- **Root cause (DRAFT):** the gates self-test runs only on hosted Ubuntu runners, so no change to
+  the gates is exercised on the self-hosted pool. F-0039's correction had no ticket and no owner.
+- **Correction:** sovereign-vpc-gcp #58 installs Python with a pinned uv 0.13.5 (sha256 from the
+  owner) on self-hosted runners; its `python-self-hosted` self-test passed on the pool (run
+  43842299596).
+- **Preventive action (DRAFT):** the full single-job self-test runs on every self-hosted label in
+  each gates PR, or hosted and self-hosted runners share one OS image.
+- **Verification (DRAFT):** the self-hosted self-test fails on an Ubuntu-only step before its fix
+  (designed to fail), then passes.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#93](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/93)
+  (the finding); sovereign-vpc-gcp run 43837740795 (#55); run 43842299596 (#58); F-0039's journal
+  entry. Related: F-0039 (open; recorded on 2026-11-11 that the Debian 12 runner has no Python 3.12
+  for `setup-python`), sovereign-vpc-gcp #55, #58.
+- **Status:** open.
+
+## 2026-11-16: The agent pushed a workflow with a trigger GitHub Actions does not have
+
+- **Rule:** check behaviour against the platform's documentation before relying on it (`AGENTS.md` →
+  CI Rules).
+- **Problem:** #55's first push of `.github/workflows/runner-scaler.yml` used `on: workflow_job`, a
+  webhook event that is not a GitHub Actions trigger. GitHub rejected the file (run 43834216309
+  failed in 0 s). The push was corrected to `workflow_run`.
+- **Detection:** a control: GitHub's workflow parser.
+- **Root cause (DRAFT):** the agent wrote the trigger from memory, without the GitHub docs or a
+  workflow linter. Nothing lints workflow files before push or in the gates.
+- **Correction:** #55 uses `workflow_run` on plan and apply plus a 5-minute schedule.
+- **Preventive action (DRAFT):** a pinned actionlint runs in the gates on every change under
+  `.github/workflows/`, and in the agent's pre-push.
+- **Verification (DRAFT):** actionlint rejects a fixture workflow with `on: workflow_job` (designed
+  to fail) and passes the corrected file.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#94](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/94)
+  (the finding); sovereign-vpc-gcp run 43834216309; PR #55's commit history. Related: F-0086 (open;
+  also acted on an assumption instead of checking), sovereign-vpc-gcp #55.
+- **Status:** open.
+
+## 2026-11-16: An agent's local test ran a download the owner had stopped
+
+- **Rule:** an agent acts only within what the owner approves (`AGENTS.md` → Agent Rules).
+- **Problem:** while #58 was being built, the owner stopped the uv download, and a local test step
+  then ran uv anyway. The step ran inside an `if ( … )` condition, where bash ignores `set -e`, so
+  the failed step did not stop the script. The session did not record the commands or times, only
+  the outcome (handoff `claude/handoff-2026-11-16-e.md`, item 5).
+- **Detection:** a person: the owner.
+- **Root cause (DRAFT):** `set -e` does not apply to commands in a condition (`if`, `&&`, `||`), so
+  an earlier failure, here the stopped download, does not stop the script. The test had no explicit
+  check that the download had succeeded before running the binary.
+- **Correction:** the step runs in `bash -c`, so `set -e` applies inside it.
+- **Preventive action (DRAFT):** scripts the agent writes check each prerequisite explicitly (exit
+  status and checksum) before using what it produced, and never rely on `set -e` inside a condition;
+  a ShellCheck rule or test case covers `set -e` under `if`.
+- **Verification (DRAFT):** a test where the download step fails shows the script stops before
+  running the binary (designed to fail).
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#95](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/95)
+  (the finding); handoff `claude/handoff-2026-11-16-e.md`, item 5; PR #58. The session kept no
+  command log; this gap is part of the finding. Related: F-0046 (open; the agent acts through the
+  owner's credentials), sovereign-vpc-gcp #58.
+- **Status:** open.
+
+## 2026-11-16: An agent commit was authored as the owner because the agent copied the last commit's author
+
+- **Rule:** agents author changes under their own identity, never the person's (`AGENTS.md` → Agent
+  Rules, Security Rules).
+- **Problem:** the agent created sovereign-vpc-gcp commit `cd8f210` with `-c user.name/user.email`
+  taken from `git log -1`, the owner's merge commit, so it was authored as the owner, though the
+  clone's configured identity is `Claude <noreply@anthropic.com>`. It was pushed and #59 opened on
+  it at 13:54 UTC; the agent noticed, re-authored it (`abb6e15`) and force-pushed within about a
+  minute. Plan run 43880298759 started on the wrong commit and was cancelled.
+- **Detection:** a person: the agent, comparing the author with earlier agent commits.
+- **Root cause (DRAFT):** the agent overrode the configured identity with a value read from history
+  instead of trusting the configuration. Nothing checks commit authors on agent pull requests.
+- **Correction:** #59 now has one commit, authored as Claude.
+- **Preventive action (DRAFT):** the agent never sets `user.name`/`user.email` on the command line.
+  Until KAN-69, a gate on pull requests marked agent-authored refuses any commit whose author is not
+  the agent identity.
+- **Verification (DRAFT):** the gate fails on `cd8f210` (designed to fail) and passes on `abb6e15`.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#96](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/96)
+  (the finding); sovereign-vpc-gcp commits `cd8f210` and `abb6e15`; runs 43880298759 (cancelled) and
+  43880340573; PR #59. Related: F-0046 (open, same fingerprint, so not a `recurs`; this is a new
+  path to it), KAN-69, sovereign-vpc-gcp #59.
+- **Status:** open.
+
+## 2026-11-16: F-0039's root cause explained only the last three of sixteen failed applies
+
+- **Rule:** read every red check's log (`AGENTS.md` → CI Rules).
+- **Problem:** F-0039 gives the cause of every failed apply since October as two defects in the
+  apply's gates call, read from run 41755822228 (#38). That holds for applies #22–#24 only (#35,
+  #36, #38: the gates job failed). The earlier failures had passing gates and failed in `Apply
+  (dev)` itself, with two other causes: (1) applies #9–#13 (#4, #12, #10, #11, #14; 2026-10-23 to
+  10-26): `Error creating RegionBackendService ... Balancing mode must be CONNECTION for an INTERNAL
+  backend service`, fixed by #16; (2) applies #14–#21 (#16 to #32; 2026-10-26 to 10-29): `Permission
+  'iam.serviceAccounts.create' denied` creating `ollama-gpu-bench` on `sovereign-vpc-488522`. #38
+  moved that account into the human-applied identity unit and #39 (open) points the bench unit at
+  it; whether the identity unit has been applied is not known. The first apply after `apply.yml` is
+  re-enabled will roll out every change merged since 2026-10-23.
+- **Detection:** a person: the agent, reading every failed apply on 2026-11-16 after the owner
+  shared the `dev` deployments page.
+- **Root cause (DRAFT):** the 2026-11-11 diagnosis read the newest failed run only; the failure
+  streak's first run and the points where the error changed were not read.
+- **Correction:** this finding records the two missing causes; F-0039's entry stays as written.
+- **Preventive action (DRAFT):** a repeated failure is diagnosed from the first run of the streak
+  and every run where the error changes, not the latest only. Before `apply.yml` is re-enabled: the
+  identity unit is applied by hand, #39 is merged, and a plan on `main` shows no service-account
+  creation by `ci-apply`.
+- **Verification (DRAFT):** the first apply after re-enabling succeeds; the failed-apply alert
+  planned in F-0039 fires on a designed-to-fail apply.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#97](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/97)
+  (the finding); sovereign-vpc-gcp apply runs 40003137967, 40284222436, 40284655716, 40286088966,
+  40364496131 (balancing mode); 40370266410 to 40801232217 (eight runs, IAM denied); 40875507651,
+  40875694344, 41755822228 (gates); PRs #16, #38, #39. Related: F-0039 (open; the entry this
+  corrects), F-0085 (apply disabled), F-0086 (same class: diagnosis without full evidence),
+  sovereign-vpc-gcp #38, #39.
+- **Status:** open.
