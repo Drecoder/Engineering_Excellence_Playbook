@@ -29,3 +29,6 @@ crash.log
 # Python
 __pycache__/
 *.pyc
+
+# agent-ddi-harness checkout at the commit pinned in tests/contracts/harness_conformance/ddi_pin.json
+.ddi-harness/

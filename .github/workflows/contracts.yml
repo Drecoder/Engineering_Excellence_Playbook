@@ -41,6 +41,16 @@ jobs:
         with:
           persist-credentials: false
 
+      # The harness conformance cases validate their emitted events and drafts against
+      # agent-ddi-harness's schemas at one pinned commit (tests/contracts/harness_conformance/ddi_pin.json);
+      # the tests check every file's SHA-256 against the pin. Repin both together.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Drecoder/agent-ddi-harness
+          ref: 67d5500d6fd9ec2ab2d76fcfc3f061f8655df920
+          path: .ddi-harness
+          persist-credentials: false
+
       - name: Build the toolchain image
         run: docker build --pull -t "$IMAGE:ci" tests/antipatterns/toolchain
 
