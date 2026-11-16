@@ -1,0 +1,139 @@
+# A CAPA finding (KAN-60). The issue number is the finding's ID (F-NNNN); the projector
+# (tests/journal/capa_project.py) turns the issue into its journal entry and register row, so nothing
+# is written twice. The headings below are the projector's input contract: renaming a label breaks
+# projection, and tests/journal/test_capa_project.py checks every label here against the projector.
+name: CAPA finding
+description: A defect, a gap between a written rule and what runs, or a check shown to work.
+title: "CAPA: "
+labels: [capa]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Facts come from evidence. Mark every field that is your proposal, not a fact, in
+        **Drafts for the owner**; the owner approves drafts by merging the projection.
+  - type: input
+    id: heading
+    attributes:
+      label: Journal heading
+      description: One sentence, the finding as a fact. The projector prefixes the found date.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options: [security, governance, supply-chain, ci, reliability, quality, reuse]
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: >-
+        critical = an exploitable exposure or a control that admits what it must refuse (7 days);
+        high = a control that silently does not run or checks nothing, or a governance gap that
+        removes a guardrail (30); medium = a defect or missing proof with a working control around
+        it (90); low = maintainability or reuse (180).
+      options: [critical, high, medium, low]
+    validations:
+      required: true
+  - type: dropdown
+    id: detected_by
+    attributes:
+      label: Detected by
+      options: [control, person]
+    validations:
+      required: true
+  - type: input
+    id: found
+    attributes:
+      label: Found
+      description: The day it was found, YYYY-MM-DD (UTC). The due date is computed from it.
+    validations:
+      required: true
+  - type: textarea
+    id: rule_ids
+    attributes:
+      label: Rules
+      description: One per line, as findings_register.v2 refs (ARCH-NNN, SEC-NNN, GOV-NNN, or PATH#HEADING).
+    validations:
+      required: true
+  - type: textarea
+    id: components
+    attributes:
+      label: Components
+      description: One per line, from the register's component registry.
+    validations:
+      required: true
+  - type: textarea
+    id: fingerprints
+    attributes:
+      label: Fingerprints
+      description: One per line, lowercase-with-hyphens.
+    validations:
+      required: true
+  - type: input
+    id: recurs
+    attributes:
+      label: Recurs
+      description: An earlier finding with the same fingerprint that was closed (F-NNNN), if any.
+  - type: textarea
+    id: rule
+    attributes:
+      label: Rule
+      description: The rule it breaks, in words, with where it is written.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection
+    validations:
+      required: true
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root cause
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Correction
+    validations:
+      required: true
+  - type: textarea
+    id: preventive_action
+    attributes:
+      label: Preventive action
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Checkable pointers (run IDs, PRs, log lines). The projector adds the link to this issue.
+    validations:
+      required: true
+  - type: checkboxes
+    id: drafts
+    attributes:
+      label: Drafts for the owner
+      options:
+        - label: Root cause
+        - label: Correction
+        - label: Preventive action
+        - label: Verification
