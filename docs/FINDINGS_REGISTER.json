@@ -1492,7 +1492,7 @@
       "detected_by": "person",
       "found": "2026-11-16",
       "due": "2026-11-23",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Autonomy Rules",
@@ -1507,7 +1507,9 @@
           "manifest-without-lockfile",
           "eligibility-admits-unlocked-change"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "sovereign-vpc-gcp #53 (901d1dc): auto-merge eligibility refuses a manifest changed without its lockfile, and GATE_LOCK_MATCH fails a manifest pin the locks lack (cases 16 of 16 and 11 of 11). coqui-tts #20 (568900c) and compliance-authority #16 (be0fc29) repinned to it and pass the gate on their final heads (runs 43885193055, 43885205466)"
     },
     {
       "id": "F-0060",
@@ -1609,7 +1611,7 @@
       "detected_by": "person",
       "found": "2026-11-16",
       "due": "2027-05-15",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#CI Rules"
@@ -1623,7 +1625,9 @@
           "dependabot-private-reusable-workflow",
           "checklist-only-triage"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "each consumer's github-actions entry ignores Drecoder/sovereign-vpc-gcp/* (coqui-tts #20, compliance-authority #16, aws-builder-agent #29, agent-notepad #12; template in Playbook #98). The next github-actions Dependabot run on each main succeeded: coqui-tts 43916317316, aws-builder-agent 43916349173, agent-notepad 43916411523, compliance-authority 43916270964"
     },
     {
       "id": "F-0089",
@@ -1633,7 +1637,7 @@
       "detected_by": "person",
       "found": "2026-11-16",
       "due": "2027-02-14",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Observability Rules"
@@ -1644,7 +1648,9 @@
         "fingerprints": [
           "projection-drops-continuation-lines"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "Playbook #99 (a646885): the CAPA projector projects every field of an issue in full, continuation lines included; its reference test replays #87's content (tests/journal/fixtures/capa/issue-87.txt) and asserts F-0087's three cut fields whole. Contract tests on main: run 43921938650"
     },
     {
       "id": "F-0091",
