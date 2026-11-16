@@ -48,6 +48,7 @@ dashed outline is design, and red is refused.
 | Agent notepad | `agent-notepad` | Working memory for every agent and task | **Partial**: library with in-memory and local file backends |
 | Adaptive harness | — | Picks an agent's next bounded step from knowledge, reliability states, quality evidence and governance state (`06_AgentZone/09_Adaptive_Harness.md`) | **Design**: proposed standard; contracts specified |
 | CAPA graph and risk-weighted learning | — | Projects the proof journal and CAPA register into a graph, computes risk weights W(N), and (after a protected decision) fine-tunes an agent on its own verified corrections (`06_AgentZone/10_CAPA_Graph_and_Risk_Weighted_Learning.md`) | **Design**: proposed standard; fine-tuning closed |
+| Rotor (cyclic tri-pass reading) | — | Orders every agent's input at the harness boundary: rotated passes, end-focused windows or size routing, with cited findings; changes a stage's reading only where it wins its benchmark, the session agent first (`06_AgentZone/11_Cyclic_Tri_Pass_Reading.md`) | **Design**: proposed standard; no stage promoted |
 | Messaging backbone | Genesis modules (AWS first) | Object store, event stream, bridge, fan-out, work queues | **Design**: SNS and SQS with claim checks, in the MVP (KAN-36); module specs pending |
 
 ## 3️⃣ The Path of a Change
