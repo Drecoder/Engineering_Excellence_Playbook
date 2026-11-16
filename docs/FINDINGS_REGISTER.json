@@ -1339,6 +1339,139 @@
           "runner-installs-at-every-boot"
         ]
       }
+    },
+    {
+      "id": "F-0053",
+      "journal": "## 2026-11-16: Mutation testing crashed on every repository on typescript 7",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Test Quality Rules",
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "aws-builder-agent"
+        ],
+        "fingerprints": [
+          "mutation-typescript-api-missing"
+        ]
+      }
+    },
+    {
+      "id": "F-0054",
+      "journal": "## 2026-11-16: Genesis has never implemented GOV-002 (no service-account keys)",
+      "category": "governance",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2026-12-16",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "GOV-002",
+          "AGENTS.md#Governance Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "guardrail-not-implemented",
+          "governance-hand-written-not-generated"
+        ]
+      }
+    },
+    {
+      "id": "F-0055",
+      "journal": "## 2026-11-16: The Go gate installed a hard-coded Go version",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "genesis"
+        ],
+        "fingerprints": [
+          "gate-toolchain-version-hard-coded"
+        ]
+      }
+    },
+    {
+      "id": "F-0056",
+      "journal": "## 2026-11-16: Genesis runs its own plan and apply workflows outside the central CI",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#CI Rules"
+        ],
+        "components": [
+          "genesis"
+        ],
+        "fingerprints": [
+          "per-repo-ci-outside-factory"
+        ]
+      }
+    },
+    {
+      "id": "F-0057",
+      "journal": "## 2026-11-16: Two factory repositories have no Dependabot security updates",
+      "category": "security",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-16",
+      "due": "2026-12-16",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "genesis",
+          "gcp-reviewer-agent"
+        ],
+        "fingerprints": [
+          "security-updates-not-enabled",
+          "hand-written-repo-list"
+        ]
+      }
+    },
+    {
+      "id": "F-0058",
+      "journal": "## 2026-11-16: The CRAP gate blocked the agent's own regression",
+      "category": "quality",
+      "severity": "medium",
+      "detected_by": "control",
+      "found": "2026-11-16",
+      "due": "2027-02-14",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Test Quality Rules"
+        ],
+        "components": [
+          "factory-orchestrator"
+        ],
+        "fingerprints": [
+          "ratchet-existing-function-complexity"
+        ]
+      }
     }
   ],
   "controls": [
