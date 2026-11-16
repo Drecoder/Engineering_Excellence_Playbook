@@ -1159,7 +1159,7 @@
       "detected_by": "person",
       "found": "2026-11-11",
       "due": "2027-02-09",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#CI Rules",
@@ -1172,7 +1172,9 @@
         "fingerprints": [
           "download-without-retry"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "Playbook #77: the anti-pattern catalog is green on main (run 43089148287); coqui-tts's image builds with its retried, checksum-verified ffmpeg download (coqui-tts #20, Image build, tests and scan)"
     },
     {
       "id": "F-0046",
@@ -1306,7 +1308,7 @@
       "detected_by": "control",
       "found": "2026-11-11",
       "due": "2027-02-09",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Agent Rules"
@@ -1317,7 +1319,9 @@
         "fingerprints": [
           "takeover-missing-failure-delta"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "factory-orchestrator #8 (merged 2026-11-16): PR gates green, Mutation (TypeScript) and CRAP (Policy Engine) included (run 43815626405)"
     },
     {
       "id": "F-0052",
@@ -1348,7 +1352,7 @@
       "detected_by": "person",
       "found": "2026-11-16",
       "due": "2027-02-14",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Test Quality Rules",
@@ -1361,7 +1365,10 @@
         "fingerprints": [
           "mutation-typescript-api-missing"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "sovereign-vpc-gcp #50 (01e1057); the mutation self-test, including the typescript 7 case, green on #50 (run 43805413817)",
+      "residual": "the case was committed failing first (f32264e), but no CI run exists on that commit and the failing run was not re-run independently, so the control is fixed, not proven"
     },
     {
       "id": "F-0054",
@@ -1394,7 +1401,7 @@
       "detected_by": "control",
       "found": "2026-11-16",
       "due": "2027-02-14",
-      "status": "open",
+      "status": "proven",
       "refs": {
         "rule_ids": [
           "AGENTS.md#CI Rules"
@@ -1406,7 +1413,9 @@
         "fingerprints": [
           "gate-toolchain-version-hard-coded"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "sovereign-vpc-gcp #52 (ebf2f5f); tests/gates/go/cases.sh re-run on 2026-11-16: 10 of 10 cases fail against gates.yml at 73adfef and 10 of 10 pass at 820fb07; go-version self-test green on #52 (run 43818233142)"
     },
     {
       "id": "F-0056",
@@ -1460,7 +1469,7 @@
       "detected_by": "control",
       "found": "2026-11-16",
       "due": "2027-02-14",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Test Quality Rules"
@@ -1471,7 +1480,9 @@
         "fingerprints": [
           "ratchet-existing-function-complexity"
         ]
-      }
+      },
+      "closed": "2026-11-16",
+      "verification": "factory-orchestrator #8: the re-run CRAP (Policy Engine) and Mutation (TypeScript) gates passed (run 43815626405)"
     },
     {
       "id": "F-0059",
