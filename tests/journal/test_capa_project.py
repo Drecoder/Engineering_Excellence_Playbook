@@ -173,6 +173,13 @@ class Batch(unittest.TestCase):
         self.assertEqual(added, [])
         self.assertEqual(journal, self.journal)
 
+    def test_a_finding_already_in_the_register_is_not_parsed(self):
+        # #84 to #89 were projected by hand before the form existed; their bodies are not form
+        # output, and projection must skip them by ID, not refuse them.
+        journal, register, added = project([issue(84, "a body written before the form")],
+                                           self.journal, copy.deepcopy(self.register))
+        self.assertEqual((journal, added), (self.journal, []))
+
     def test_running_twice_adds_nothing_the_second_time(self):
         issues = [self.new_issue(9001, "A first test finding")]
         journal, register, _ = project(issues, self.journal, copy.deepcopy(self.register))
