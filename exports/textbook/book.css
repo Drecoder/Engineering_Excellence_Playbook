@@ -19,13 +19,17 @@ blockquote { margin: 0.8em 0; padding: 0.2em 1em; border-left: 3px solid var(--a
 table { width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 8.6pt; line-height: 1.35; break-inside: auto; }
 th, td { border: 1px solid var(--rule); padding: 0.35em 0.5em; vertical-align: top; text-align: left; word-break: normal; overflow-wrap: break-word; hyphens: auto; }
 th { background: var(--soft); font-weight: 600; }
+/* Long identifiers wrap instead of widening the page: one element wider than the text column makes
+   the browser shrink every page of the book, the cover included, to fit it. */
+code { overflow-wrap: anywhere; }
+th code, td code { word-break: break-word; }
 tr { break-inside: avoid; }
 h1, h2, h3, h4 { break-after: avoid; line-height: 1.2; }
 h3 { font-size: 12.5pt; margin: 1.3em 0 0.4em; color: var(--ink); }
 h4 { font-size: 11pt; margin: 1.1em 0 0.3em; }
 h5 { font-size: 10pt; margin: 1em 0 0.3em; }
 
-.cover { width: 7in; height: 10in; display: flex; flex-direction: column; justify-content: center; break-after: page;
+.cover { width: 100%; height: 10in; display: flex; flex-direction: column; justify-content: center; break-after: page;
   background: linear-gradient(160deg, #0f172a, #1e3a5f); color: #f1f5f9; margin: 0; padding: 0 0.9in; }
 .cover h1 { font-size: 40pt; margin: 0.2em 0; line-height: 1.05; }
 .cover-series { font-size: 11pt; letter-spacing: 2px; text-transform: uppercase; color: #38bdf8; }
