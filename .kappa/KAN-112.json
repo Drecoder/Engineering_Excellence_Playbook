@@ -1,0 +1,150 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-112",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "docs/POC_JOURNAL.md still says the feedback mechanism is designed, not wired, and that no agent is given the journal. Since Playbook #107 (KAN-60 slice 3) the Builder takes a slice before it diagnoses and CI checks the record on Playbook pull requests. Update the role table and status paragraph to claim exactly that, with its limits; the learning resource stays not wired."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "e2bd34f13b9bafbbad5b2cc7579b70fb97db51c527387ffc076b18e69b6a9186",
+    "journal_sha256": "28dc5ee5d0de83a06040c7519c09b92f99d1faa833fa57d0e545ff210a356743"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Observability Rules",
+      "AGENTS.md#Agent Rules"
+    ],
+    "fingerprints": [
+      "declared-live-drift"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0019",
+      "relation": "related",
+      "applies": true,
+      "reason": "Its lesson is the core of this change: the status line claims only what the check proves. So the paragraph says Kappa-first is enforced on Playbook pull requests and proves the history was addressed first, not that the reasoning was sound, and that the central gates and a harness stage are still to come. It does not write 'the factory learns from itself' without those limits.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "related",
+      "applies": true,
+      "reason": "Open: the journal's CAPA fields are not checked. The current text says the structure has 'CAPA fields in every entry'; keeping that unqualified would claim a check that does not exist, so the new text names F-0030 beside it.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0085",
+      "relation": "related",
+      "applies": true,
+      "reason": "Its fingerprint (declared-live-drift) is the same shape inverted: the document says a role is not wired when it now is. The correction is to the document only; nothing about what runs changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "Work starts on a ticket that exists first and is cited everywhere: KAN-112 was created before this record, and the branch, commits and PR name it. Drift is corrected in the session that finds it.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0046",
+      "relation": "related",
+      "applies": true,
+      "reason": "Agent commits are still authored under the owner's account until KAN-69. This branch keeps the clone's configured author (F-0096) and sets no identity on the command line; the status text says 'the Builder' for the role, not an identity Git can tell apart.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0014",
+      "relation": "related",
+      "applies": true,
+      "reason": "The append-only check protects entries only; the preamble may change (tests/journal/journal_append_only.py, line 10). This edit is in the preamble, so no entry is touched.",
+      "reuses_correction": true,
+      "revalidation": "Re-read on main at d4b07d8: journal_append_only.py's docstring and ENTRY_HEADING still treat everything before the first '## YYYY-MM-DD:' heading as preamble that may change. The 'Three Roles' section sits before the first entry."
+    },
+    {
+      "id": "F-0089",
+      "relation": "related",
+      "applies": true,
+      "reason": "The projector and the slice read entries in both journal forms; the edit must not add a line the entry parser would read as an entry heading. The new text has no '## YYYY-MM-DD:' heading.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0017",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Fixed ranking and deadlines in the register; this change adds no finding and changes no register row.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The board ticket's contract; this change creates an ordinary ticket and adds no boundary.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "builder.spec.v1 and the price table; not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Pin bumps and the vendored-contracts check; no pin or contract changes here.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The sync PR's source name; no sync change here.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "dependency_patch promotion evidence; autonomy is not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The governance baseline's dry-run staging; not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0087",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Dependabot's access to the private central CI; selected only through F-0089, and nothing here involves Dependabot.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0098",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Conformance cases that could not fail; this change adds no check or case.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "State a status with the check that proves it and the scope it covers, never wider (F-0019).",
+    "A structural claim that no check backs names its open finding (F-0030).",
+    "The ticket exists before the work; the record comes first (F-0099)."
+  ],
+  "uncertainty": [
+    "The DDI harness repository was not read in this session; the text says only what AGENTS.md on main states: enforced on Playbook pull requests, the central gates follow (KAN-60).",
+    "KAN-112 was created in Backlog; Ready is the owner's move under the Work Tracking Rules, though the owner asked for this change directly."
+  ]
+}
