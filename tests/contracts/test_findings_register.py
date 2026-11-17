@@ -77,6 +77,15 @@ class FindingsRegisterV2(unittest.TestCase):
     def test_the_real_register_is_valid(self):
         self.assertEqual([e.message for e in VALIDATOR_V2.iter_errors(REGISTER_V2)], [])
 
+    def test_a_row_may_name_its_issue(self):
+        # KAN-114: a row names the issue it was journaled from, as owner/repo#N.
+        self.assertEqual(self.mutate(lambda d: d["findings"][0].update(
+            issue="Drecoder/Engineering_Excellence_Playbook#103")), [])
+
+    def test_an_issue_that_is_not_owner_repo_number_is_refused(self):
+        for bad in ("#103", "103", "Drecoder/Engineering_Excellence_Playbook#", "https://github.com/a/b/issues/1"):
+            self.assertTrue(self.mutate(lambda d, b=bad: d["findings"][0].update(issue=b)), bad)
+
     def test_the_real_register_is_v2_and_names_its_agent(self):
         self.assertEqual((REGISTER_V2["schema_version"], REGISTER_V2["agent"]), ("findings_register.v2", "builder"))
 

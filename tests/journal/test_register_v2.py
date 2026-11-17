@@ -159,6 +159,14 @@ class Refs(unittest.TestCase):
 
 
 class Versions(unittest.TestCase):
+    def test_two_rows_naming_the_same_issue_fail(self):
+        # KAN-114: an issue is journaled once; a second row naming it is a duplicate projection.
+        reg = copy.deepcopy(BASE)
+        for f in reg["findings"][:2]:
+            f["issue"] = "Drecoder/Engineering_Excellence_Playbook#9005"
+        errors = check(TEXT, reg, date(2026, 11, 10))["errors"]
+        self.assertTrue(any("#9005" in e and "more than one row" in e for e in errors), errors)
+
     def test_an_unsupported_version_fails(self):
         reg = dict(BASE, schema_version="findings_register.v3")
         result = check(TEXT, reg, date(2026, 11, 10))
