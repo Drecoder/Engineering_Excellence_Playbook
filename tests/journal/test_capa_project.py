@@ -226,8 +226,15 @@ class Check(unittest.TestCase):
         (tmp / "issues.json").write_text(json.dumps(issues))
         (tmp / "j.md").write_text((ROOT / "docs" / "POC_JOURNAL.md").read_text())
         (tmp / "r.json").write_text((ROOT / "docs" / "FINDINGS_REGISTER.json").read_text())
-        return main([str(tmp / "issues.json"), "--check", "--journal", str(tmp / "j.md"),
-                     "--register", str(tmp / "r.json")])
+        # Capture the output: an ::error:: line printed in CI becomes a false annotation on the PR.
+        import contextlib
+        import io
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main([str(tmp / "issues.json"), "--check", "--journal", str(tmp / "j.md"),
+                         "--register", str(tmp / "r.json")])
+        self.last_output = out.getvalue()
+        return code
 
     def test_an_unprojected_issue_fails_and_changes_nothing(self):
         import tempfile
@@ -236,6 +243,7 @@ class Check(unittest.TestCase):
             body = ISSUE_87.replace("Dependabot cannot read the private central CI, so its run on main fails",
                                     "A finding nobody projected")
             self.assertEqual(self.run_check([issue(9001, body)], tmp), 1)
+            self.assertIn("unprojected capa issue(s): F-9001", self.last_output)
             self.assertEqual((tmp / "r.json").read_text(),
                              (ROOT / "docs" / "FINDINGS_REGISTER.json").read_text())
 
