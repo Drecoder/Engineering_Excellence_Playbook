@@ -1,0 +1,175 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-67",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "Journal two findings from 2026-11-17 through capa issues and the projector: (A) #55's WIF attribute_condition left its subject alternatives unbracketed, so the owner-ID and repository pins covered only the PR plan subject from 11:05 to 11:56 CT (fixed by sovereign #64); (B) the hand-applied identity unit was planned three times from code other than intended (a stale checkout, then main before #64), caught only by comparing counts (KAN-113). Found during the work: (C) the projector re-projected issue #103 as a duplicate F-0103, because #108 wrote it by hand as F-0100 and CI never runs the projector's check (KAN-114); projection ran on the issue list without #103."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "e2bd34f13b9bafbbad5b2cc7579b70fb97db51c527387ffc076b18e69b6a9186",
+    "journal_sha256": "8cc558bac705b0e1e453ac5cec577fae270f8bd2e824a9e3022df8373b20d451"
+  },
+  "query": {
+    "component": "sovereign-vpc-gcp",
+    "rule_ids": [
+      "AGENTS.md#Security Rules",
+      "AGENTS.md#IaC Rules",
+      "AGENTS.md#Observability Rules"
+    ],
+    "fingerprints": [
+      "trust-condition-operator-precedence",
+      "hand-applied-unit-unchecked",
+      "apply-from-stale-checkout"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0097",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same unit and the same root: the identity unit is applied by hand and never planned in CI, so nothing reads what it renders. F-0097 found that #38's change was never applied; here #55's rendered condition was never checked. Both new findings cite it as a cause; neither is a recurrence, since F-0097 is open and its fingerprint differs.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0094",
+      "relation": "related",
+      "applies": true,
+      "reason": "Its lesson (check platform behaviour in the docs, not from memory) applies to the root cause sentence 'CEL binds && tighter than ||'. Checked before writing: CEL's operator table lists conditional AND above conditional OR (cel-spec langdef; Firebase's CEL reference). The checker's tests also refuse the live string, so the claim is tested, not only cited.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0010",
+      "relation": "related",
+      "applies": true,
+      "reason": "A check counts only once shown to fail on its defect. The preventive check (check_wif_condition.py) was: the live condition string is refused, the module-source test fails on the pre-#64 main, and the owner's run on the real plan printed PASS on the fix.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0092",
+      "relation": "related",
+      "applies": true,
+      "reason": "Merged without its real path running: #55's condition merged green because no CI path renders the identity unit. The same shape (a merge proves nothing about a path that did not run) is the root cause stated in finding A.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0086",
+      "relation": "related",
+      "applies": true,
+      "reason": "Diagnosed from the code, not the live state. This time the diagnosis came from the live state: the owner's apply output, at 11:05 CT, showed the rendered condition. The entries cite that output, not the module source alone.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0085",
+      "relation": "related",
+      "applies": true,
+      "reason": "The apply workflow is disabled, so the fix cannot be verified for the apply subject with a real token. The verification states this instead of claiming all three subjects were proven.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0034",
+      "relation": "related",
+      "applies": true,
+      "reason": "The defect arrived with the KAN-67 elastic-pool work that answers F-0034, F-0084 and F-0091. The pool's scale-to-zero now runs (scaler logs 17:47-17:57Z, 2026-11-17), but those findings close in their own change, not in this journal PR.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0084",
+      "relation": "related",
+      "applies": true,
+      "reason": "As F-0034: same KAN-67 work; its closure needs the designed-to-fail alert run, not done here.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0091",
+      "relation": "related",
+      "applies": true,
+      "reason": "As F-0034: the scaler never shrinks below busy VMs, which answers F-0091; its closure is a separate change.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0100",
+      "relation": "related",
+      "applies": true,
+      "reason": "A sibling identity finding in the same module: #61 (its fix) also changes modules/identity/main.tf. After #64, #61 was merged with main and still brackets the condition; its next identity apply runs the same check.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0046",
+      "relation": "related",
+      "applies": true,
+      "reason": "The defect was agent-authored, and Git cannot tell the agent's commits from the owner's until KAN-69. The entry says 'agent-authored' from the PR body's statement, not from Git authorship.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0096",
+      "relation": "related",
+      "applies": true,
+      "reason": "This branch keeps the clone's configured author; no identity is set on the command line.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0038",
+      "relation": "related",
+      "applies": true,
+      "reason": "Branch protection: #55 merged with a human review, and the review missed the precedence. The preventive action is a check, not more review, consistent with F-0038's lesson that a control must run rather than be relied on.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0027",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The design record's gate; #55 had a design record (docs/design/2026-11-16-elastic-plan-pool.md), and the defect is in the rendered IAM condition, not the record.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0039",
+      "relation": "related",
+      "applies": false,
+      "reason": "The failing apply's history; context for F-0085 only. It changes nothing in these entries.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "dependency_patch autonomy; not involved.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0052",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Runner boot time; the baked image from #55 is unaffected by the condition.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0093",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The Python gate path on the Debian pool; not involved.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0095",
+      "relation": "related",
+      "applies": false,
+      "reason": "An agent ran a download the owner had stopped. No download or stopped action is involved here; listed for completeness of the agent-conduct findings.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Severity comes from the register's written rubric, not from a first guess: a control that admits what it must refuse is critical, even when fixed within the hour.",
+    "A hand-applied unit needs a machine check on its rendered plan, because CI never renders it (F-0097, F-0092).",
+    "State what the verification proved per subject; the apply subject cannot be proven while apply is disabled (F-0085).",
+    "Platform semantics in a root cause are checked in the docs first (F-0094)."
+  ],
+  "uncertainty": [
+    "Whether any token was accepted on sub alone from outside the owner's repository between 11:05 and 11:56 CT was not checked: STS audit logs were not read from this session. Exploiting it needed the Drecoder/sovereign-vpc-gcp name held by another account.",
+    "KAN-113's preventive guard is designed, not built; finding B stays open.",
+    "Finding C (F-0112) was found after this record's slice and is not in its query; its own Kappa read comes with KAN-114's fix."
+  ]
+}

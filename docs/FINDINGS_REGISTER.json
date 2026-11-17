@@ -1870,6 +1870,80 @@
           "workload-on-runner-identity"
         ]
       }
+    },
+    {
+      "id": "F-0110",
+      "journal": "## 2026-11-17: The CI identity provider's trust condition pinned the owner ID and repository for PR plan jobs only, so apply and scaler tokens matched on their subject alone",
+      "category": "security",
+      "severity": "critical",
+      "detected_by": "person",
+      "found": "2026-11-17",
+      "due": "2026-11-24",
+      "status": "fixed",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "trust-condition-operator-precedence",
+          "hand-applied-unit-unchecked"
+        ]
+      },
+      "closed": "2026-11-17",
+      "verification": "sovereign-vpc-gcp #64 (merge 21c63f8) applied by the owner at 11:56 CT: 0 added, 1 changed, 0 destroyed, and scripts/ci/check_wif_condition.py printed PASS on that plan. Designed to fail: the live condition string is refused, and the module-source test fails on main before #64 (1 failed, 10 passed) and passes with it. Real tokens under the fixed condition: the scaler subject (runner-scaler run 44142675529, 17:57Z) and the PR plan subject (Plan (dev) on #62, run 44142649545, 18:07Z) both authenticated",
+      "residual": "the apply subject is not yet proven with a real token, because the apply workflow is disabled (F-0085); STS audit logs for 11:05-11:56 CT were not read; the identity unit is still applied by hand with no guard on the checkout (F-0111, KAN-113)",
+      "ticket": "KAN-67"
+    },
+    {
+      "id": "F-0111",
+      "journal": "## 2026-11-17: The hand-applied identity unit was planned three times from code other than the intended code, and only a count comparison noticed",
+      "category": "governance",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-17",
+      "due": "2027-02-15",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "apply-from-stale-checkout",
+          "hand-applied-unit-unchecked"
+        ]
+      },
+      "ticket": "KAN-113"
+    },
+    {
+      "id": "F-0112",
+      "journal": "## 2026-11-17: CI never runs the CAPA projector's check, so F-0100 was written by hand under an ID that does not match its issue",
+      "category": "quality",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-17",
+      "due": "2026-12-17",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "playbook"
+        ],
+        "fingerprints": [
+          "rule-without-control",
+          "finding-id-not-issue-number"
+        ]
+      },
+      "ticket": "KAN-114"
     }
   ],
   "controls": [
