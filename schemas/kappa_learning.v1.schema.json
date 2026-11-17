@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kappa_learning.v1.schema.json",
+  "title": "kappa_learning.v1",
+  "description": "The Builder's learning handoff (KAN-60 slice 3): what its own journal and register already know about one piece of work, made with tests/journal/kappa.py slice after intake and before diagnosis, and committed before any other change of that work as .kappa/<ticket>.json. The slice's Markdown (root causes, corrections, preventive actions, verification) and this record are the context the diagnosis prompt receives. tests/journal/kappa.py check recomputes the slice from the base branch's Kappa and refuses a record that omits a selected finding. It proves the record is complete and came first, not that its reasoning is good. Everything in it is an agent's claim.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "agent",
+    "work",
+    "kappa",
+    "query",
+    "result",
+    "classification",
+    "findings",
+    "lessons",
+    "uncertainty"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "kappa_learning.v1"
+    },
+    "agent": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,31}$",
+      "description": "The agent whose journal was read; it must be the register's agent (an agent reads only its own journal)."
+    },
+    "work": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ticket",
+        "repository",
+        "problem"
+      ],
+      "properties": {
+        "ticket": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]+-[0-9]+$"
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,100}/[A-Za-z0-9._-]{1,100}$"
+        },
+        "problem": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 2000
+        }
+      }
+    },
+    "kappa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "consulted",
+            "unavailable"
+          ],
+          "description": "unavailable records an honest failure; the check fails closed on it."
+        },
+        "register_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "journal_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "consulted"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "register_sha256",
+          "journal_sha256"
+        ]
+      },
+      "else": {
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component"
+      ],
+      "properties": {
+        "component": {
+          "type": "string",
+          "minLength": 1,
+          "description": "An ID from the register's component registry: the component the work changes."
+        },
+        "rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fingerprints": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          }
+        }
+      }
+    },
+    "result": {
+      "enum": [
+        "matches",
+        "none_found"
+      ],
+      "description": "none_found records that the search found no applicable prior findings."
+    },
+    "classification": {
+      "enum": [
+        "new",
+        "recurring",
+        "related",
+        "regression_of_prior_correction"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "relation",
+          "applies",
+          "reason",
+          "reuses_correction"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F-[0-9]{4}$"
+          },
+          "relation": {
+            "enum": [
+              "same",
+              "recurring",
+              "related",
+              "caused_by_prior_correction",
+              "not_applicable"
+            ]
+          },
+          "applies": {
+            "type": "boolean",
+            "description": "Whether this history changes the diagnosis or the implementation."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000
+          },
+          "reuses_correction": {
+            "type": "boolean",
+            "description": "true when the work reuses this finding's correction or preventive action."
+          },
+          "revalidation": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000,
+            "description": "How the reused correction's conditions were re-checked against the current code."
+          }
+        },
+        "if": {
+          "properties": {
+            "reuses_correction": {
+              "const": true
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "revalidation"
+          ]
+        }
+      }
+    },
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      },
+      "description": "Open questions and missing historical evidence."
+    }
+  }
+}

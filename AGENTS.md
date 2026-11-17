@@ -416,6 +416,20 @@ Rules for the Builder / Reviewer agents and any future agent in the control plan
 - **Work enters only as an approved spec.** The Builder starts from a `spec.approved` event on its
   queue, fetches the spec object, and verifies its digest; the approval names one exact spec
   version (`06_AgentZone/03_Software_Factory_Intake.md`).
+- **Consult Kappa before deciding.** After intake and before diagnosing, choosing an approach, or
+  writing a test or code, the Builder retrieves what its own journal and register know about the
+  work: `tests/journal/kappa.py slice` selects every finding open in the component it changes, every
+  finding there that shares a rule it touches, every finding anywhere that shares a fingerprint, and
+  the findings those recur, are recurred by, or name as their cause. It then commits a learning
+  record (`schemas/kappa_learning.v1.schema.json`, as `.kappa/<ticket>.json`) before any other change
+  of the work: a disposition for each finding, how any prior correction it reuses was re-checked
+  against the current code, the lessons, and what it could not establish; `none_found` when nothing
+  applies. The slice and the record are the diagnosis prompt's context. History informs the
+  diagnosis; it never overrides a gate, a required check, or current evidence. CI recomputes the
+  slice from the base branch and refuses a record that omits a selected finding, was made against
+  other Kappa, or was committed after the work began; Kappa unavailable fails closed. This proves the
+  history was addressed first, not that the reasoning was sound. Enforced on Playbook pull requests
+  (`.github/workflows/journal.yml`); the central gates follow (KAN-60).
 - **Plan, never apply.** Agents may run `terragrunt plan` / `validate` only. `apply` runs in a
   separate post-merge pipeline with its own scoped identity and is never exposed as an agent tool.
 - **Schemas at every boundary.** Agent inputs, outputs, and tool arguments are defined as
