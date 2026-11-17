@@ -177,6 +177,7 @@ and PR — no model, no tokens, no reliance on memory. Policy ids appear in find
 | `SEC-011` | No firewall or security-group rule allows `0.0.0.0/0` or `::/0` to management ports (SSH 22, RDP 3389) |
 | `SEC-012` | Container images run as a non-root user, pin their base image by digest, carry no secrets in layers or build arguments, and pass the image scan (`00_UniversalStandards/12_Containers.md`) |
 | `SEC-013` | Every released artifact has an SBOM and a pipeline signature with provenance, and deploys admit only artifacts whose signature verifies (`00_UniversalStandards/13_Supply_Chain.md`) |
+| `SEC-014` | Every workload runs as its own service account: no instance or instance template outside the CI runner unit runs as the runner's identity, which can read the runner's GitHub App key |
 
 A failing `SEC-*` policy blocks the change. Exceptions are granted per unit in a reviewed policy
 file, with an owner and an expiry date.

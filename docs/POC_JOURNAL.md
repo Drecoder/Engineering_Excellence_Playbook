@@ -1644,3 +1644,43 @@ Status: open.
   KAN-89); `docs/FINDINGS_REGISTER.json` on main at `fa47404`; the Features Map,
   <https://claude.ai/artifact/NpwCvBoUaFQ6KPqoUaPZr5>.
 - **Status:** open.
+
+## 2026-11-17: The inference VMs run as the CI runner's identity, which can read the GitHub App key
+
+- **Rule:** each workload gets its own identity, scoped to its job (`AGENTS.md` → Security Rules);
+  now also `SEC-014`, added with this entry: no compute outside the CI runner unit runs as the
+  runner's identity.
+- **Problem:** the inference instance template `ollama-inference-20261023185414177600000001`
+  (project `sovereign-vpc-488522`) runs as `ci-runner-vm`, which holds
+  `roles/secretmanager.secretAccessor` on the runner GitHub App key secret
+  (`modules/identity/main.tf:198`). Any inference VM can read that key through its metadata token.
+  The identity module's own comment (lines 158-161) keeps the GPU bench VMs off this identity for
+  exactly that reason; the main inference unit still passes `runner_sa_email`
+  (`live/dev/gcp/inference/terragrunt.hcl:39`). It was not only latent: KAN-30 confirmed on
+  2026-11-03 that the running inference VM (created 2026-10-23 with `min_size = 1`, INC-006) used
+  this identity. Secret read logging was off, so whether the key was read cannot be shown. On
+  2026-11-16 the group was at zero and no inference VM was running.
+- **Detection:** a person. The owner first confirmed the running VM's account on 2026-11-03
+  (KAN-30). On 2026-11-16 the owner listed instances and templates (`--filter="name~^ollama-"`),
+  at the agent's request while checking sovereign-vpc-gcp #39, and the agent read the runner
+  identity's grants (Playbook issue #103).
+- **Root cause:** creating a dedicated service account is IAM, which `ci-apply` cannot do, so the
+  inference unit reused the runner's account. When #38 moved the GPU bench's account into the
+  human-applied identity unit, the main inference unit was not moved with it. The finding then sat
+  on KAN-30 for 14 days with no journal entry or register row, so production readiness never
+  counted it.
+- **Correction:** containment: the runner GitHub App key was rotated on 2026-11-16; every old key
+  was deleted and Secret Manager version 1 disabled. Fix (KAN-30, in two steps): an
+  `ollama-inference` service account in the identity unit, beside `ollama-gpu-bench`, with only
+  log and metric writer roles, which `ci-apply` may attach. The owner applies the identity unit.
+  Then `live/dev/gcp/inference` points at it, and the apply pipeline rolls a new template.
+- **Preventive action:** `SEC-014`, a plan-time check that refuses any instance or instance
+  template outside the runners unit that runs as `ci-runner-vm`. It is committed with a
+  designed-to-fail fixture, run in the gates self-test, then wired into every unit's plan.
+- **Verification:** the same `instance-templates list` shows no `ollama-*` template on
+  `ci-runner-vm`; the check fails on its fixture and passes on `main`.
+- **Evidence:** the owner's command output, 2026-11-16 13:28 CT; KAN-30 comments of 2026-11-03 and
+  2026-11-05; `modules/identity/main.tf:158-161`, `:198-199`;
+  `live/dev/gcp/inference/terragrunt.hcl:39`; sovereign-vpc-gcp #39 (the GPU bench only); Playbook
+  issue #103; severity confirmed by the owner on 2026-11-17.
+- **Status:** open.
