@@ -7,6 +7,7 @@ on:
     paths:
       - "schemas/**"
       - "docs/FINDINGS_REGISTER.json"
+      - ".kappa/**"
       - "tests/contracts/**"
       - "action.yml"
       - "tests/antipatterns/toolchain/**"
@@ -16,6 +17,7 @@ on:
     paths:
       - "schemas/**"
       - "docs/FINDINGS_REGISTER.json"
+      - ".kappa/**"
       - "tests/contracts/**"
       - "action.yml"
       - "tests/antipatterns/toolchain/**"

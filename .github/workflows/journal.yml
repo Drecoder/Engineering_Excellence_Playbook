@@ -11,6 +11,9 @@
 # date within its severity's deadline, and the control-effectiveness metrics and production
 # readiness in the run summary. An overdue open finding warns on a pull request and fails the daily
 # run, so a deadline cannot pass silently.
+#
+# On a pull request it also checks the Builder's learning record (.kappa/<ticket>.json, KAN-60): Kappa
+# was consulted before the work began, and no applicable finding was left out.
 name: Journal append-only
 
 on:
@@ -70,3 +73,37 @@ jobs:
           MODE: ${{ github.event_name == 'schedule' && 'scheduled' || 'pr' }}
         run: |
           docker run --rm -v "$PWD:/work:ro" -v "$GITHUB_STEP_SUMMARY:/summary.md" -w /work             -e PYTHONDONTWRITEBYTECODE=1 -e GITHUB_STEP_SUMMARY=/summary.md "$PYTHON_IMAGE"             python tests/journal/register.py "$JOURNAL" docs/FINDINGS_REGISTER.json --mode "$MODE"
+
+      # Kappa-first (AGENTS.md -> Agent Rules; KAN-60 slice 3): the pull request carries one learning
+      # record, .kappa/<ticket>.json, committed before any other change of the branch, and complete
+      # against the slice recomputed from the base branch's register and journal. Git runs here on the
+      # runner only to list the branch's commits and read the base's Kappa; the check itself runs in
+      # the pinned image. Dependabot pull requests (the dependency_patch class) have no diagnosis step
+      # and are exempt, with a notice in the run.
+      - name: Kappa-first learning record
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -euo pipefail
+          if [ "$PR_AUTHOR" = "dependabot[bot]" ]; then
+            echo "::notice::Dependabot pull request: exempt from the Kappa learning record (dependency_patch class)"
+            exit 0
+          fi
+          kappa="$RUNNER_TEMP/kappa"
+          mkdir -p "$kappa"
+          git show "$BASE_SHA:docs/FINDINGS_REGISTER.json" > "$kappa/register.json"
+          git show "$BASE_SHA:$JOURNAL" > "$kappa/journal.md"
+          merge_base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          : > "$kappa/commits.tsv"
+          for c in $(git rev-list --first-parent --no-merges --reverse "$merge_base..$HEAD_SHA"); do
+            printf '%s\t\n' "$c" >> "$kappa/commits.tsv"
+            git diff-tree --no-commit-id --name-only -r "$c" | while IFS= read -r path; do
+              printf '%s\t%s\n' "$c" "$path" >> "$kappa/commits.tsv"
+            done
+          done
+          docker run --rm -v "$PWD:/work:ro" -v "$kappa:/kappa:ro" -w /work -e PYTHONDONTWRITEBYTECODE=1 \
+            "$PYTHON_IMAGE" python tests/journal/kappa.py check --commits /kappa/commits.tsv --head /work \
+            --journal /kappa/journal.md --register /kappa/register.json

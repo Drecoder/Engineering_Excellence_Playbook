@@ -1,0 +1,65 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-60",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "The Builder consults Kappa only when a prompt or handoff happens to send it there: no rule requires it before diagnosis, and nothing checks that it happened (Kappa-first, KAN-60 slice 3, read side)."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "41bec3f3fc5ac1c06caac3ab451ba44a6763e47dc824a1683e67fd5768107b6f",
+    "journal_sha256": "0c4e1fb217e7867ed309e6bfa975f3f330256a5efc2ca50b5c0749bda62ae2f9"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Agent Rules",
+      "AGENTS.md#Observability Rules"
+    ],
+    "fingerprints": [
+      "rule-without-control",
+      "assumed-cause-from-code",
+      "diagnosis-from-latest-failure-only",
+      "unverified-platform-assumption"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same class: a written journal rule with no check. Its correction (a check run on every PR, shown failing on fixtures) is the pattern: the Kappa-first rule ships with its check in the same PR.",
+      "reuses_correction": true,
+      "revalidation": "The append-only check still runs in journal.yml on every PR (read at 0175fc2); the new check is a step in the same job and image, so the pattern applies unchanged."
+    },
+    {
+      "id": "F-0030",
+      "relation": "related",
+      "applies": true,
+      "reason": "Recurs F-0014: a journal rule (CAPA fields) whose preventive check was planned and never built. Lesson: do not merge the Kappa-first rule as text with the check left for later.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0027",
+      "relation": "related",
+      "applies": true,
+      "reason": "The design record had rules and a reference checker but no gate step that called them. Lesson: the reference retrieve() in harness_reference.py exists and is called by nothing; the new retrieval must be wired into a running workflow, not only tested.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Ship the rule and its check in one change, with designed-to-fail cases (F-0014, F-0027, F-0030).",
+    "Test the retrieval against real entries in both journal forms, not only the bold-list form (F-0089).",
+    "Mutate the checker after its tests pass; a passing suite can still miss a branch (F-0098).",
+    "Claim only what the check proves: completeness and order, not reasoning quality (F-0019).",
+    "A new boundary gets a versioned contract first (F-0022, F-0029)."
+  ],
+  "uncertainty": [
+    "Only Playbook pull requests are enforced by this change; the other repositories wait for the central gates.yml step.",
+    "The check verifies that the record existed before the first implementation commit, not that its first version was complete; a later update is allowed and only the final version is checked against current Kappa.",
+    "The query (rules and fingerprints) is chosen by the agent. Open findings in the component are always required, but a too-narrow query can leave out a closed finding that would have helped."
+  ]
+}

@@ -59,12 +59,18 @@ One continuous loop, every phase reading the same rule catalogs:
    and risks; rank the rules that apply: domain invariants, the five inner-loop habits (Scope &
    Premise Check, Investigate & Blast Radius, TDD & Root Cause, Minimal Diff & Architecture,
    Prove With Evidence), CAPA rules and merge-conflict rules (`06_Merge_Conflicts.md`).
-2. **Rule-gated execution.** Enforce the machine-checkable rules before any gate runs.
-3. **Capture.** Every error event opens or updates a structured CAPA or conflict draft with its
+2. **Learn from Kappa.** Before any diagnosis, retrieve what the agent's own journal and register
+   already know about the scoped change (`tests/journal/kappa.py slice`) and commit the learning
+   record (`kappa_learning.v1`) first: each applicable finding's disposition, any reused correction
+   re-checked against the current code, the lessons, and the open questions. The diagnosis in the
+   next phases starts from it; CI refuses a record that omits a finding or came after the work
+   (`AGENTS.md` → Agent Rules).
+3. **Rule-gated execution.** Enforce the machine-checkable rules before any gate runs.
+4. **Capture.** Every error event opens or updates a structured CAPA or conflict draft with its
    evidence, so nothing is copied into an issue, a PR or a chat by hand.
-4. **Gauntlet.** CRAP, then mutation, then the TDD pyramid, on exactly what is pushed; stop at
+5. **Gauntlet.** CRAP, then mutation, then the TDD pyramid, on exactly what is pushed; stop at
    the first failure.
-5. **Feedback.** The verification artifact, the drafts and the events feed the next attempt.
+6. **Feedback.** The verification artifact, the drafts and the events feed the next attempt.
 
 What is automatic and what is not:
 
