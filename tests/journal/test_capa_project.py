@@ -130,6 +130,7 @@ class Row(unittest.TestCase):
                      "components": ["coqui-tts", "aws-builder-agent", "sovereign-vpc-gcp"],
                      "fingerprints": ["dependabot-private-reusable-workflow",
                                       "checklist-only-triage"]},
+            "issue": "Drecoder/Engineering_Excellence_Playbook#87",
         })
 
     def test_due_date_is_computed_from_severity(self):
@@ -186,6 +187,70 @@ class Batch(unittest.TestCase):
         journal2, register2, added = project(issues, journal, copy.deepcopy(register))
         self.assertEqual(added, [])
         self.assertEqual((journal2, register2), (journal, register))
+
+
+    # KAN-114 (F-0112, the owner's option (a)): an issue is journaled when a row names it, so a
+    # finding recorded by hand under another ID (#103 as F-0100) is never projected twice.
+    def test_an_issue_a_row_names_is_left_alone_and_not_parsed(self):
+        register = copy.deepcopy(self.register)
+        register["findings"][0]["issue"] = "Drecoder/Engineering_Excellence_Playbook#9005"
+        journal, register2, added = project([issue(9005, "a body that is not form output")],
+                                            self.journal, register)
+        self.assertEqual((journal, added), (self.journal, []))
+
+    def test_a_row_naming_the_same_number_in_another_repository_does_not_count(self):
+        register = copy.deepcopy(self.register)
+        register["findings"][0]["issue"] = "Drecoder/sovereign-vpc-gcp#9005"
+        _, _, added = project([self.new_issue(9005, "A finding in this repository")],
+                              self.journal, register)
+        self.assertEqual(added, ["F-9005"])
+
+    def test_the_register_names_issue_103_for_f_0100(self):
+        # The case F-0112 found: projecting every capa issue must not duplicate F-0100.
+        _, _, added = project([issue(103, "the hand-journaled body of #103")],
+                              self.journal, copy.deepcopy(self.register))
+        self.assertEqual(added, [])
+
+    def test_every_projected_row_names_its_issue(self):
+        _, register, _ = project([self.new_issue(9001, "A first test finding")], self.journal,
+                                 copy.deepcopy(self.register))
+        self.assertEqual(register["findings"][-1]["issue"],
+                         "Drecoder/Engineering_Excellence_Playbook#9001")
+
+
+class Check(unittest.TestCase):
+    """--check, which journal.yml runs on every pull request: exit 1 on an unprojected issue."""
+
+    def run_check(self, issues, tmp):
+        from capa_project import main
+        (tmp / "issues.json").write_text(json.dumps(issues))
+        (tmp / "j.md").write_text((ROOT / "docs" / "POC_JOURNAL.md").read_text())
+        (tmp / "r.json").write_text((ROOT / "docs" / "FINDINGS_REGISTER.json").read_text())
+        # Capture the output: an ::error:: line printed in CI becomes a false annotation on the PR.
+        import contextlib
+        import io
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main([str(tmp / "issues.json"), "--check", "--journal", str(tmp / "j.md"),
+                         "--register", str(tmp / "r.json")])
+        self.last_output = out.getvalue()
+        return code
+
+    def test_an_unprojected_issue_fails_and_changes_nothing(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            body = ISSUE_87.replace("Dependabot cannot read the private central CI, so its run on main fails",
+                                    "A finding nobody projected")
+            self.assertEqual(self.run_check([issue(9001, body)], tmp), 1)
+            self.assertIn("unprojected capa issue(s): F-9001", self.last_output)
+            self.assertEqual((tmp / "r.json").read_text(),
+                             (ROOT / "docs" / "FINDINGS_REGISTER.json").read_text())
+
+    def test_the_real_register_passes_with_issue_103(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(self.run_check([issue(87, ISSUE_87), issue(103, "hand-journaled")], Path(d)), 0)
 
 
 if __name__ == "__main__":

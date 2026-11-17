@@ -1,0 +1,164 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-114",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "F-0112, owner's option (a), 2026-11-17 12:21 CT: the projector treats an issue as journaled when an existing register row names it. Add an optional issue field (owner/repo#N) to findings_register.v2 rows, write it on every projected row, set F-0100's to #103, skip issues a row names, and run capa_project.py --check in journal.yml."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "9c6ca5f969c38c84f2aa7572c08b1db9d0d756633fb2a5bb3afed7cc5dc98ba0",
+    "journal_sha256": "89865948e29c0f13b1a21198b0ebfbfba75fc04f3abd5653104c0727db7eaed8"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Observability Rules"
+    ],
+    "fingerprints": [
+      "rule-without-control",
+      "finding-id-not-issue-number",
+      "projection-drops-continuation-lines"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0112",
+      "relation": "same",
+      "applies": true,
+      "reason": "This is its correction and preventive action, the owner's option (a): rows name their issue, the projector skips an issue a row names, and journal.yml runs --check so a hand-written row with no issue link fails CI.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0100",
+      "relation": "related",
+      "applies": true,
+      "reason": "Its row gets issue Drecoder/Engineering_Excellence_Playbook#103, the link the hand-written entry carries only in prose. The ID stays F-0100.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0014",
+      "relation": "related",
+      "applies": true,
+      "reason": "A rule ships with its check (rule-without-control): --check goes into journal.yml in the same change, with a designed-to-fail test.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same lesson: an unchecked field is a claim. The new issue field is validated by the schema's pattern, and the projector's skip set is tested.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0027",
+      "relation": "related",
+      "applies": true,
+      "reason": "rule-without-control again: the gate is part of the change, not a follow-up.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0089",
+      "relation": "related",
+      "applies": true,
+      "reason": "The projector must stay faithful: adding issue to projected rows must not change any entry text; the existing projection tests over real issues must still pass unchanged.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0098",
+      "relation": "related",
+      "applies": true,
+      "reason": "After the tests pass, mutate the skip logic and --check to see what the suite misses.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "The work has its ticket (KAN-114) before it starts; F-0112's row already carries it.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "related",
+      "applies": true,
+      "reason": "Contract changes: issue is an optional field added to findings_register.v2, following the precedent of ticket (KAN-60 slice 4). An existing v2 document stays valid; only rows that use the field need the new schema.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "related",
+      "applies": true,
+      "reason": "Vendored contracts: consumers vendor schemas/ at a pin. An optional field added to v2 leaves every existing register valid, and no consumer writes this register, so no consumer's vendored copy is broken; noted in the PR.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "builder.spec and the price table; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "related",
+      "applies": false,
+      "reason": "The control-catch metric; this change records no new detection, so the metric is unaffected.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0017",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Ranking and deadlines; no row's severity or due date changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The sync PR's source name; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0046",
+      "relation": "related",
+      "applies": false,
+      "reason": "Agent commits still author as the owner until KAN-69; the configured author is kept (F-0096).",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Autonomy promotion; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Governance baseline; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0087",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Dependabot and the central CI; untouched.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Ship the projector's check in CI in the same change (F-0014, F-0030).",
+    "Name links in data, never parse them from prose (F-0112).",
+    "Mutate the new skip and check logic after the tests pass (F-0098)."
+  ],
+  "uncertainty": [
+    "The --check step needs the issue list from the API in CI; if journal.yml's token cannot read issues, the step must fail closed, not skip.",
+    "Built on #113's branch; the digests are against #113's register and journal, and must match main once #113 merges."
+  ]
+}

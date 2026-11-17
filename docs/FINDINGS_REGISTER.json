@@ -1869,7 +1869,8 @@
         "fingerprints": [
           "workload-on-runner-identity"
         ]
-      }
+      },
+      "issue": "Drecoder/Engineering_Excellence_Playbook#103"
     },
     {
       "id": "F-0110",
@@ -1930,7 +1931,7 @@
       "detected_by": "person",
       "found": "2026-11-17",
       "due": "2026-12-17",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Observability Rules"
@@ -1943,7 +1944,10 @@
           "finding-id-not-issue-number"
         ]
       },
-      "ticket": "KAN-114"
+      "ticket": "KAN-114",
+      "closed": "2026-11-17",
+      "verification": "KAN-114: rows name their issue (findings_register.v2 `issue`), F-0100 names #103, the projector skips an issue a row names and writes `issue` on every row it projects, register.py refuses two rows naming one issue, and journal.yml runs capa_project.py --check. Designed to fail on the real issue list (16 capa issues): before the fix --check exits 1 on F-0103, after it exits 0. Tests: 7 failed on the test commit, then 123 passed; 7 of 7 hand mutants killed. Host Python, provisional until CI runs it in the pinned image",
+      "residual": "--check only warns on a pull request, by design (a new capa issue must not turn every open pull request red); it fails a push to main and the daily run. Rows projected before KAN-114 (F-0089 to F-0111) carry no `issue` and are matched by ID"
     }
   ],
   "controls": [
