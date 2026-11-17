@@ -17,14 +17,21 @@ happened, and what it records changes the standard, the controls, and the next p
 | :--- | :--- | :--- | :--- | :--- |
 | **Engineering artifact** | **In use** | Engineers and reviewers | The chronological, evidence-linked history of findings, corrections, verification, and unresolved work, so the project's actual state does not have to be rebuilt from Git history | The entries in order; the [CAPA register](FINDINGS_REGISTER.json) for what is open, its severity, and its deadline |
 | **Learning resource** | Designed, not yet wired | People learning the craft, through a learning system | Engineering experience turned into causal knowledge: what failed, why, how it was detected, how the fix was verified, and what now prevents it | Each entry's CAPA fields as a lesson; the register's category and severity to group and order lessons |
-| **Feedback mechanism** | Designed, not yet wired | The factory's agents and future engineering decisions | Prior experience to weigh against the playbook's standards and the current evidence, so the variance between what a rule says, what happened before, and what is happening now is visible | The register as structured data (category, severity, status, residual); the entries it points to, as the reasoning behind each row |
+| **Feedback mechanism** | **In use** by the Builder; enforced on Playbook pull requests | The factory's agents and future engineering decisions | Prior experience to weigh against the playbook's standards and the current evidence, so the variance between what a rule says, what happened before, and what is happening now is visible | The register as structured data (category, severity, status, residual); the entries it points to, as the reasoning behind each row |
 
-**Status, honestly:** the engineering artifact is in use. The learning resource and the feedback
-mechanism are designed but not yet wired: no learning system reads the journal yet, and no agent
-is given it yet. When agents are, they will receive a slice relevant to their task, never the whole
-journal, as with every other piece of context (`AGENTS.md` → Reuse Rules). The structure is already
-ready for all three, though only the first is served: CAPA fields in every entry, and a register
-with the same rows as machine-readable data.
+**Status, honestly (2026-11-17, KAN-112):** two of the three roles are served, and the factory
+now learns from its own work. The engineering artifact is in use. The feedback mechanism is wired
+for the Builder: before it diagnoses, it takes a slice of its own journal and register with
+`tests/journal/kappa.py slice`, never the whole of either (`AGENTS.md` → Reuse Rules), and commits a
+learning record that disposes of every finding the slice selects, before any other change. CI
+recomputes the slice from the base branch and refuses a record that leaves a finding out, was made
+against other Kappa, or came after the work (`AGENTS.md` → Agent Rules, Playbook #107, KAN-60). The
+limits: the check runs only on Playbook pull requests until the central gates carry it (KAN-60), no
+harness stage runs it yet (KAN-91), each agent reads only its own journal, and the check proves the
+history was addressed first, not that the reasoning was sound. The learning resource is still
+designed, not wired: no learning system reads the journal yet. The structure is ready for all
+three: CAPA fields in every entry (not yet checked, F-0030), and a register with the same rows as
+machine-readable data.
 
 ## Format: CAPA
 
