@@ -1691,3 +1691,123 @@ Status: open.
   `live/dev/gcp/inference/terragrunt.hcl:39`; sovereign-vpc-gcp #39 (the GPU bench only); Playbook
   issue #103; severity confirmed by the owner on 2026-11-17.
 - **Status:** open.
+
+## 2026-11-17: The CI identity provider's trust condition pinned the owner ID and repository for PR plan jobs only, so apply and scaler tokens matched on their subject alone
+
+- **Rule:** Workloads and agents use short-lived federated identity only, and trust policies pin
+  repo, branch and environment (`AGENTS.md` → Security Rules). The owner-ID pin
+  (`assertion.repository_owner_id`) exists so that a repository of the same name under another
+  account can never mint a token.
+- **Problem:** sovereign-vpc-gcp #55 (KAN-67, agent-authored) added the scaler subject to the
+  provider's `attribute_condition` by joining the subject alternatives with `||` without brackets.
+  CEL binds `&&` tighter than `||`, so the applied condition read `(owner && repository && sub ==
+  pull_request) || (sub == environment:dev && ref == main) || (sub == ref:refs/heads/main &&
+  job_workflow_ref == runner-scaler.yml@main)`. The owner-ID and repository pins covered only the PR
+  plan subject. The apply subject (`ci-apply`, the highest-privilege CI identity) and the scaler
+  subject matched on `sub` alone. `sub` embeds `Drecoder/sovereign-vpc-gcp`, so exploiting it needed
+  that name held by another account, which is exactly what the owner-ID pin is there to refuse. Live
+  from the owner's identity apply at 11:05 CT to the fixed apply at 11:56 CT on 2026-11-17 (about 51
+  minutes). Scheduled scaler runs in that window authenticated on `sub` alone (run 44134492613 got
+  past token exchange).
+- **Detection:** a person: the agent read the rendered condition in the owner's `terragrunt apply`
+  output at 11:05 CT and saw the precedence. No control caught it: the identity unit is applied by
+  hand and no CI job plans it, and #55's PR review passed it.
+- **Root cause:** The identity unit is hand-applied and is not in `scripts/ci/terragrunt-units.sh`,
+  so no CI plan ever renders its `attribute_condition`, and no check read the rendered string (as
+  F-0097: nothing reads what this unit renders). #55's PR body asked for close review of the trust
+  condition, but review is not a check; the module's source joined two lists, and the precedence is
+  visible only in the rendered string.
+- **Correction:** sovereign-vpc-gcp #64 wraps the subject alternatives in `format("(%s)", join(" ||
+  ", ...))`. The owner merged it, planned the identity unit on main (0 to add, 1 to change, 0 to
+  destroy: only `attribute_condition`), and applied that saved plan at 11:56 CT.
+- **Preventive action:** `scripts/ci/check_wif_condition.py` reads the plan JSON and refuses any
+  provider whose condition has a top-level `||` or lacks top-level owner-ID and repository pins; no
+  provider in the plan fails closed. The owner runs it on every identity plan before applying
+  (`terragrunt show -json tfplan | py -3 -I ../../../../scripts/ci/check_wif_condition.py`). A
+  module-source test in CI (`test_module_brackets_the_subject_alternatives`) fails if the brackets
+  are removed. KAN-113 adds the guard that the plan is made from `origin/main`.
+- **Verification:** Designed to fail: the live condition string, copied from the 11:05 apply output,
+  is refused; the module-source test fails on main before #64 (1 failed, 10 passed) and passes with
+  it (11 passed); CI on #64 green (Gates, Gates verdict, Plan (dev)). On the real plan the check
+  printed `PASS: google_iam_workload_identity_pool_provider.github` (11:56 CT). After the apply, the
+  scaler subject authenticated under the fixed condition (run 44142675529, 17:57Z, success). Not yet
+  proven with a real token: the apply subject (the apply workflow is disabled, F-0085) and the PR
+  plan subject (next Plan (dev) run on #61 or #62). One gap in the check itself was found before
+  use: it refused #62's new `agent_pr` provider, which pins repositories with `assertion.repository
+  in [...]`; #62 fixes it test-first (2 failed, then 39 passed; 6 of 8 hand mutants killed, the 2
+  survivors each equivalent alone and killed together).
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#110](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/110)
+  (the finding); Drecoder/sovereign-vpc-gcp#55 (introduced), Drecoder/sovereign-vpc-gcp#64 (fix,
+  merge `21c63f8`), Drecoder/sovereign-vpc-gcp#62 (check extended); the owner's apply output at
+  11:05 and 11:56 CT, 2026-11-17; scaler runs 44134492613 (17:13Z, token exchange passed on `sub`
+  alone, then failed on the missing `SCALER_SA`) and 44142675529 (17:57Z, after the fix). Ticket
+  KAN-67. CEL precedence: cel-spec `doc/langdef.md` (conditional AND binds tighter than conditional
+  OR).
+- **Status:** open.
+
+## 2026-11-17: The hand-applied identity unit was planned three times from code other than the intended code, and only a count comparison noticed
+
+- **Rule:** Every failure and near miss gets a record (`AGENTS.md` → Observability Rules). IAM
+  changes take the highest-scrutiny path, decided from the plan JSON (`AGENTS.md` → Agent Rules →
+  Fail closed).
+- **Problem:** The identity unit is applied by hand from the owner's checkout. On 2026-11-17 its
+  plan was made three times from code other than what was meant to be applied: at 10:45 CT from a
+  checkout behind `origin/main` (0 changes; #38's `ollama-gpu-bench` resources were never created),
+  and at 11:14 and 11:26 CT from `main` before #64 had merged ("No changes" where 0 to add, 1 to
+  change, 0 to destroy was expected). Each saved plan was applied. All three were harmless only
+  because state matched the old code. Had state been ahead of the checkout, the same steps would
+  have planned and applied deletions of live IAM, with no CI no-destroy gate in the path.
+- **Detection:** a person: each time, the agent compared the plan's count with the count it had told
+  the owner to expect. No check compares what is checked out with what should be applied.
+- **Root cause (DRAFT):** (DRAFT) The hand-apply procedure is a sequence of commands with no
+  precondition: nothing refuses a plan made from a checkout that is behind `origin/main`, or from
+  `main` before the change it is meant to apply has merged. The expected count lives only in the
+  agent's message to the owner, not in anything the commands check.
+- **Correction (DRAFT):** (DRAFT) Each run was re-done from a fresh `git pull` once the intended
+  change was on `main`; the 11:56 CT plan matched the expected 0/1/0 and the condition check printed
+  PASS before it was applied.
+- **Preventive action (DRAFT):** (DRAFT) KAN-113: the hand-applied units refuse to plan or apply
+  unless HEAD equals `origin/main` after a fetch and the tree is clean (a Terragrunt `before_hook`
+  or a wrapper), with designed-to-fail cases (a stale checkout, a dirty tree, a detached HEAD). The
+  rollout steps state the expected count for the owner to compare.
+- **Verification (DRAFT):** (DRAFT) The guard refuses a checkout one commit behind `origin/main` and
+  a dirty tree in its fixtures, and passes on a clean, current `main`.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#111](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/111)
+  (the finding); The owner's terminal output, 2026-11-17 at 10:45, 11:14, 11:26 and 11:56 CT;
+  claude/handoff-2026-11-17-b.md step 6 (the 10:45 near miss); Drecoder/sovereign-vpc-gcp#64 (the
+  change the 11:14 and 11:26 plans lacked). Ticket KAN-113.
+- **Status:** open.
+
+## 2026-11-17: CI never runs the CAPA projector's check, so F-0100 was written by hand under an ID that does not match its issue
+
+- **Rule:** Every finding is journaled and tracked in the register (`AGENTS.md` → Observability
+  Rules); the projector (KAN-60 slice 1) makes each `capa` issue its entry and row, keyed by the
+  issue number, so the two cannot drift from the issue.
+- **Problem:** Issue #103 was journaled by hand in Playbook #108 as F-0100, while the projector keys
+  a finding by its issue number (F-0103). Running `capa_project.py` over every `capa` issue
+  therefore re-projects #103 as a duplicate entry. F-0100 is now cited as an ID by SEC-014,
+  sovereign-vpc-gcp #61 and KAN-30, so it cannot be renumbered. The projector's `--check` (exit 1
+  when an issue is unprojected) exists but no workflow runs it, so nothing refused the hand-written
+  row. F-0098 and F-0099 were also written by hand, with IDs taken from pull request numbers.
+- **Detection:** a person: the agent ran the projector for #110 and #111 and it projected F-0103;
+  the duplicate was reverted before any commit.
+- **Root cause (DRAFT):** (DRAFT) The projector is run by hand and its `--check` is not in
+  `journal.yml`, so a hand-written entry passes every check that does run (append-only, register,
+  Kappa). The rule that an issue's number is its ID is stated only in the projector's docstring.
+- **Correction (DRAFT):** (DRAFT) The owner decides how #103 is linked to F-0100 without
+  renumbering: (a) the projector treats an issue as projected when a row names it; (b) a reviewed
+  alias list; or (c) `capa` is removed from #103 with a comment. Until then, projection runs on the
+  issue list without #103, stated in the PR.
+- **Preventive action (DRAFT):** (DRAFT) `journal.yml` runs `capa_project.py --check` on every pull
+  request and daily, with a designed-to-fail case (a `capa` issue with no row fails).
+- **Verification (DRAFT):** (DRAFT) The check fails on a fixture with an unprojected issue and
+  passes on `main` once the #103 link is in place.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#112](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/112)
+  (the finding); Drecoder/Engineering_Excellence_Playbook#103 (the issue),
+  Drecoder/Engineering_Excellence_Playbook#108 (the hand-written F-0100);
+  `tests/journal/capa_project.py` lines 215-227 (ID = issue number); `.github/workflows/` (no
+  workflow calls the projector). Ticket KAN-114.
+- **Status:** open.

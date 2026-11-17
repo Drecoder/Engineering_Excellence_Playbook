@@ -4,7 +4,7 @@
   "work": {
     "ticket": "KAN-67",
     "repository": "Drecoder/Engineering_Excellence_Playbook",
-    "problem": "Journal two findings from 2026-11-17 through capa issues and the projector: (A) #55's WIF attribute_condition left its subject alternatives unbracketed, so the owner-ID and repository pins covered only the PR plan subject from 11:05 to 11:56 CT (fixed by sovereign #64); (B) the hand-applied identity unit was planned three times from code other than intended (a stale checkout, then main before #64), caught only by comparing counts (KAN-113)."
+    "problem": "Journal two findings from 2026-11-17 through capa issues and the projector: (A) #55's WIF attribute_condition left its subject alternatives unbracketed, so the owner-ID and repository pins covered only the PR plan subject from 11:05 to 11:56 CT (fixed by sovereign #64); (B) the hand-applied identity unit was planned three times from code other than intended (a stale checkout, then main before #64), caught only by comparing counts (KAN-113). Found during the work: (C) the projector re-projected issue #103 as a duplicate F-0103, because #108 wrote it by hand as F-0100 and CI never runs the projector's check (KAN-114); projection ran on the issue list without #103."
   },
   "kappa": {
     "status": "consulted",
@@ -169,6 +169,7 @@
   ],
   "uncertainty": [
     "Whether any token was accepted on sub alone from outside the owner's repository between 11:05 and 11:56 CT was not checked: STS audit logs were not read from this session. Exploiting it needed the Drecoder/sovereign-vpc-gcp name held by another account.",
-    "KAN-113's preventive guard is designed, not built; finding B stays open."
+    "KAN-113's preventive guard is designed, not built; finding B stays open.",
+    "Finding C (F-0112) was found after this record's slice and is not in its query; its own Kappa read comes with KAN-114's fix."
   ]
 }
