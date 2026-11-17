@@ -189,6 +189,11 @@
           "type": "string",
           "pattern": "^[A-Z][A-Z0-9]+-[0-9]+$",
           "description": "The finding's ticket key (KAN-60 slice 4). Optional in v2; the check that requires it on open rows comes with that slice."
+        },
+        "issue": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[1-9][0-9]*$",
+          "description": "The capa issue this finding was journaled from, as owner/repo#N (KAN-114). The projector writes it on every row it projects and leaves alone any issue a row names, so a finding recorded under another ID (issue #103 as F-0100) is never projected twice. Optional in v2; tests/journal/register.py refuses two rows naming one issue."
         }
       },
       "allOf": [

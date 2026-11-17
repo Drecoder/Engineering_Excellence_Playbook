@@ -4,8 +4,10 @@ The CAPA projector (KAN-60 slice 1): a `capa` issue, written through
 row (docs/FINDINGS_REGISTER.json). Nothing in either is written by hand, so the two cannot drift
 from the issue, and a field is never cut (F-0089).
 
-The issue number is the finding's ID (F-NNNN). Projection only appends: an issue whose ID is
-already in the register is left alone, so running it twice adds nothing. Input that does not fit
+The issue number is the finding's ID (F-NNNN), and each row names its issue (`issue`,
+owner/repo#N). Projection only appends: an issue whose ID is already in the register, or that a
+row names (KAN-114: #103 was journaled by hand as F-0100), is left alone, so running it twice adds
+nothing. Input that does not fit
 the form (a missing required section, an unknown choice, a malformed date) is refused, never
 repaired.
 
@@ -142,6 +144,14 @@ def _field(label, text):
     return out
 
 
+def issue_ref(issue):
+    """owner/repo#N for an issue, from its html_url: the register's `issue` field (KAN-114)."""
+    m = ISSUE_URL.match(issue.get("html_url", ""))
+    if not m:
+        raise ProjectionError(f"#{issue.get('number')}: html_url {issue.get('html_url')!r} is not an issue URL")
+    return f"{m.group(1)}#{m.group(2)}"
+
+
 def _link(issue):
     m = ISSUE_URL.match(issue.get("html_url", ""))
     if not m:
@@ -204,6 +214,7 @@ def project_row(issue):
         "due": (found + timedelta(days=DUE_DAYS[form["Severity"]])).isoformat(),
         "status": "open",
         "refs": refs,
+        "issue": issue_ref(issue),
     }
 
 
@@ -216,9 +227,11 @@ def project(issues, journal, register):
     """Append every capa issue not yet in the register, in issue order. Returns the new journal
     text, the register (changed in place), and the IDs added."""
     known = {row["id"] for row in register["findings"]}
+    # An issue a row names is journaled, whatever that row's ID (KAN-114: #103 is F-0100).
+    named = {row["issue"] for row in register["findings"] if "issue" in row}
     added = []
     for issue in sorted((i for i in issues if _is_capa(i)), key=lambda i: int(i["number"])):
-        if f"F-{int(issue['number']):04d}" in known:
+        if f"F-{int(issue['number']):04d}" in known or issue_ref(issue) in named:
             continue  # already projected; an issue from before the form is never parsed
         row = project_row(issue)
         entry = project_entry(issue)

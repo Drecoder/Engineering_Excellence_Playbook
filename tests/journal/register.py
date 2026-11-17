@@ -154,6 +154,9 @@ def check(journal_text: str, register: dict, today: date, root: Path = ROOT) -> 
     ids = [f["id"] for f in findings]
     for dup in sorted({i for i in ids if ids.count(i) > 1}):
         errors.append(f"{dup}: id used more than once")
+    named = [f["issue"] for f in findings if "issue" in f]
+    for dup in sorted({i for i in named if named.count(i) > 1}):
+        errors.append(f"{dup}: named by more than one row; an issue is journaled once (KAN-114)")
     for h in headings:
         if h not in rows:
             errors.append(f"no register row for journal entry: {h}")
