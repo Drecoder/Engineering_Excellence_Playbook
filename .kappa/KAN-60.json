@@ -1,0 +1,192 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-60",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "The Builder consults Kappa only when a prompt or handoff happens to send it there: no rule requires it before diagnosis, and nothing checks that it happened (Kappa-first, KAN-60 slice 3, read side)."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "41bec3f3fc5ac1c06caac3ab451ba44a6763e47dc824a1683e67fd5768107b6f",
+    "journal_sha256": "0c4e1fb217e7867ed309e6bfa975f3f330256a5efc2ca50b5c0749bda62ae2f9"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Agent Rules",
+      "AGENTS.md#Observability Rules"
+    ],
+    "fingerprints": [
+      "rule-without-control",
+      "assumed-cause-from-code",
+      "diagnosis-from-latest-failure-only",
+      "unverified-platform-assumption"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same class: a written journal rule with no check. Its correction (a check run on every PR, shown failing on fixtures) is the pattern: the Kappa-first rule ships with its check in the same PR.",
+      "reuses_correction": true,
+      "revalidation": "The append-only check still runs in journal.yml on every PR (read at 0175fc2); the new check is a step in the same job and image, so the pattern applies unchanged."
+    },
+    {
+      "id": "F-0030",
+      "relation": "related",
+      "applies": true,
+      "reason": "Recurs F-0014: a journal rule (CAPA fields) whose preventive check was planned and never built. Lesson: do not merge the Kappa-first rule as text with the check left for later.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0027",
+      "relation": "related",
+      "applies": true,
+      "reason": "The design record had rules and a reference checker but no gate step that called them. Lesson: the reference retrieve() in harness_reference.py exists and is called by nothing; the new retrieval must be wired into a running workflow, not only tested.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0089",
+      "relation": "related",
+      "applies": true,
+      "reason": "A projection with no test that compared its output with its source cut fields silently. The slice reads journal entries, including the five 2026-11-08 entries in the plain form, so tests compare slice output with the real entries' text in both forms.",
+      "reuses_correction": true,
+      "revalidation": "entry_fields in capa_project.py (merged in #99) parses only the bold-list form; checked against F-0025, which uses plain Rule: lines, so kappa.py adds a plain-form fallback instead of trusting it."
+    },
+    {
+      "id": "F-0098",
+      "relation": "related",
+      "applies": true,
+      "reason": "Its lesson: a suite can pass every designed-to-fail case and still miss a branch of the rule. The checker is mutated by hand after its tests pass, and every surviving mutant gets a case.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "related",
+      "applies": true,
+      "reason": "A metric built on a hand-set field overstated what it measured. The new check proves the record is complete against recomputed Kappa and came first; it does not prove the reasoning is good. The rule's wording and the PR must say exactly that, no more.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0086",
+      "relation": "related",
+      "applies": true,
+      "reason": "The class this rule exists to prevent: a diagnosis from declared state without the history or the live evidence. Prior knowledge would have pointed to F-0034's open preventive action.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0094",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same class: a decision from memory without checking (a trigger GitHub Actions does not have). The rule requires checking history and current evidence before acting; this PR's workflow change uses only the existing pull_request trigger and github context fields.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0097",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same class: a diagnosis from the latest evidence only. Its preventive action (read the streak from the first run) is a special case of what Kappa-first generalizes: read what is already known before diagnosing.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0039",
+      "relation": "related",
+      "applies": false,
+      "reason": "Selected through F-0097, which corrects it. The apply failures themselves are not in this change's scope.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0085",
+      "relation": "related",
+      "applies": false,
+      "reason": "Selected through F-0097. The disabled apply workflow is sovereign-vpc-gcp's and is not touched here.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0087",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Selected through F-0089, which restated its cut fields. Dependabot's access to the private CI does not bear on this change.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "related",
+      "applies": true,
+      "reason": "A boundary named in the docs before its contract existed. The learning handoff is a new boundary, so it gets a versioned schema (kappa_learning.v1), an example and contract tests in the same change.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same lesson as F-0029: the record's format is written as a contract before anything parses it, so the checker and the Builder agree on one shape.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0046",
+      "relation": "related",
+      "applies": true,
+      "reason": "Agent commits are still made under the owner's GitHub connection. This clone's configured author is Claude, and the commits keep it; no author is set on the command line (F-0096's lesson).",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "Work Tracking Rules: the work needs a ticket before it starts. KAN-60 carries it (slice 3, read side); the comment was added before this record.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0017",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The register's ranking and deadlines are read, not changed. The slice reports severity and status but adds no ranking of its own.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "related",
+      "applies": false,
+      "reason": "Consumers vendor only AGENTS.md and schemas, not the register. The next increment (the central gates.yml step) must fetch the register at the pinned playbook commit, like the license evaluator; out of scope here.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The sync action's provenance labels are not touched by this change.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Dependabot pull requests are exempt from the learning record: they are the dependency_patch class, with no diagnosis step. The exemption is shown in the run, not silent.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Governance baseline constraints are unrelated to this change.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Ship the rule and its check in one change, with designed-to-fail cases (F-0014, F-0027, F-0030).",
+    "Test the retrieval against real entries in both journal forms, not only the bold-list form (F-0089).",
+    "Mutate the checker after its tests pass; a passing suite can still miss a branch (F-0098).",
+    "Claim only what the check proves: completeness and order, not reasoning quality (F-0019).",
+    "A new boundary gets a versioned contract first (F-0022, F-0029)."
+  ],
+  "uncertainty": [
+    "Only Playbook pull requests are enforced by this change; the other repositories wait for the central gates.yml step.",
+    "The check verifies that the record existed before the first implementation commit, not that its first version was complete; a later update is allowed and only the final version is checked against current Kappa.",
+    "The query (rules and fingerprints) is chosen by the agent. Open findings in the component are always required, but a too-narrow query can leave out a closed finding that would have helped."
+  ]
+}
