@@ -1,0 +1,165 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-30",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "The inference instance template runs as ci-runner-vm, which can read the runner GitHub App key (Playbook issue #103). Journal and register it (severity high, owner-confirmed 2026-11-17) and add SEC-014; the fix lands in sovereign-vpc-gcp under the same ticket."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "41bec3f3fc5ac1c06caac3ab451ba44a6763e47dc824a1683e67fd5768107b6f",
+    "journal_sha256": "0c4e1fb217e7867ed309e6bfa975f3f330256a5efc2ca50b5c0749bda62ae2f9"
+  },
+  "query": {
+    "component": "sovereign-vpc-gcp",
+    "rule_ids": [
+      "AGENTS.md#Security Rules"
+    ],
+    "fingerprints": [
+      "workload-on-runner-identity"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0046",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same root: a workload or agent acting with an identity meant for something else. This fix narrows the runner identity's blast radius; F-0046 is the agent side. The commits keep the clone's configured author (Claude), never one set on the command line (F-0096).",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0096",
+      "relation": "related",
+      "applies": true,
+      "reason": "Its lesson applies to this branch: no user.name/user.email on the command line; the configured identity authors every commit.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0038",
+      "relation": "related",
+      "applies": false,
+      "reason": "Branch protection on sovereign-vpc-gcp is unchanged by this work; the fix PR still merges only through the owner's review.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0097",
+      "relation": "related",
+      "applies": true,
+      "reason": "#38 moved only the GPU bench's account into the human-applied identity unit, and the main inference unit was left on the runner's account; F-0097 records that applies failed with 'iam.serviceAccounts.create denied' for exactly this reason. The correction reuses #38's pattern (the account in the identity unit, ci-apply may attach it).",
+      "reuses_correction": true,
+      "revalidation": "Re-read on main at 35e8ba3: modules/identity/main.tf lines 158-179 still define ollama-gpu-bench with logWriter and metricWriter and apply_uses_inference_bench; live/dev/gcp/inference/terragrunt.hcl line 39 still passes runner_sa_email. The pattern applies unchanged."
+    },
+    {
+      "id": "F-0039",
+      "relation": "related",
+      "applies": true,
+      "reason": "Apply is broken and disabled (F-0085), so the unit change cannot roll a new template until apply runs again. The identity unit is applied by the owner by hand, as for #38.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0085",
+      "relation": "related",
+      "applies": true,
+      "reason": "apply.yml is disabled_manually: the corrected template reaches GCP only after apply is re-enabled. Verification must read the live template list, not the merged code.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0094",
+      "relation": "related",
+      "applies": true,
+      "reason": "No platform behaviour is assumed from memory: the check reads the plan JSON fields the existing no-delete gate already reads (resource_changes[].change.after), and its fixtures are plan JSON.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0010",
+      "relation": "related",
+      "applies": true,
+      "reason": "The guardrail counts only with a designed-to-fail case: a fixture plan whose instance template uses ci-runner-vm must fail, and the runners unit and a dedicated account must pass.",
+      "reuses_correction": true,
+      "revalidation": "tests/gates/*/cases.sh in sovereign-vpc-gcp still run from gates-selftest.yml on pull requests that touch tests/gates/**; the new cases follow the auto-merge cases' shape."
+    },
+    {
+      "id": "F-0092",
+      "relation": "related",
+      "applies": true,
+      "reason": "A check merged without running is the failure F-0092 records. The check script runs in the self-test on its own PR, before it is wired into plan.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0095",
+      "relation": "related",
+      "applies": true,
+      "reason": "The check verifies its input explicitly (the plan JSON parses and has resource_changes) and fails closed, not relying on set -e inside a condition.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0086",
+      "relation": "related",
+      "applies": true,
+      "reason": "Diagnose from live state, not declared code: the finding's evidence is the owner's instance-templates list, and KAN-30's Nov 3 comment confirms a VM actually ran as ci-runner-vm. The register entry says so instead of 'latent' only.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0034",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Runner scaling is not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0084",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Runner scaling and queued-job alerts are not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0091",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Runner scale-in is not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0052",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The runner image is not touched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0093",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The gates' Python path is not touched; the check is bash and jq on hosted runners.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0027",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Design-record validation is unrelated.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "dependency_patch autonomy is unrelated.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Move the account into the human-applied identity unit first, then point the unit at it in a second change (#38's pattern, KAN-30's order), so no plan reads a missing output (#39).",
+    "Ship the guardrail with a designed-to-fail fixture and run it before wiring it into plan (F-0010, F-0092).",
+    "Record what live state showed: a VM ran as ci-runner-vm from 2026-10-23, confirmed 2026-11-03 (KAN-30), so the exposure was not only latent (F-0086).",
+    "A known finding sat 14 days on a ticket with no journal entry or register row, so production readiness never counted it."
+  ],
+  "uncertainty": [
+    "Whether the key was read while a VM held the runner identity cannot be shown: secret read logging was off (KAN-30, 2026-11-05). The runner App key was rotated on 2026-11-16 and the old version disabled.",
+    "The plan-time check sees only units planned in CI; a template created by hand outside Terraform is caught only by the live verification."
+  ]
+}

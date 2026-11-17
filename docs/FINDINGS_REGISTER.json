@@ -1848,6 +1848,28 @@
           "finding-board-drift"
         ]
       }
+    },
+    {
+      "id": "F-0100",
+      "journal": "## 2026-11-17: The inference VMs run as the CI runner's identity, which can read the GitHub App key",
+      "category": "security",
+      "severity": "high",
+      "detected_by": "person",
+      "found": "2026-11-03",
+      "due": "2026-12-03",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Security Rules",
+          "SEC-014"
+        ],
+        "components": [
+          "sovereign-vpc-gcp"
+        ],
+        "fingerprints": [
+          "workload-on-runner-identity"
+        ]
+      }
     }
   ],
   "controls": [
