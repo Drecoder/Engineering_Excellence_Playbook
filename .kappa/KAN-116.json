@@ -1,0 +1,183 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-116",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "Owner request 2026-11-18: journal the three findings ticketed by the Features Map sync (KAN-94): the agent-ddi-harness shard-0 mutation crash (KAN-116), sovereign-vpc-gcp units without committed provider lock files (KAN-117), and the scaler holding idle VMs while a job runs (KAN-118). Open their capa issues, add agent-ddi-harness to the register's components so KAN-116's row resolves, and project the issues into the journal and register."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "37dd0d98501544948930cdaf2dd931a6012e3f546f0dc74f6c6e22614120fd9a",
+    "journal_sha256": "89865948e29c0f13b1a21198b0ebfbfba75fc04f3abd5653104c0727db7eaed8"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Observability Rules",
+      "AGENTS.md#Test Quality Rules",
+      "AGENTS.md#Supply Chain Rules",
+      "AGENTS.md#IaC Rules"
+    ],
+    "fingerprints": [
+      "mutation-runner-resource-limit",
+      "iac-provider-lock-uncommitted",
+      "idle-capacity-held",
+      "scale-in-while-busy"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "related",
+      "applies": true,
+      "reason": "The journal is append-only: three entries are added at the end, none edited; journal_append_only.py runs locally before the PR.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0017",
+      "relation": "related",
+      "applies": true,
+      "reason": "Each new row gets a severity on the written rubric and a due date within its deadline (medium: 90 days from the found date).",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Control-catch attribution; untouched. detected_by is set by hand as the rubric asks, and recorded as person for all three.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Board ticket contract; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "builder.spec.v1 and the price table; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "related",
+      "applies": true,
+      "reason": "CAPA fields are unchecked: every root cause, correction, preventive action and verification in the three issues is marked as a draft for the owner, not stated as fact.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0034",
+      "relation": "related",
+      "applies": true,
+      "reason": "The KAN-118 finding (idle VMs held while a job runs) is in the same scaler. F-0034 stays open; it is carried by KAN-119, not this change.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Playbook pin bumps; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Playbook sync source; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0046",
+      "relation": "related",
+      "applies": true,
+      "reason": "Agent-authored issues and PR are opened under the owner's account until KAN-69 lands; stated in the PR, not hidden.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Autonomy promotion; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Governance baseline; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0084",
+      "relation": "related",
+      "applies": true,
+      "reason": "Same scaler as KAN-118. F-0084 stays open; carried by KAN-119.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0087",
+      "relation": "related",
+      "applies": true,
+      "reason": "Projection, not hand-writing: the three entries come from capa_project.py, as F-0087's correction requires.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0089",
+      "relation": "related",
+      "applies": true,
+      "reason": "The hand projection cut sentences once: the projected entries are diffed against their issues before committing.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0091",
+      "relation": "related",
+      "applies": true,
+      "reason": "KAN-118's fix must not reopen it: the preventive action deletes only idle instances, never resizes the group. Not a recurrence: F-0091 removed busy VMs, KAN-118 keeps idle ones.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0098",
+      "relation": "related",
+      "applies": true,
+      "reason": "Test Quality Rules: the shard-0 finding's verification needs a designed-to-fail case, not only two green runs.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "These three gaps had no ticket and were found by the daily sync; they are ticketed (KAN-116 to KAN-118) before journaling, and KAN-119 removes the KAN-67 Done-over-open-findings drift.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0100",
+      "relation": "related",
+      "applies": true,
+      "reason": "Rows must name their issue (findings_register.v2 issue field); the projector writes it.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0112",
+      "relation": "related",
+      "applies": true,
+      "reason": "Projector, never by hand: each finding's ID is its issue number, and capa_project.py --check is run locally against the issue list.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Project from issues, never write rows by hand (F-0087, F-0112).",
+    "Mark diagnosis as draft until shown (F-0030): the shard-0 cause is a hypothesis.",
+    "A cost fix in the scaler must keep F-0091's guarantee: never remove a busy VM."
+  ],
+  "uncertainty": [
+    "The shard-0 Errno 11 cause is not reproduced; the process-limit reading is a hypothesis from the error code.",
+    "The idle window (2026-11-17 17:29-17:43Z) is from the agent's observation in the session; the scaler's logs for it were not re-read here.",
+    "Opening the issues before this merges makes the projector's --check fail on a push to main and the daily run until the projection lands."
+  ]
+}
