@@ -143,6 +143,12 @@
           "kind": "contract"
         }
       ]
+    },
+    {
+      "id": "agent-ddi-harness",
+      "kind": "repository",
+      "name": "agent-ddi-harness (the open-source DDI harness)",
+      "depends_on": []
     }
   ],
   "findings": [
@@ -1948,6 +1954,79 @@
       "closed": "2026-11-17",
       "verification": "KAN-114: rows name their issue (findings_register.v2 `issue`), F-0100 names #103, the projector skips an issue a row names and writes `issue` on every row it projects, register.py refuses two rows naming one issue, and journal.yml runs capa_project.py --check. Designed to fail on the real issue list (16 capa issues): before the fix --check exits 1 on F-0103, after it exits 0. Tests: 7 failed on the test commit, then 123 passed; 7 of 7 hand mutants killed. Host Python, provisional until CI runs it in the pinned image",
       "residual": "--check only warns on a pull request, by design (a new capa issue must not turn every open pull request red); it fails a push to main and the daily run. Rows projected before KAN-114 (F-0089 to F-0111) carry no `issue` and are matched by ID"
+    },
+    {
+      "id": "F-0115",
+      "journal": "## 2026-11-18: The agent-ddi-harness daily mutation run crashed on shard 0 two days running, so the full mutation count was never recorded",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-18",
+      "due": "2027-02-16",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Test Quality Rules",
+          "AGENTS.md#Observability Rules"
+        ],
+        "components": [
+          "agent-ddi-harness"
+        ],
+        "fingerprints": [
+          "mutation-runner-resource-limit",
+          "scheduled-failure-unalerted"
+        ]
+      },
+      "ticket": "KAN-116",
+      "issue": "Drecoder/Engineering_Excellence_Playbook#115"
+    },
+    {
+      "id": "F-0116",
+      "journal": "## 2026-11-17: Five of the seven sovereign-vpc-gcp units plan and apply without a committed provider lock file",
+      "category": "supply-chain",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-17",
+      "due": "2027-02-15",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#Supply Chain Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "iac-provider-lock-uncommitted"
+        ]
+      },
+      "ticket": "KAN-117",
+      "issue": "Drecoder/Engineering_Excellence_Playbook#116"
+    },
+    {
+      "id": "F-0117",
+      "journal": "## 2026-11-17: The runner scaler keeps idle VMs up while any job runs, holding three VMs for one job",
+      "category": "ci",
+      "severity": "medium",
+      "detected_by": "person",
+      "found": "2026-11-17",
+      "due": "2027-02-15",
+      "status": "open",
+      "refs": {
+        "rule_ids": [
+          "AGENTS.md#IaC Rules"
+        ],
+        "components": [
+          "sovereign-vpc-gcp",
+          "gcp-ci-project"
+        ],
+        "fingerprints": [
+          "idle-capacity-held"
+        ]
+      },
+      "ticket": "KAN-118",
+      "issue": "Drecoder/Engineering_Excellence_Playbook#117"
     }
   ],
   "controls": [

@@ -1811,3 +1811,90 @@ Status: open.
   `tests/journal/capa_project.py` lines 215-227 (ID = issue number); `.github/workflows/` (no
   workflow calls the projector). Ticket KAN-114.
 - **Status:** open.
+
+## 2026-11-18: The agent-ddi-harness daily mutation run crashed on shard 0 two days running, so the full mutation count was never recorded
+
+- **Rule:** A passing suite counts only if its tests could fail, and mutation score is tracked with
+  a floor; a flaky test is a defect, rerun once at most (`AGENTS.md` → Test Quality Rules). The
+  platform instruments itself: a failure found by a person looking is a finding in itself
+  (`AGENTS.md` → Observability Rules).
+- **Problem:** The scheduled `ci` workflow in Drecoder/agent-ddi-harness failed on 2026-11-17 (run
+  44058010609) and 2026-11-18 (run 44278562042) the same way: shard 0 of the full mutation run
+  raised `BlockingIOError: [Errno 11] Resource temporarily unavailable` inside `run_mutants(...)`
+  after about 54 and 56 minutes, shards 1 to 3 passed, and the job that computes the complete count
+  was skipped. The harness has no full-population mutation score for either day.
+- **Detection:** a person: the daily Features Map sync (KAN-94) read the run on 2026-11-18. Nothing
+  alerted on the first failure; a red scheduled run notifies no one.
+- **Root cause (DRAFT):** Not reproduced. Errno 11 (EAGAIN) when starting a process or thread
+  suggests shard 0 reaches a process or thread limit (the container's pids limit or RLIMIT_NPROC),
+  for example because mutant subprocesses that time out are not reaped. File-descriptor exhaustion
+  would raise Errno 24, not 11. Shard 0 may hold the slowest mutants, which would explain why only
+  it fails.
+- **Correction (DRAFT):** Reproduce shard 0 in the pinned image while sampling the process count;
+  reap or bound the mutant workers at the source.
+- **Preventive action (DRAFT):** KAN-116: a designed-to-fail case that runs the mutant runner under
+  a low process limit and shows it degrades without crashing; a failed scheduled run raises an alert
+  instead of waiting to be read.
+- **Verification (DRAFT):** The designed-to-fail case fails before the fix and passes after; two
+  consecutive scheduled runs finish all four shards and publish the complete count.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#115](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/115)
+  (the finding); [run
+  44058010609](https://github.com/Drecoder/agent-ddi-harness/actions/runs/44058010609) and [run
+  44278562042](https://github.com/Drecoder/agent-ddi-harness/actions/runs/44278562042) (job
+  134712896594, log line `BlockingIOError: [Errno 11] Resource temporarily unavailable`). Ticket
+  KAN-116.
+- **Status:** open.
+
+## 2026-11-17: Five of the seven sovereign-vpc-gcp units plan and apply without a committed provider lock file
+
+- **Rule:** Pin every input: packages by exact version in a committed lockfile (`AGENTS.md` → Supply
+  Chain Rules).
+- **Problem:** On main (checked 2026-11-18), only `live/dev/gcp/inference` and
+  `live/dev/gcp/inference-gpu-bench` commit `.terraform.lock.hcl`. `live/_bootstrap/gcp/identity`,
+  `live/_bootstrap/gcp/state`, `live/dev/gcp/network`, `live/dev/gcp/runners` and
+  `live/dev/gcp/observability` do not. On 2026-11-17 the owner's checkout held untracked lock files
+  for identity, runners, observability and `modules/observability`, so the day's hand applies of
+  identity, runners and observability used provider versions resolved on the laptop, not a reviewed
+  pin.
+- **Detection:** a person: the agent saw the untracked lock files in the owner's `git status` during
+  the 2026-11-17 applies. No gate checks that a unit commits its lock file.
+- **Root cause (DRAFT):** The units were added without their lock files, and the central gates check
+  lockfiles for package managers but not for Terraform providers, so nothing failed.
+- **Correction (DRAFT):** Generate each unit's lock file in the pinned toolchain image for
+  linux_amd64 and the owner's platform, and commit them in one change whose plans show no provider
+  change.
+- **Preventive action (DRAFT):** KAN-117: a gate check that fails a unit with a `terragrunt.hcl` and
+  no committed lock file, shown to fail on a fixture first.
+- **Verification (DRAFT):** All seven units commit a lock file on main, and the check fails on its
+  fixture and passes on main.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#116](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/116)
+  (the finding); `gh api repos/Drecoder/sovereign-vpc-gcp/git/trees/main?recursive=1` on 2026-11-18
+  (lock files in two of seven units); claude/handoff-2026-11-17-d.md, Next step 5 (the four
+  untracked lock files). Ticket KAN-117.
+- **Status:** open.
+
+## 2026-11-17: The runner scaler keeps idle VMs up while any job runs, holding three VMs for one job
+
+- **Rule:** Compute runs only when called: CI runners are at zero when no work is queued
+  (`AGENTS.md` → IaC Rules; `03_InfrastructureZone/05_Cost.md` §3a).
+- **Problem:** The elastic plan pool (sovereign-vpc-gcp #55, live since 2026-11-17) does not shrink
+  while any job is running. On 2026-11-17 from 17:29 to 17:43Z it held three VMs for one job, about
+  two idle VMs for fourteen minutes.
+- **Detection:** a person: the agent watched the pool during the first scaler runs on 2026-11-17. No
+  metric counts idle VM-minutes.
+- **Root cause (DRAFT):** To keep F-0091's guarantee (never remove a busy VM), the scaler treats the
+  pool as one unit and scales in only when the whole pool is idle, instead of deleting the idle
+  instances by name.
+- **Correction (DRAFT):** None yet; the cost is bounded by the length of the longest running job.
+- **Preventive action (DRAFT):** KAN-118: the scaler deletes only instances whose runner is not
+  busy, never by resizing the group, with designed-to-fail cases (a busy VM is never deleted; an
+  idle VM above the queue's need is), and emits idle VM-minutes as a metric.
+- **Verification (DRAFT):** A run shows the pool shrinking to the queue's need while a job is still
+  running, with no job killed, and the idle VM-minutes metric drops.
+- **Evidence:**
+  [Drecoder/Engineering_Excellence_Playbook#117](https://github.com/Drecoder/Engineering_Excellence_Playbook/issues/117)
+  (the finding); claude/handoff-2026-11-17-d.md and the owner's TODO (3 VMs for 1 job, 17:29 to
+  17:43Z on 2026-11-17); Drecoder/sovereign-vpc-gcp#55. Ticket KAN-118.
+- **Status:** open.
