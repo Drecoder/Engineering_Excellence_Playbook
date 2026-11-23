@@ -1190,7 +1190,7 @@
       "detected_by": "person",
       "found": "2026-11-11",
       "due": "2026-12-11",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Agent Rules",
@@ -1208,7 +1208,11 @@
         "fingerprints": [
           "agent-acts-as-person"
         ]
-      }
+      },
+      "closed": "2026-11-23",
+      "verification": "aws-builder-agent #34 (merged 2026-11-23) was opened by ddi-factory[bot], not the owner: the agent-pr workflow (sovereign-vpc-gcp #63) authenticated through Workload Identity Federation, signed the App JWT in Cloud KMS (run 45245248590), and CODEOWNERS requested the owner's review; the owner approved and merged. Before the fix the same run failed: the auth action was not allowed (run 44388351869; KAN-120) and KMS refused the sign (runs 44388756146, 45238632884; KAN-121, fixed by sovereign-vpc-gcp #67 and applied 2026-11-23)",
+      "residual": "one repository has opened an App-authored PR; the other ten callers are configured but unexercised. Genesis #9 (caller) is open, and the public Playbook cannot call the private workflow, so its agent PRs are still opened by the owner. The KMS binding no longer pins the key version (sovereign-vpc-gcp #67)",
+      "ticket": "KAN-69"
     },
     {
       "id": "F-0047",
@@ -1773,7 +1777,7 @@
       "detected_by": "person",
       "found": "2026-11-16",
       "due": "2027-05-15",
-      "status": "open",
+      "status": "fixed",
       "refs": {
         "rule_ids": [
           "AGENTS.md#Agent Rules",
@@ -1785,7 +1789,10 @@
         "fingerprints": [
           "agent-acts-as-person"
         ]
-      }
+      },
+      "closed": "2026-11-23",
+      "verification": "The agent-pr workflow refuses a branch with any commit not authored by an agent identity: designed-to-fail cases in sovereign-vpc-gcp tests/gates/agent-pr/cases.sh (an owner-authored commit, one foreign commit among agent commits, an empty author email: each refused, no PR opened). Positive case: aws-builder-agent #34, its commit authored by the agent and the PR opened as ddi-factory[bot] (run 45245248590), merged by the owner 2026-11-23",
+      "ticket": "KAN-69"
     },
     {
       "id": "F-0097",
