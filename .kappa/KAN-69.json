@@ -1,0 +1,171 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-69",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "Owner request 2026-11-23: close F-0046 (agent pull requests authored as the owner) and F-0096 (an agent commit authored as the owner) in the register now that aws-builder-agent #34 opened as ddi-factory[bot] and was merged by the owner, after KAN-120 (allowed actions) and KAN-121 (KMS signer condition, sovereign-vpc-gcp #67) cleared."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "74a7edc32aebf7b2bf5f368b161220119fd111c6ba8e00810754301439056de3",
+    "journal_sha256": "d3ce916c9ccab0154a4cbdb0313f181eff0f111a2ffc3bdb6c5667380065a3f9"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Agent Rules",
+      "AGENTS.md#Security Rules",
+      "AGENTS.md#Observability Rules"
+    ],
+    "fingerprints": [
+      "agent-acts-as-person"
+    ]
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "related",
+      "applies": true,
+      "reason": "The journal is append-only: this change adds no journal text and edits none; closure goes in the register rows only, as f0e6583 did.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0017",
+      "relation": "related",
+      "applies": true,
+      "reason": "Both rows keep their severity and due date; only status, closed, verification, residual and ticket are added.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Control-catch attribution; untouched. Both findings were detected by a person and stay so.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Board ticket contract; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0025",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Branch-protection incident journaling; this change does not touch rulesets.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "builder.spec.v1 and price table contracts; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "related",
+      "applies": true,
+      "reason": "CAPA fields are not machine-checked yet, so each verification names concrete run IDs and PR numbers a reader can re-check.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Playbook pin bumps and vendored contracts; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Playbook sync source; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0046",
+      "relation": "same",
+      "applies": true,
+      "reason": "This is the finding being closed: aws-builder-agent #34 was authored by ddi-factory[bot] through the agent-pr workflow, CODEOWNERS requested the owner's review, and the owner merged it.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "dependency_patch autonomy level; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Governance baseline dry-run staging; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0087",
+      "relation": "related",
+      "applies": false,
+      "reason": "Hand projection once cut sentences; this change writes register fields by script with a JSON round-trip that preserves the file byte-for-byte outside the two rows.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0089",
+      "relation": "related",
+      "applies": false,
+      "reason": "Same lesson as F-0087: the diff is limited to the two rows and checked before commit.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0096",
+      "relation": "same",
+      "applies": true,
+      "reason": "Closed with F-0046: the workflow refuses a branch with any commit not authored by an agent identity, and #34's commit is authored by Claude, opened as ddi-factory[bot].",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0098",
+      "relation": "related",
+      "applies": true,
+      "reason": "A control counts only with a designed-to-fail case: the agent-pr workflow's own gate cases (sovereign-vpc-gcp tests/gates/agent-pr/cases.sh) cover a non-agent author being refused; the real run is the positive case.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "Every change cites its ticket: KAN-69 carries both findings (KAN-120 and KAN-121 were its blockers).",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0100",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "Inference service account; untouched.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0112",
+      "relation": "related",
+      "applies": true,
+      "reason": "Rows name their issue where they have one; F-0046 predates issue-backed findings, F-0096's row stays matched by ID. capa_project.py --check is run before the PR.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Close on the evidence the finding's own correction names: a real App-authored PR and the owner's merge, not the workflow's self-test (which used a fake KMS and missed the 403).",
+    "Keep closure in the register; the journal stays append-only."
+  ],
+  "uncertainty": [
+    "Only one repository (aws-builder-agent) has opened an App-authored PR so far; the other ten callers are configured the same way but unexercised.",
+    "Genesis #9 (caller) is still open, and the public Playbook cannot call the private workflow, so its agent PRs are still opened by the owner.",
+    "The KMS binding no longer pins the key version; a rotated version could sign without an IAM change (sovereign-vpc-gcp #67 trade-off)."
+  ]
+}
