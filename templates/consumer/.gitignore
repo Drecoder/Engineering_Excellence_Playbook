@@ -1,0 +1,9 @@
+# Factory baseline for every consumer repository (KAN-83 item 6). Copy it into a new repository, or
+# append the lines a repository is missing; keep the repository's own exclusions. Local agent
+# settings and environment files never enter version control. Sanitized .env.example files stay
+# tracked. A .gitignore does not untrack a file already committed: the factory's secret scan covers
+# tracked files and history.
+.claude/settings.local.json
+.env
+.env.*
+!.env.example

@@ -32,3 +32,7 @@ __pycache__/
 
 # agent-ddi-harness checkout at the commit pinned in tests/contracts/harness_conformance/ddi_pin.json
 .ddi-harness/
+
+# Factory baseline (EEP templates/consumer/.gitignore; KAN-83 item 6): local agent settings and
+# environment files never enter version control. Sanitized .env.example files stay tracked.
+.claude/settings.local.json
