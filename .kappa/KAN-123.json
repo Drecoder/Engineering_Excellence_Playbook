@@ -1,0 +1,103 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-123",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "Restart the documentation-only Drift Prevention change after PR #126 exposed the omitted Kappa prerequisite."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "364c7195f7e3539fe96dedecba0b6c572a363339192423b5853c2e968401a63a",
+    "journal_sha256": "d3ce916c9ccab0154a4cbdb0313f181eff0f111a2ffc3bdb6c5667380065a3f9"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Reuse Rules"
+    ],
+    "fingerprints": []
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The rule does not alter the journal or its existing enforcement.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No control-catch metric or attribution changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No Jira issue shape or parser contract changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No Builder or price-table contract changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "CAPA field validation stays intact.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No vendor sync, contract pin, or workflow changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No change to sync PR generation or its source name.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No promoted autonomy or changes to the evidence requirements.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No change to the governance baseline or its controls.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "The work is recorded under KAN-123 and does not claim a ticket or finding closed.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Keep the rule single-sourced in the existing universal standard.",
+    "Run the Kappa slice and commit its record before reapplying the documentation change."
+  ],
+  "uncertainty": [
+    "This record applies to the fresh branch only. PR #126's original work was committed without a Kappa record.",
+    "The rule's automatic retrieval still depends on the private Rubik integration."
+  ]
+}

@@ -144,3 +144,11 @@ slice is failing, not that the rules are too strict.
 
 Shared things live in one place, agents are shown that place before they write, and code catches
 the copies a person or a model misses.
+
+## Drift Prevention
+
+Apply DRY, KISS, and Lean principles to reasoning, planning, and execution.
+
+Stay aligned with the objective. Do not introduce unnecessary work, complexity, or decisions.
+
+Preserve existing architecture and governance.
