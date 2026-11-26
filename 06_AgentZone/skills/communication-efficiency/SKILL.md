@@ -40,6 +40,7 @@ Budgets are flexible guidance, not minimums. Use fewer words when they suffice. 
 
 - Report the delta, not the whole system state.
 - Lead with outcomes and required decisions.
+- Use the Product Owner’s established language in messages, summaries, handoffs and reports. Follow the terms in the current product goal, work tracker and project bindings. Preserve the Product Owner’s wording for goals, milestones, statuses and decisions. Keep exact identifiers and technical terms where they carry evidence.
 - Don't repeat established context or instructions; link the source instead.
 - Keep agent claims distinct from independently verified results.
 - Disclose material risks, blockers, deviations and assumptions.
