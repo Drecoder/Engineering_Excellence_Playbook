@@ -370,6 +370,11 @@ policy list in `00_UniversalStandards/07_Security_In_Depth.md`).
   CODEOWNERS requires a human code owner on `.github/`, the gate pin, `.ci/quality.v1.json`, and
   `.ci/exceptions.v1.json`. Accounts that can change branch protection or App permissions are held
   to the standard of a cloud admin role.
+- **Agents operate only in staging (QA) or prod, and change things only through DEV.** DEV is the
+  development path: every change to code, infrastructure or configuration is a pull request. In
+  either environment an agent writes operational data only and never modifies deployed code,
+  infrastructure or configuration. The environment assignment, not the agent, decides permissions
+  (`07_SoftwareFactory/01_Software_Factory.md` §5).
 - **Pull-request gate runners hold no deploy authority.** They run agent-written code, so their
   identity has no deploy, apply, or secret access and is separate from the apply pipeline's.
 - **CI least privilege:** workflows default to `permissions: contents: read` and grant more per

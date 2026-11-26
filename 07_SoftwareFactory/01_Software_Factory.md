@@ -13,7 +13,8 @@ This page describes the factory's own repositories and how they work with one an
 platform map, trust boundaries, and status of every stage are in `ARCHITECTURE.md`; the rules for
 each bench are in the standard it links to. The patterns the factory attaches to every platform it
 builds (DataOps, FinOps, MLOps, SecOps), and the runs that build them, are in
-`02_Platform_Patterns.md`.
+`02_Platform_Patterns.md`. How the owner and the agents plan, inspect and improve the work each
+month is in `03_Agentic_Scrum.md`.
 
 ---
 
@@ -200,6 +201,64 @@ fixed `##` sections in the description, parsed strictly (owner decision, 2026-11
 - **The factory is built by its own rules.** A bench that cannot meet the playbook is not built.
 - **Benches built by hand are replaced by the factory.** MVP benches built by hand, on local
   backends behind injected interfaces, are later rebuilt by the agent loop.
+
+## 5️⃣ Environments and Governed Self-Improvement
+
+The factory improves itself, so its own capabilities (the infrastructure Genesis vends, the
+orchestrator, the DDI harness, agent skills, a memory provider) move through environments like any
+service. This section adds only the agent model. The environment rules it builds on are written
+once elsewhere: separate environments with their own state and identity
+(`03_InfrastructureZone/01_IaC_Standards.md`), the `dev`, `staging` and `prod` nodes of the hierarchy
+(`00_UniversalStandards/08_Governance_Guardrails.md` §3), human-approved merges to staging and prod
+(`00_UniversalStandards/07_Security_In_Depth.md` §3), promotion of one digest
+(`00_UniversalStandards/12_Containers.md`), and agents holding no execution authority (`AGENTS.md`).
+
+| Environment | What agents do there | What agents may write |
+| :--- | :--- | :--- |
+| **DEV** | Nothing: DEV is the development path (the repositories, pull requests, the central gates and the owner's approval), not an operating environment | Every change to code, infrastructure and configuration, as a pull request |
+| **QA** (`staging`) | Normal builder work using the **candidate** versions of factory capabilities, plus any observation objectives the owner assigns | Operational data only |
+| **PROD** | Normal builder work using the **approved baseline** versions | Operational data only |
+
+- **Two kinds of write, kept apart.** *Operational data* is what agents record while they work:
+  handoffs, daily and Sprint records, CAPA findings through the `capa-issue` process, ticket
+  status and comments under the Work Tracking Rules, telemetry, run records and leases, and a
+  capability's own data store. *A modification of deployed software or infrastructure* is any
+  change to code, IaC, configuration, IAM, network or a deployed artifact. Agents make the second
+  kind only as pull requests to DEV, which then pass the central gates, the owner's approval and
+  promotion. Nothing else changes what is deployed.
+- **The environment, not the agent, decides permissions.** Agents are interchangeable: any agent can
+  hold the QA or PROD assignment, and the assignment is recorded data the owner edits (in the
+  current Sprint's planning record), never a scheduler. Rotating agents changes which agent holds
+  which assignment, never an environment's boundaries, deployed versions or governance.
+- **Agent-side capabilities are versioned per environment.** A capability that runs inside an
+  agent's own session (skills, the harness, a memory provider) has no cloud account; its
+  environment is a pinned version reference: PROD uses the last approved version, QA a candidate.
+- **QA is productive.** The QA agent is a builder doing assigned engineering work, not a test
+  agent. Alongside it, it may carry observation objectives on a new capability (defects,
+  regressions, retrieval accuracy, inefficiency). Material findings go to the `capa-issue`
+  process; corrections go to DEV. Observation supplements the central gates; it never replaces
+  them and never adds a mandatory review by another agent.
+- **Factory capabilities start in `staging`.** Their verification happens on the DEV path, so their
+  first operational run is in `staging`; no deployed DEV runtime is needed for them. Services the
+  factory builds keep the deployed `dev` stage of `01_IaC_Standards.md`.
+- **Genesis enforces it.** Each account or project sits under exactly one environment node, and
+  workload and agent roles are denied any update to deployed code, configuration, IaC, IAM and
+  network; only the apply pipeline changes them, after a human-approved merge. Each denial is shown
+  failing before it counts. The DDI harness detects violations; it never enforces or approves.
+
+### The lifecycle of a factory capability
+
+1. Version *n* runs in PROD.
+2. An agent working in PROD develops version *n+1*, writing only to DEV.
+3. Version *n+1* passes the central gates and the owner's approval, and is promoted to QA.
+4. The QA agent uses it in normal work while observing its assigned objectives.
+5. Defects become CAPA findings, and their corrections go to DEV.
+6. Each corrected version is verified and promoted to QA again.
+7. Once its acceptance criteria are met, the owner approves it for PROD.
+8. Work on version *n+2* starts without disturbing the approved version.
+
+The factory improves itself this way without any agent holding the authority to change what it
+runs on.
 
 ---
 
