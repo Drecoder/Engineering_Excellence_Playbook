@@ -68,6 +68,8 @@ later inherits them without anyone remembering to.
   every permission set carries an explicit deny on creating long-lived credentials (users, access
   keys, console passwords, and re-activating a key), shown to fail before it counts. Root is the
   break-glass path, with MFA and an alert on use.
+- The agentic plane's accounts sit under the same environment nodes as every other workload, one
+  node each (`07_SoftwareFactory/01_Software_Factory.md` §5).
 - Environment nodes may tighten the baseline (e.g. `prod` enforces controls that `dev` runs in dry
   run), never loosen it.
 

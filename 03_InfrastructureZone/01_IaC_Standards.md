@@ -114,7 +114,9 @@ Spin up only what is used, and make idle cost visible:
 
 - **Prove the loop in dev first.** Staging and prod may exist from day one, each with its own
   state and identity, but keep their fixed-cost resources minimal or scaled to zero until the
-  dev loop works.
+  dev loop works. For the factory's own capabilities, DEV is the development path rather than a
+  deployed environment, and the first operational run is in staging
+  (`07_SoftwareFactory/01_Software_Factory.md` §5).
 - **Avoid fixed hourly costs in dev:** no NAT gateways, managed Kubernetes clusters, or idle load
   balancers unless the unit truly needs them.
 - **GPUs are on demand.** Prefer a scale-to-zero service (e.g. Cloud Run with a GPU) over a
