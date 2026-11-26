@@ -1,0 +1,105 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-123",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "Make the playbook the single canonical home of the seven shared agent skills, which today exist as copies in a private repository and in account-level skill stores that have drifted from each other."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "364c7195f7e3539fe96dedecba0b6c572a363339192423b5853c2e968401a63a",
+    "journal_sha256": "d3ce916c9ccab0154a4cbdb0313f181eff0f111a2ffc3bdb6c5667380065a3f9"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Reuse Rules",
+      "AGENTS.md#Work Tracking Rules"
+    ],
+    "fingerprints": []
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The skills do not alter the journal or its append-only enforcement.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No control-catch metric or attribution changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No Jira issue shape or parser contract changes; the skills name a generic work tracker.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No Builder or price-table contract changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "CAPA field validation stays intact; no register or journal schema changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No vendor sync, contract pin, or workflow changes; the skills are documents only.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No change to sync PR generation or its source name.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No promoted autonomy or changes to the evidence requirements; the skills restate that agent claims are not evidence.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No change to the governance baseline or its controls.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "The work is recorded under KAN-123 and does not claim a ticket or finding closed.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "One canonical copy per skill: the skills move here, and consumers point to a pinned commit instead of keeping copies.",
+    "Drift Prevention stays single-sourced in 00_UniversalStandards/09_Reuse_and_DRY.md; the skill points to it rather than restating it.",
+    "Commit this record before the skill files, as a separate first commit."
+  ],
+  "uncertainty": [
+    "This record sits beside .kappa/KAN-123.json instead of replacing it, so the earlier record is kept; that departs from the one-file-per-ticket naming.",
+    "Whether the skills preserve existing behavior is checked by the owner against an equivalence table in the consuming repository's PR, not by a test."
+  ]
+}
