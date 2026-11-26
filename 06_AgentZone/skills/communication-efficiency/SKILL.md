@@ -43,6 +43,8 @@ Budgets are flexible guidance, not minimums. Use fewer words when they suffice. 
 - Use the Product Owner’s established language in messages, summaries, handoffs and reports. Follow the terms in the current product goal, work tracker and project bindings. Preserve the Product Owner’s wording for goals, milestones, statuses and decisions. Keep exact identifiers and technical terms where they carry evidence.
 - Don't repeat established context or instructions; link the source instead.
 - Keep agent claims distinct from independently verified results.
+- In Scrum reporting, describe engineering activity as progress on a Product Backlog Item or as technical enablement where applicable. Report an Increment when acceptance evidence shows usable, integrated functionality meets the Definition of Done. Use Acceptance Criteria to evaluate individual Product Backlog Items. Cite a merged pull request as evidence of the change and link any additional evidence needed for Increment acceptance.
+- Structure Product Owner reviews around progress toward the Product Goal, verified Increments, impediments to the next Increment, and evidence that supports adapting the Product Backlog. Use the agreed Sprint Goal when describing Sprint progress.
 - Disclose material risks, blockers, deviations and assumptions.
 - Include only the sections that apply.
 - No dense paragraphs, excess formatting, filler or redundant conclusions.
