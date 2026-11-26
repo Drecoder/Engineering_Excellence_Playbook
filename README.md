@@ -95,7 +95,7 @@ Engineering_Excellence_Playbook/
 ├── 03_InfrastructureZone/   # IaC core + GCP/AWS specifics, security & IAM, Kubernetes
 ├── 04_OperationalRunbooks/  # Rollbacks, incident response, alert thresholds
 ├── 05_Metadata/             # Red/Green logic, trade-offs, least privilege
-├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks
+├── 06_AgentZone/            # Agent contracts, tool guardrails, risk routing, golden tasks; shared agent skills (skills/)
 ├── 07_SoftwareFactory/      # Capstone: the factory's repositories and how they work together
 ├── ARCHITECTURE.md          # Platform map: layers, path of a change, trust boundaries, status
 ├── docs/                    # Deep dives: USL, Little's Law, RED/USE methods
