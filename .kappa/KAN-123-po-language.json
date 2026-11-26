@@ -1,0 +1,104 @@
+{
+  "schema_version": "kappa_learning.v1",
+  "agent": "builder",
+  "work": {
+    "ticket": "KAN-123",
+    "repository": "Drecoder/Engineering_Excellence_Playbook",
+    "problem": "Agents report in their own terms and drift from the Product Owner's intent; the canonical Communication Efficiency skill should require the Product Owner's established language, intent and authority (EEP #132)."
+  },
+  "kappa": {
+    "status": "consulted",
+    "register_sha256": "364c7195f7e3539fe96dedecba0b6c572a363339192423b5853c2e968401a63a",
+    "journal_sha256": "d3ce916c9ccab0154a4cbdb0313f181eff0f111a2ffc3bdb6c5667380065a3f9"
+  },
+  "query": {
+    "component": "playbook",
+    "rule_ids": [
+      "AGENTS.md#Reuse Rules",
+      "AGENTS.md#Work Tracking Rules"
+    ],
+    "fingerprints": []
+  },
+  "result": "matches",
+  "classification": "related",
+  "findings": [
+    {
+      "id": "F-0014",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "The change doesn't touch the journal or its append-only enforcement.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0019",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No control-catch metric or attribution changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0022",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No Jira issue shape or parser contract changes; the skill names Scrum terms, not a tracker format.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0029",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No Builder or price-table contract changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0030",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No register or journal schema changes.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0035",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No vendor sync, contract pin or workflow changes; one skill document only.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0037",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No change to sync PR generation or its source name.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0047",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No autonomy promotion; the skill keeps agent claims distinct from verified results.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0060",
+      "relation": "not_applicable",
+      "applies": false,
+      "reason": "No change to the governance baseline or its controls.",
+      "reuses_correction": false
+    },
+    {
+      "id": "F-0099",
+      "relation": "related",
+      "applies": true,
+      "reason": "The change is recorded under KAN-123 and claims no ticket or finding closed.",
+      "reuses_correction": false
+    }
+  ],
+  "lessons": [
+    "Change the one canonical skill; consumers move to it only through their pinned bindings.",
+    "Commit this record first, in its own commit, before the skill change: #132 failed the Kappa check without it."
+  ],
+  "uncertainty": [
+    "A third KAN-123 record beside KAN-123.json and KAN-123-skills.json; the owner's decision on per-ticket record naming is still open.",
+    "The skill's effect on agent behavior is checked by the owner in use, not by a test."
+  ]
+}
